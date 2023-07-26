@@ -14,10 +14,25 @@ p3_table:
 p2_table:
     resb 4096
 
+    resb 8192
+_sys_stack:
+
+section .rodata
+gdt64:
+    dq 0    ; gdt zero entry
+.code: equ $ - gdt64    ; gdt code segment
+    dq (1<<44) | (1<<47) | (1<<41) | (1<<43) | (1<<53)
+.data: equ $ - gdt64    ; gdt data segment
+    dq (1<<44) | (1<<47) | (1<<41)
+.pointer:
+    dw .pointer - gdt64 - 1
+    dq gdt64
 
 section .text
 bits 32
 _start:
+
+    mov esp, _sys_stack  ; stack initialization
 
     ; Point the first entry in the p4 table to the p3 table
     mov eax, p3_table
@@ -70,23 +85,11 @@ _start:
     mov ds, ax
     mov es, ax
 
-    jmp gdt64.code:long_mode_start
+    jmp gdt64.code:main
 
     bits 64
     long_mode_start:
 
-    mov rax, 0x2f592f412f4b2f4f
-    mov qword [0xb8000], rax
+    extern main
+    call main
     hlt
-
-section .rodata
-gdt64:
-    dq 0    ; gdt zero entry
-.code: equ $ - gdt64    ; gdt code segment
-    dq (1<<44) | (1<<47) | (1<<41) | (1<<43) | (1<<53)
-.data: equ $ - gdt64    ; gdt data segment
-    dq (1<<44) | (1<<47) | (1<<41)
-.pointer:
-    dw .pointer - gdt64 - 1
-    dq gdt64
-

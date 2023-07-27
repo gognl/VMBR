@@ -1,3 +1,28 @@
+# C COMPILER
+
+C_COMPILER = gcc
+C_FLAGS = -c -nostdlib -fno-builtin -nostdinc -fno-stack-protector -Wall -I./include
+
+# LINKER
+
+LINKER = ld
+LINKER_FLAGS = -nostdlib --oformat elf64-x86-64 -n
+
+# ASM ASSEMBLER
+
+ASM_ASSEMBLER = nasm
+ASM_FLAGS = -f elf64 -I./include -w-all
+
+# -------------------------------------------------------- #
+
+
+C_FILES = $(shell find src/ -name '*.c')
+ASM_FILES = $(shell find src/ -name '*.asm')
+OBJ_FILES = $(addprefix build/, $(notdir $(C_FILES:.c=.o))) $(addprefix build/, $(notdir $(ASM_FILES:.asm=.o)))
+
+LINKER_SCRIPT := src/linker.ld
+GRUB_CFG := src/boot/grub.cfg
+
 default: run
 
 .PHONY: default build run clean
@@ -10,27 +35,20 @@ run: build
 clean:
 	rm -rf build
 
-build/mb2_header.o: src/boot/mb2_header.asm
+build/%.o: src/*/*%.c
 	mkdir -p build
-	nasm -f elf64 src/boot/mb2_header.asm -o build/mb2_header.o
+	$(C_COMPILER) $(C_FLAGS) -o $@ $<
 
-build/boot.o: src/boot/boot.asm
+build/%.o: src/*/*%.asm
 	mkdir -p build
-	nasm -f elf64 src/boot/boot.asm -o build/boot.o
+	$(ASM_ASSEMBLER) $(ASM_FLAGS) -o $@ $<
 
-build/system.o: src/util/system.c
+build/vmbr.bin: $(OBJ_FILES) $(LINKER_SCRIPT)
 	mkdir -p build
-	gcc -c -fno-builtin -nostdinc -Wall -I ./include -o build/system.o src/util/system.c
+	$(LINKER) $(LINKER_FLAGS) -T $(LINKER_SCRIPT) $(OBJ_FILES) -o $@
 
-build/main.o: src/boot/main.c
-	mkdir -p build
-	gcc -c -fno-builtin -nostdinc -Wall -I ./include -o build/main.o src/boot/main.c
-
-build/kernel.bin: build/mb2_header.o build/boot.o build/main.o build/system.o src/linker.ld
-	ld -n -o build/kernel.bin -T src/linker.ld build/mb2_header.o build/boot.o build/main.o build/system.o
-
-build/vmbr.iso: build/kernel.bin src/boot/grub.cfg
+build/vmbr.iso: build/vmbr.bin $(GRUB_CFG)
 	mkdir -p build/isofiles/boot/grub
-	cp src/boot/grub.cfg build/isofiles/boot/grub
-	cp build/kernel.bin build/isofiles/boot
-	grub-mkrescue -o build/vmbr.iso build/isofiles
+	cp $(GRUB_CFG) build/isofiles/boot/grub
+	cp build/vmbr.bin build/isofiles/boot
+	grub-mkrescue -o $@ build/isofiles

@@ -1,4 +1,3 @@
-#include <system.h>
 
 unsigned char *memcpy(unsigned char *dest, const unsigned char *src, int count){
     for(int i = 0; i<count; i++){
@@ -22,9 +21,7 @@ unsigned short *memsetw(unsigned short *dest, unsigned short val, int count){
 }
 
 int strlen(const char *str){
-    int c = -1;
-    while(str[c++] != '\0');
-    return c;
+    for(int c=0; ; c++) if(str[c] == '\0') return c;
 }
 
 unsigned char inportb (unsigned short _port){

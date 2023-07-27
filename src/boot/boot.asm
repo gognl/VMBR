@@ -85,7 +85,7 @@ _start:
     mov ds, ax
     mov es, ax
 
-    jmp gdt64.code:main
+    jmp gdt64.code:long_mode_start
 
     bits 64
     long_mode_start:

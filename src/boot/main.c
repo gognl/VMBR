@@ -1,8 +1,8 @@
 #include <system.h>
+#include <debug.h>
 
 int main(){
-
-    int l = strlen("hello");
-
+    init_video();
+    puts("Hello World!");
     for(;;);
 }

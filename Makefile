@@ -43,12 +43,12 @@ build/%.o: src/*/*%.asm
 	mkdir -p build
 	$(ASM_ASSEMBLER) $(ASM_FLAGS) -o $@ $<
 
-build/vmbr.bin: $(OBJ_FILES) $(LINKER_SCRIPT)
+build/kernel.bin: $(OBJ_FILES) $(LINKER_SCRIPT)
 	mkdir -p build
 	$(LINKER) $(LINKER_FLAGS) -T $(LINKER_SCRIPT) $(OBJ_FILES) -o $@
 
-build/vmbr.iso: build/vmbr.bin $(GRUB_CFG)
+build/vmbr.iso: build/kernel.bin $(GRUB_CFG)
 	mkdir -p build/isofiles/boot/grub
 	cp $(GRUB_CFG) build/isofiles/boot/grub
-	cp build/vmbr.bin build/isofiles/boot
+	cp build/kernel.bin build/isofiles/boot
 	grub-mkrescue -o $@ build/isofiles

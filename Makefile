@@ -32,7 +32,7 @@ build: build/vmbr.iso
 run: build
 	qemu-system-x86_64 -cdrom build/vmbr.iso -nographic -serial mon:stdio
 
-scr:
+scr: build
 	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio
 
 clean:

@@ -1,7 +1,11 @@
-global _start
 
 %define ESER_MSR 0xC0000080
 %define MEM_SIZE 512
+%define MMAP_ADDR 0x8600
+%define E820_MAGIC 0x534D4150
+
+global _start
+global _func
 
 section .bss
 
@@ -30,6 +34,10 @@ gdt64:
 
 section .text
 bits 32
+
+_func:
+    nop
+
 _start:
 
     mov esp, _sys_stack  ; stack initialization

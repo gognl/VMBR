@@ -25,11 +25,14 @@ GRUB_CFG := src/boot/grub.cfg
 
 default: run
 
-.PHONY: default build run clean
+.PHONY: default build run clean scr
 
 build: build/vmbr.iso
 
 run: build
+	qemu-system-x86_64 -cdrom build/vmbr.iso -nographic -serial mon:stdio
+
+scr:
 	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio
 
 clean:

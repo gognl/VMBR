@@ -2,7 +2,6 @@
 #include <debug.h>
 
 int main(){
-    init_video();
-    puts("Hello World!");
+    puts("Hello World! %d %d %d %c\n", 123, 456, 789, 'k');
     for(;;);
 }

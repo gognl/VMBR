@@ -30,7 +30,7 @@ default: run
 build: build/vmbr.iso
 
 run: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso
+	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio
 
 clean:
 	rm -rf build

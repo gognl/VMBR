@@ -7,5 +7,7 @@ extern unsigned short *memsetw(unsigned short *dest, unsigned short val, int cou
 extern int strlen(const unsigned char *str);
 extern unsigned char inportb (unsigned short _port);
 extern void outportb (unsigned short _port, unsigned char _data);
+extern int digitCount (int num);
+extern int pow (int m, int n);
 
 #endif

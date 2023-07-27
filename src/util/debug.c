@@ -1,58 +1,41 @@
 #include <system.h>
 #include <debug.h>
-
-unsigned short *ptr;
-int csr_x = 0, csr_y = 0;
-
-void scroll(void){
-    if (csr_y >= SCR_HEIGHT){
-        memcpy(ptr, PIXEL_ADDRESS(ptr, 0, 1), (SCR_HEIGHT-1)*SCR_WIDTH);
-        memsetw(PIXEL_ADDRESS(ptr, 0, SCR_HEIGHT-1), PIXEL(BLUE, BLACK, BLANK), SCR_WIDTH);
-        csr_y = SCR_HEIGHT-1;
-    }
-}
-
-void cls(void){
-
-    for(csr_x = 0; csr_x < SCR_WIDTH; csr_x++){
-        for(csr_y = 0; csr_y < SCR_HEIGHT; csr_y++){
-            *PIXEL_ADDRESS(ptr, csr_x, csr_y) = PIXEL(BLUE, BLACK, BLANK);
-        }
-    }
-
-    csr_x = 0, csr_y = 0;
-}
+#include <types.h>
 
 void putch(unsigned char c){
-
-    if (csr_x >= SCR_WIDTH){
-        csr_x = 0;
-        csr_y++;
-    }
-
-    if (c == '\n'){
-        csr_x = 0;
-        csr_y++;
-    }
-    else if (c == '\t'){
-        csr_x = (csr_x + 8) & ~(8 - 1);
-    }
-    else {
-        *PIXEL_ADDRESS(ptr, csr_x, csr_y) = PIXEL(BLUE, WHITE, c);
-        csr_x++;
-    }
-
-    scroll();
+        outportb(DBG_PORT, c);
 }
 
-void puts(unsigned char *s){
+void puts(unsigned char *s, ...){
+
+    va_list args;
+    va_start(args, s);
+
     int len = strlen(s);
     for(int i = 0; i<len; i++){
-        putch(s[i]);
-    }
-}
+        if(s[i] == '%'){
+            switch(s[i+1]){
+                case 'd': {
+                    DWORD num = va_arg(args, DWORD);
+                    DWORD digits = digitCount(num);
+                    DWORD delimiter = pow(10, digits-1);
 
-void init_video(void){
-    ptr = (unsigned short *)0xB8000;
-    cls();
+                    while(delimiter){
+                        putch((num/delimiter)%10 + '0');
+                        delimiter /= 10;
+                    }
+                    break;
+                }
+                case 'c': {
+                    // unsigned char is changed to int when passed to va
+                    putch(va_arg(args, int));   
+                    break;
+                }
+            }
+            i++;
+        } else {
+            putch(s[i]);
+        }
+    }
+    va_end(args);
 }

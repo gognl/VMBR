@@ -82,20 +82,9 @@ _start:
     extern ProtectedToCompatibility
     call ProtectedToCompatibility
 
-    ; Load GDT
-    lgdt [gdt64.pointer]
-
-    jmp gdt64.code:long_mode_start
-
+    extern CompatibilityToLong
+    call CompatibilityToLong
 bits 64
-    long_mode_start:
-
-    ; Update selectors
-    mov ax, gdt64.data
-    mov ss, ax
-    mov ds, ax
-    mov es, ax
-
     extern main:function
     call main
     hlt

@@ -1,5 +1,6 @@
 global RealToProtected
 global ProtectedToCompatibility
+global CompatibilityToLong
 
 global gdt64.code, gdt64.data, gdt64.pointer
 
@@ -38,6 +39,21 @@ gdt64:
 section .text
 
 bits 32
+RealToProtected:
+    push eax
+    
+    cli
+
+    lgdt [gdt64.pointer]
+
+    mov eax, cr0
+    or eax, CR0_PE
+    mov cr0, eax
+
+    pop eax
+    ret
+
+bits 32
 ProtectedToCompatibility:
     push eax
     push ecx
@@ -57,17 +73,18 @@ ProtectedToCompatibility:
     pop eax
     ret
 
-bits 32
-RealToProtected:
-    push eax
-    
-    cli
+CompatibilityToLong:
+    pop edi
 
+    ; Load GDT
     lgdt [gdt64.pointer]
 
-    mov eax, cr0
-    or eax, CR0_PE
-    mov cr0, eax
+    ; Update selectors
+    mov ax, gdt64.data
+    mov ss, ax
+    mov ds, ax
+    mov es, ax
 
-    pop eax
-    ret
+    push gdt64.code
+    push edi
+    retf

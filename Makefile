@@ -23,7 +23,7 @@ OBJ_FILES = $(addprefix build/, $(notdir $(C_FILES:.c=.o))) $(addprefix build/, 
 LINKER_SCRIPT := src/linker.ld
 GRUB_CFG := src/boot/grub.cfg
 
-default: run
+default: scr
 
 .PHONY: default build run clean scr
 

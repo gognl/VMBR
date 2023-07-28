@@ -1,55 +1,49 @@
-
-%define ESER_MSR 0xC0000080
-%define MEM_SIZE 512
-%define MMAP_ADDR 0x8600
-%define E820_MAGIC 0x534D4150
-
 global _start
-global _func
+
+extern gdt64.code, gdt64.data, gdt64.pointer
+
+%define MEM_SIZE 512
+
+; -------------- Page Table Entry Flags ---------------------------------------
+%define PTE_P 1<<0          ; Present bit
+%define PTE_W 1<<1          ; Writeable bit
+%define PTE_PS 1<<7         ; Huge Page bit (2MB)
+; -----------------------------------------------------------------------------
+
+; -------------- CR4 bits -----------------------------------------------------
+%define CR4_PAE 1<<5        ; PAE bit (Physical Address Extension)
+; -----------------------------------------------------------------------------
 
 section .bss
 
-align 4096
+align 0x1000
 
 p4_table:
-    resb 4096
+    resb 0x1000
 p3_table:
-    resb 4096
+    resb 0x1000
 p2_table:
-    resb 4096
+    resb 0x1000
 
-    resb 8192
+    resb 0x2000
 _sys_stack:
-
-section .rodata
-gdt64:
-    dq 0    ; gdt zero entry
-.code: equ $ - gdt64    ; gdt code segment
-    dq (1<<44) | (1<<47) | (1<<41) | (1<<43) | (1<<53)
-.data: equ $ - gdt64    ; gdt data segment
-    dq (1<<44) | (1<<47) | (1<<41)
-.pointer:
-    dw .pointer - gdt64 - 1
-    dq gdt64
 
 section .text
 bits 32
 
-_func:
-    nop
-
-_start:
-
-    mov esp, _sys_stack  ; stack initialization
+InitializePageTables:
+    push eax
+    push ecx
+    push edx
 
     ; Point the first entry in the p4 table to the p3 table
     mov eax, p3_table
-    or eax, (1 << 0) | (1 << 1)    ; set the present & writeable bits
+    or eax, PTE_P | PTE_W 
     mov dword [p4_table+0], eax
 
     ; Point the first entry in the p3 table to the p2 table
     mov eax, p2_table
-    or eax, (1 << 0) | (1 << 1)    ; set the present & writeable bits
+    or eax, PTE_P | PTE_W
     mov dword [p3_table+0], eax
 
     ; Map the p2 table 
@@ -57,7 +51,7 @@ _start:
     .map_p2_table:
         mov eax, 0x200000   ; 2MB
         mul ecx    ; now eax=eax*ecx, meaning eax=2MB*idx
-        or eax, (1 << 0) | (1 << 1) | (1 << 7)    ; present, writeable & huge page bits
+        or eax, PTE_P | PTE_W | PTE_PS
         mov [p2_table + 8*ecx], eax
 
         inc ecx
@@ -70,22 +64,31 @@ _start:
 
     ; Enable PAE (Physical Address Extension)
     mov eax, cr4
-    or eax, 1 << 5
+    or eax, CR4_PAE
     mov cr4, eax
+    
+    pop edx
+    pop ecx
+    pop eax
+    ret
 
-    ; Set long mode
-    mov ecx, ESER_MSR
-    rdmsr
-    or eax, 1 << 8
-    wrmsr
+_start:
+    ; protected mode
 
-    ; Enable paging
-    mov eax, cr0
-    or eax, ((1 << 16) | (1 << 31))
-    mov cr0, eax
+    mov esp, _sys_stack  ; stack initialization
+
+    call InitializePageTables
+
+    extern ProtectedToCompatibility
+    call ProtectedToCompatibility
 
     ; Load GDT
     lgdt [gdt64.pointer]
+
+    jmp gdt64.code:long_mode_start
+
+bits 64
+    long_mode_start:
 
     ; Update selectors
     mov ax, gdt64.data
@@ -93,11 +96,6 @@ _start:
     mov ds, ax
     mov es, ax
 
-    jmp gdt64.code:long_mode_start
-
-    bits 64
-    long_mode_start:
-
-    extern main
+    extern main:function
     call main
     hlt

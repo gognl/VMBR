@@ -1,62 +1,25 @@
-global RealToProtected
-global ProtectedToCompatibility
-global CompatibilityToLong
+section .data
 
-global gdt64.code, gdt64.data, gdt64.pointer
-
-%define ESER_MSR 0xC0000080
-
-; -------------- ESER MSR bits ------------------------------------------------
-%define ESER_LM 1<<8        ; Long Mode enabled bit
-; -----------------------------------------------------------------------------
-
-; -------------- CR0 bits -----------------------------------------------------
-%define CR0_PE 1<<0         ; Protected mode Enabled bit
-%define CR0_PG 1<<31        ; Paging enabled bit
-; -----------------------------------------------------------------------------
-
-; -------------- GDT Segment Descriptor Access Byte bits & Flags --------------
-%define SEG_DSCR_RW 1<<41   ; R/W bit - R for code segments, W for data segments
-%define SEG_DSCR_DC 1<<42   ; Direction bit (0 for growing up, 1 for growing down)
-%define SEG_DSCR_E 1<<43    ; Executable bit
-%define SEG_DSCR_S 1<<44    ; S bit (type) - 1 if code/data segment
-%define SEG_DSCR_P 1<<47    ; Present bit
-%define SEG_DSCR_L 1<<53    ; Long mode code flag
-; -----------------------------------------------------------------------------
-
-section .rodata
-gdt64:
-.null:
-    dq 0    ; gdt zero entry
-.code: equ $ - gdt64    ; gdt code segment
-    dq  SEG_DSCR_RW | SEG_DSCR_E | SEG_DSCR_S | SEG_DSCR_P | SEG_DSCR_L
-.data: equ $ - gdt64    ; gdt data segment
-    dq SEG_DSCR_RW | SEG_DSCR_S | SEG_DSCR_P
-.pointer:
-    dw .pointer - gdt64 - 1    ; size of gdt minus 1
-    dq gdt64    ; offset is 8-bytes in 64bit mode
+ivt:
+    dw 0x03ff             ; limit 0-15
+    dd 0                  ; base 16-48
 
 section .text
 
 bits 32
-RealToProtected:
-    push eax
+ProtectedToLong:
+    pop esi
     
-    cli
+    call InitializePageTables
 
-    lgdt [gdt64.pointer]
+    ; Move p4 address to cr3
+    mov eax, p4_table
+    mov cr3, eax
 
-    mov eax, cr0
-    or eax, CR0_PE
-    mov cr0, eax
-
-    pop eax
-    ret
-
-bits 32
-ProtectedToCompatibility:
-    push eax
-    push ecx
+    ; Enable PAE (Physical Address Extension)
+    mov eax, cr4
+    or eax, CR4_PAE
+    mov cr4, eax
 
     ; Set long mode
     mov ecx, ESER_MSR
@@ -69,22 +32,14 @@ ProtectedToCompatibility:
     or eax, CR0_PG
     mov cr0, eax
 
-    pop ecx
-    pop eax
-    ret
-
-CompatibilityToLong:
-    pop edi
-
-    ; Load GDT
     lgdt [gdt64.pointer]
 
-    ; Update selectors
-    mov ax, gdt64.data
-    mov ss, ax
-    mov ds, ax
-    mov es, ax
+    jmp gdt64.code:ProtectedToLong.long_mode
+bits 64
+    .long_mode:
+    
+    UpdateSelectorsAX gdt64.data
 
-    push gdt64.code
-    push edi
-    retf
+    and rsi, 0xFFFFFFFF
+    push rsi
+    ret

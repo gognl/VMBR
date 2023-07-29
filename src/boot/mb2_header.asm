@@ -1,6 +1,6 @@
 extern _start
 
-section .mb2_header
+;section .mb2_header
 mb2_header_start:
     dd 0xE85250D6    ; magic
     dd 0    ; architecture

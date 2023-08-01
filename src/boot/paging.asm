@@ -1,3 +1,16 @@
+%include "src/boot/macros.asm"
+
+section .bss
+
+align 0x1000
+p4_table:
+    resb 0x1000
+p3_table:
+    resb 0x1000
+p2_table:
+    resb 0x1000
+
+section .text
 bits 32
 InitializePageTables:
 

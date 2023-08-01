@@ -1,16 +1,17 @@
-section .data
+%include "src/boot/macros.asm"
 
-ivt:
-    dw 0x03ff             ; limit 0-15
-    dd 0                  ; base 16-48
+section .rodata
+%include "src/boot/gdt.asm"
 
 section .text
+bits 32
+ivt:
+    dw 0x03ff             ; limit 0-15
+    dq 0                  ; base 16-48
 
 bits 32
 ProtectedToLong:
     pop esi
-    
-    call InitializePageTables
 
     ; Move p4 address to cr3
     mov eax, p4_table
@@ -32,14 +33,92 @@ ProtectedToLong:
     or eax, CR0_PG
     mov cr0, eax
 
-    lgdt [gdt64.pointer]
+    lgdt [_gdt.pointer]
 
-    jmp gdt64.code:ProtectedToLong.long_mode
+    jmp _gdt.code64:ProtectedToLong.long_mode
 bits 64
     .long_mode:
     
-    UpdateSelectorsAX gdt64.data
+    UpdateSelectorsAX _gdt.data64
 
     and rsi, 0xFFFFFFFF
     push rsi
+    ret
+
+bits 64
+LongToProtected:
+    pop rsi
+    push _gdt.code32
+    push REAL_ADDR(LongToProtected.compatibility_mode)
+    retfq
+
+bits 32
+    .compatibility_mode:
+
+    UpdateSelectorsAX _gdt.data32
+
+    ; Disable paging
+    mov eax, cr0
+    and eax, ~CR0_PG
+    mov cr0, eax
+
+    ; Disable long mode
+    mov ecx, ESER_MSR
+    rdmsr
+    and eax, ~ESER_LM  
+    wrmsr
+
+    ; Disable PAE (Physical Address Extension)
+    mov eax, cr4
+    and eax, ~CR4_PAE
+    mov cr4, eax
+
+    push esi
+    ret
+
+
+bits 32
+ProtectedToReal:
+    pop esi
+
+    cli 
+    jmp _gdt.code16:REAL_ADDR(ProtectedToReal.protected16)
+bits 16
+    .protected16:
+
+    UpdateSelectorsAX _gdt.data16
+
+    lidt [REAL_ADDR(ivt)]
+
+    mov eax, cr0
+    and eax, ~(CR0_PE)
+    mov cr0, eax
+
+    jmp 0:REAL_ADDR(ProtectedToReal.real_mode)
+    .real_mode:
+
+    UpdateSelectorsAX 0
+
+    push si
+    ret
+
+
+bits 16
+RealToProtected:
+    pop si
+
+    cli
+
+    mov eax, cr0
+    or eax, CR0_PE
+    mov cr0, eax
+
+    jmp _gdt.code32:REAL_ADDR(RealToProtected.protected_mode)
+bits 32
+    .protected_mode:
+
+    UpdateSelectorsAX _gdt.data32
+
+    and esi, 0xFFFF
+    push esi
     ret

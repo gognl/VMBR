@@ -2,14 +2,6 @@
 
 global _start
 
-;extern RealToProtected
-;extern ProtectedToCompatibility
-;extern CompatibilityToLong
-
-;extern ProtectedToReal
-
-;extern _gdt.pointer
-
 %define MEM_SIZE 512
 
 section .rodata
@@ -18,14 +10,6 @@ section .rodata
 section .bss
 
 align 0x1000
-
-p4_table:
-    resb 0x1000
-p3_table:
-    resb 0x1000
-p2_table:
-    resb 0x1000
-
     resb 0x2000
 _sys_stack:
 
@@ -34,13 +18,14 @@ section .text
 
 bits 32
 _start:
-    ; protected mode
+    call InitializePageTables
     call ProtectedToLong
+
 bits 64
     mov rsp, _sys_stack  ; stack initialization
     
-    extern main:function
-    call main
+    extern cboot:function
+    call cboot
     hlt
 
 %include "src/boot/paging.asm"

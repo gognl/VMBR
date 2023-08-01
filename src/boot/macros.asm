@@ -1,9 +1,9 @@
-%ifndef MACROS.ASM
-%define MACROS.ASM
+%ifndef __MACROS
+%define __MACROS
 
 ; -------------- Real Address Macro -------------------------------------------
-%define REAL_START 0x2000
-%define REAL_ADDR(addr) (addr + REAL_START - low_functions_start)
+%define REAL_START 0x4000
+%define REAL_ADDR(addr) (addr-low_functions_start+REAL_START)
 ; -----------------------------------------------------------------------------
 
 ; -------------- ESER MSR bits ------------------------------------------------

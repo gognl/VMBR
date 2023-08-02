@@ -21,5 +21,5 @@ void init_real(void){
 }
 
 void init_mmap(void){
-    e820_entry *mmap; 
+    mmap_entry *mmap; 
 }

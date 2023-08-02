@@ -21,11 +21,16 @@ typedef unsigned long long UINT64;
 #define ttyS0 0x3F8
 #define DBG_PORT ttyS0
 
-typedef struct _e820_entry {
+typedef struct _mmap_entry {
     UINT64 base_addr;
     UINT64 length;
     UINT32 type;
     UINT32 acpi_ea;
-} e820_entry;
+} mmap_entry;
+
+typedef struct _mmap_table {
+    UINT32 length;
+    mmap_entry *entries;
+} mmap_table;
 
 #endif

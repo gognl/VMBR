@@ -8,11 +8,10 @@ section .text
 
 bits 16
 LoadMemoryMap:
-    UpdateSelectorsAX 0
 
-    mov di, MMAP_TABLE+2        ; The first word is for the length of the table
+    mov di, MMAP_TABLE+4        ; The first dword is for the length of the table
     xor ebx, ebx
-    xor bp, bp
+    xor ebp, ebp
     mov edx, E820_MAGIC
     mov eax, 0xe820
     mov ecx, 24
@@ -44,13 +43,14 @@ LoadMemoryMap:
     or ecx, [es:di + 12]
     jz .skip_entry              ; length is zero
     ;println "Found a good entry at ", di, dword [es:di + 16]
-    inc bp                      ; got a good entry
+    inc ebp                      ; got a good entry
     add di, 24
 .skip_entry:
     test ebx, ebx               ; done if ebx=0
     jne .load_loop
 .finished:
-    mov [MMAP_TABLE], bp
+    println "Loaded memory map!"
+    mov dword [MMAP_TABLE], ebp
     clc
     ret
 .failed:

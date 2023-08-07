@@ -5,6 +5,5 @@
 int cboot(){
     puts("\n\nSuccessfully entered long mode\n");
     init_real();
-    init_mmap();
     for(;;);
 }

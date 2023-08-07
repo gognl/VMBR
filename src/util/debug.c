@@ -1,5 +1,4 @@
 #include <system.h>
-#include <debug.h>
 #include <types.h>
 
 void putch(unsigned char c){
@@ -29,6 +28,17 @@ void puts(unsigned char *s, ...){
                 case 'c': {
                     // unsigned char is changed to int when passed to va
                     putch(va_arg(args, int));   
+                    break;
+                }
+                case 'q': {
+                    UINT64 num = va_arg(args, UINT64);
+                    UINT64 digits = digitCount(num);
+                    UINT64 delimiter = pow(10, digits-1);
+
+                    while(delimiter){
+                        putch((num/delimiter)%10 + '0');
+                        delimiter /= 10;
+                    }
                     break;
                 }
             }

@@ -17,13 +17,10 @@ void init_real(void){
     memcpy((BYTE*)REAL_START, 
     low_functions_start, 
     low_functions_end-low_functions_start);
-    puts("Copied functions to real mode area\n");
+}
 
+void init_mmap(void){
     CallReal(LoadMemoryMap);
-    print_mmap();
-    BYTE *mem = allocate_memory(0x1000);
-    puts("mem addr: %q\n", mem);
-    print_mmap();
 }
 
 void print_mmap(void){

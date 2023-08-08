@@ -5,6 +5,7 @@ typedef unsigned long long QWORD, *PQWORD;
 typedef unsigned int DWORD, *PDWORD;
 typedef unsigned short WORD, *PWORD;
 typedef unsigned char BYTE, *PBYTE;
+typedef unsigned char CHAR, *PCHAR;
 
 typedef unsigned int UINT32;
 typedef unsigned long long UINT64;

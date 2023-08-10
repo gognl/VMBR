@@ -25,20 +25,20 @@ OBJ_FILES = $(addprefix build/, $(notdir $(C_FILES:.c=.o))) $(ASM_MAINO_FILE)
 LINKER_SCRIPT := src/linker.ld
 GRUB_CFG := src/boot/grub.cfg
 
-default: scr
+default: run
 
 .PHONY: default build run clean scr gdb
 
 build: build/vmbr.iso
 
-run: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -nographic -serial mon:stdio
-
 scr: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio
+	qemu-system-x86_64 -cdrom build/vmbr.iso -nographic --enable-kvm -serial mon:stdio
+
+run: build
+	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio --enable-kvm -cpu host
 
 gdb: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S -serial stdio & gdb
+	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio & gdb
 
 clean:
 	rm -rf build

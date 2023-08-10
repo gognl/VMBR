@@ -13,4 +13,48 @@ extern void outportb (unsigned short _port, unsigned char _data);
 extern int digitCount (int num);
 extern int pow (int m, int n);
 
+
+__attribute__((always_inline))
+QWORD inline __get_cpuid(){
+    DWORD ecx, edx;
+    __asm__ __volatile__("cpuid": "=d" (edx), "=c" (ecx) : "a"(1));
+    return ((QWORD)edx << 32) | ecx;
+}
+
+__attribute__((always_inline)) 
+UINT64 inline __read_msr(UINT64 msr){
+    DWORD upper = 0, lower = 0;
+    __asm__ __volatile__("rdmsr" : "=d" (upper), "=a" (lower) : "c"(msr));
+    return ((QWORD)upper << 32) | lower;
+}
+
+__attribute__((always_inline)) 
+QWORD inline __read_cr0(void){
+    QWORD cr0;
+    __asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
+    return cr0;
+}
+
+__attribute__((always_inline)) 
+QWORD inline __read_cr4(void){
+    QWORD cr4;
+    __asm__ __volatile__("mov %%cr4, %0" : "=r"(cr4));
+    return cr4;
+}
+
+__attribute__((always_inline)) 
+void inline __write_cr0(QWORD cr0){
+    __asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
+}
+
+__attribute__((always_inline)) 
+void inline __write_cr4(QWORD cr4){
+    __asm__ __volatile__("mov %0, %%cr4" :: "r"(cr4));
+}
+
+__attribute__((always_inline)) 
+void inline __vmxon(BYTE *vmxon_region){
+    __asm__ __volatile__("vmxon %0;" : : "m" (vmxon_region));
+}
+
 #endif

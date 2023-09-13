@@ -19,7 +19,7 @@ void prepare_vmxon(BYTE *vmxon_region){
 void init_vmm(){
     UINT32 cpu_count = get_cpu_count();
     BYTE *vmxon_region = allocate_memory(0x1000);   // 4kb aligned
-    puts("Allocated region and found cpu count\n");
+    puts("Allocated region and found cpu count (%d)\n", cpu_count);
     prepare_vmxon(vmxon_region);
     puts("Prepared for vmxon\n");
     __vmxon(vmxon_region);

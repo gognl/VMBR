@@ -32,13 +32,13 @@ default: run
 build: build/vmbr.iso
 
 scr: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -nographic --enable-kvm -serial mon:stdio
+	qemu-system-x86_64 -cdrom build/vmbr.iso -nographic --enable-kvm -serial mon:stdio -smp cores=4 -cpu host 
 
 run: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio --enable-kvm -cpu host
+	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio --enable-kvm -smp cores=4 -cpu host 
 
 gdb: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio & gdb
+	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio -smp cores=4 -cpu host & gdb
 
 clean:
 	rm -rf build

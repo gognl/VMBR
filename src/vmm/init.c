@@ -8,6 +8,7 @@ Sources:
 #include <real.h>
 #include <system.h>
 #include <init.h>
+#include <vmcs.h>
 
 void prepare_vmxon(BYTE *vmxon_region_ptr){
     // TODO check that vmx is available in cpuid. Also take care of edge cases (intel manual vol. 3c, section 23.8)
@@ -19,6 +20,10 @@ void prepare_vmxon(BYTE *vmxon_region_ptr){
 void prepare_vmcs(vmcs *vmcs_ptr){
     vmcs_ptr->revision_id = (DWORD)__read_msr(IA32_VMX_BASIC);  // revision identifier
     vmcs_ptr->revision_id &= ~(1<<31);                          // no shadow vmcs
+    
+}
+
+void initialize_vmcs(){
     
 }
 
@@ -39,4 +44,6 @@ void init_vmm(){
     __vmclear(vmcs_ptr);
     __vmptrld(vmcs_ptr);
     puts("VMCS is now loaded\n");
+
+    initialize_vmcs();
 }

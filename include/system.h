@@ -57,4 +57,15 @@ void inline __vmxon(BYTE *vmxon_region){
     __asm__ __volatile__("vmxon %0;" : : "m" (vmxon_region));
 }
 
+__attribute__((always_inline))
+void inline __vmclear(BYTE *vmcs_ptr){
+    __asm__ __volatile__("vmclear %0;" : : "m" (vmcs_ptr));
+}
+
+__attribute__((always_inline))
+void inline __vmptrld(BYTE *vmcs_ptr){
+    __asm__ __volatile__("vmptrld %0;" : : "m" (vmcs_ptr));
+}
+
+
 #endif

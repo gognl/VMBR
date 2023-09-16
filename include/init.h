@@ -8,6 +8,13 @@
  #define CR4_VMXE (1 << 13)
  #define CR0_NE (1 << 5)
 
+
+typedef struct _vmcs {
+    UINT32 revision_id; // bits 0-30 are the id, bit 31 is the shadow-vmcs indicator.
+    UINT32 vmx_abort;
+    // vmcs data
+} __attribute__((__packed__)) vmcs;
+
 extern void init_vmm(void);
 
 

@@ -1,7 +1,7 @@
 # C COMPILER
 
 C_COMPILER = gcc
-C_FLAGS = -c -nostdlib -fno-builtin -nostdinc -fno-stack-protector -Wall -I./include
+C_FLAGS = -c -nostdlib -fno-builtin -nostdinc -fno-stack-protector -Wall -I./include -g
 
 # LINKER
 
@@ -25,20 +25,20 @@ OBJ_FILES = $(addprefix build/, $(notdir $(C_FILES:.c=.o))) $(ASM_MAINO_FILE)
 LINKER_SCRIPT := src/linker.ld
 GRUB_CFG := src/boot/grub.cfg
 
-default: scr
+default: run
 
 .PHONY: default build run clean scr gdb
 
 build: build/vmbr.iso
 
-run: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -nographic -serial mon:stdio
-
 scr: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio
+	qemu-system-x86_64 -cdrom build/vmbr.iso -nographic --enable-kvm -serial mon:stdio -smp cores=4 -cpu host 
+
+run: build
+	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio --enable-kvm -smp cores=4 -cpu host 
 
 gdb: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S -serial stdio & gdb
+	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio -smp cores=4 -cpu host & gdb
 
 clean:
 	rm -rf build

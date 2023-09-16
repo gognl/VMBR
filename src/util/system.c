@@ -21,6 +21,15 @@ unsigned short *memsetw(unsigned short *dest, unsigned short val, int count){
     return dest;
 }
 
+BOOL memcmp(BYTE *src1, BYTE *src2, UINT32 count){
+    for(UINT32 i = 0; i<count; i++){
+        if (*src1 != *src2) return FALSE;
+        src1++;
+        src2++;
+    }
+    return TRUE;
+}
+
 int strlen(const char *str){
     for(int c=0; ; c++) if(str[c] == '\0') return c;
 }

@@ -5,12 +5,17 @@ typedef unsigned long long QWORD, *PQWORD;
 typedef unsigned int DWORD, *PDWORD;
 typedef unsigned short WORD, *PWORD;
 typedef unsigned char BYTE, *PBYTE;
+typedef unsigned char CHAR, *PCHAR;
 
 typedef unsigned int UINT32;
 typedef unsigned long long UINT64;
 
 #define FALSE 0
-#define TRUE (!(FALSE))
+#define TRUE 1
+#define BOOL BYTE
+
+#define NULL 0
+#define NULLPTR ((void*)0)
 
 #define ALIGN_UP(num, align) (((num)+(align)-1) & (-(align)))   // this is nice. Only works when align is a multiple of 2, though.
 

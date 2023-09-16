@@ -41,6 +41,18 @@ void puts(unsigned char *s, ...){
                     }
                     break;
                 }
+                case 'm': {
+                    BYTE len = s[i+2]-'0';
+                    
+                    BYTE *str = va_arg(args, BYTE*);
+                    for(BYTE j = 0; j<len; j++){
+                        putch(*str);
+                        str++;
+                    }
+
+                    i++;
+                    break;
+                }
             }
             i++;
         } else {

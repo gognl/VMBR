@@ -21,5 +21,3 @@ typedef struct _vmcs {
 } __attribute__((__packed__)) vmcs;
 
 extern void init_vmm(void);
-
-

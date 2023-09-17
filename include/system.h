@@ -4,6 +4,15 @@
 #include <types.h>
 #include <vmcs.h>
 
+typedef struct {
+    UINT64 base;
+    UINT32 limit;
+} gdtr_t;
+typedef struct {
+    UINT64 base;
+    UINT32 limit;
+} idtr_t;
+
 extern unsigned char *memcpy(unsigned char *dest, const unsigned char *src, int count);
 extern unsigned char *memset(unsigned char *dest, unsigned char val, int count);
 extern unsigned short *memsetw(unsigned short *dest, unsigned short val, int count);
@@ -30,6 +39,13 @@ UINT64 inline __read_msr(UINT64 msr){
 }
 
 // control registers read & write
+
+__attribute__((always_inline))
+QWORD inline __read_rflags(void){
+    QWORD rflags;
+    __asm__ __volatile__("pushfq; pop %0" : "=r"(rflags));
+    return rflags;
+}
 
 __attribute__((always_inline)) 
 QWORD inline __read_cr0(void){
@@ -101,9 +117,14 @@ WORD inline __read_gs(void){
     __asm__ __volatile__("mov %%gs, %0" : "=r"(gs));
     return gs;
 }
-
-
-
+__attribute__((always_inline))
+void inline __read_gdtr(gdtr_t* gdtr){
+    __asm__ __volatile__("sgdt %0" : "=m"(*gdtr));
+}
+__attribute__((always_inline))
+void inline __read_idtr(idtr_t* idtr){
+    __asm__ __volatile__("sidt %0" : "=m"(*idtr));
+}
 
 // vmx instructions
 
@@ -125,6 +146,11 @@ void inline __vmptrld(BYTE *vmcs_ptr){
 __attribute__((always_inline))
 void inline __vmwrite(VMCS_ENCODING field, UINT64 value){
     __asm__ __volatile__("vmwrite %1, %0" :: "r" ((QWORD)field), "r" (value));
+}
+
+__attribute__((always_inline))
+void inline __vmlaunch(){
+    __asm__ __volatile__("vmlaunch");
 }
 
 #endif

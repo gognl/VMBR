@@ -1,7 +1,7 @@
 #ifndef __VMCS_H
 #define __VMCS_H
 
-typedef enum {
+typedef enum VMCS_ENCODINGS {
     // host fields
         // 16bit
         HOST_ES = 0x00000c00,
@@ -160,7 +160,6 @@ typedef enum {
         CONTROL_EPTP_LIST = 0x0002024,
         CONTROL_VMREAD = 0x0002026,
         CONTROL_VMWRITE = 0x0002028,
-        CONTROL_VMWRITE = 0x0002028,
         CONTROL_VIRTUALIZATION_EXCEPTION_INFO = 0x000202a,
         CONTROL_XSS_EXITING = 0x000202c,
         CONTROL_ENCLS_EXITING = 0x000202e,
@@ -203,7 +202,7 @@ typedef enum {
         RODATA_IO_RSI = 0x00006404,
         RODATA_IO_RDI = 0x00006406,
         RODATA_IO_RIP = 0x00006408,
-        RODATA_GUEST_LINEAR_ADDRESS = 0x0000640a,
+        RODATA_GUEST_LINEAR_ADDRESS = 0x0000640a
 } VMCS_ENCODING;
 
 #endif

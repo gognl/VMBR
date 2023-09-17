@@ -24,7 +24,53 @@ void prepare_vmcs(vmcs *vmcs_ptr){
 }
 
 void initialize_vmcs(){
+    __vmwrite(HOST_CR0, __read_cr0());
+    // __vmwrite(HOST_CR3, __read_cr3()); // todo initialize vmm paging
+    __vmwrite(HOST_CR4, __read_cr4());
     
+    // todo load rsi and rsp
+
+    __vmwrite(HOST_ES, __read_es());
+    __vmwrite(HOST_CS, __read_cs());
+    __vmwrite(HOST_SS, __read_ss());
+    __vmwrite(HOST_DS, __read_ds());
+    __vmwrite(HOST_FS, 0);
+    __vmwrite(HOST_GS, 0);
+    // __vmwrite(HOST_TR, __read_tr());
+
+
+    __vmwrite(GUEST_CR0, __read_cr0());
+    __vmwrite(GUEST_CR3, __read_cr3());
+    __vmwrite(GUEST_CR4, __read_cr4());
+    __vmwrite(GUEST_DR7, -1);   // todo
+    // todo load rsi, rsp, rflags
+    __vmwrite(GUEST_ES, __read_es() & 0xf8);
+    __vmwrite(GUEST_ES_BASE, 0);
+    __vmwrite(GUEST_ES_LIMIT, 0xfffff);
+    __vmwrite(GUEST_ES_ACCESS_RIGHTS, GDT_AB_RW | GDT_AB_S | GDT_AB_P);
+    __vmwrite(GUEST_CS, __read_cs() & 0xf8);
+    __vmwrite(GUEST_CS_BASE, 0);
+    __vmwrite(GUEST_CS_LIMIT, 0xfffff);
+    __vmwrite(GUEST_CS_ACCESS_RIGHTS, GDT_AB_RW | GDT_AB_E | GDT_AB_S | GDT_AB_P);
+    __vmwrite(GUEST_SS, __read_ss() & 0xf8);
+    __vmwrite(GUEST_SS_BASE, 0);
+    __vmwrite(GUEST_SS_LIMIT, 0xfffff);
+    __vmwrite(GUEST_SS_ACCESS_RIGHTS, GDT_AB_RW | GDT_AB_S | GDT_AB_P);
+    __vmwrite(GUEST_DS, __read_ds() & 0xf8);
+    __vmwrite(GUEST_DS_BASE, 0);
+    __vmwrite(GUEST_DS_LIMIT, 0xfffff);
+    __vmwrite(GUEST_DS_ACCESS_RIGHTS, GDT_AB_RW | GDT_AB_S | GDT_AB_P);
+    __vmwrite(GUEST_FS, __read_fs() & 0xf8);
+    __vmwrite(GUEST_FS_BASE, 0);
+    __vmwrite(GUEST_FS_LIMIT, 0xfffff);
+    __vmwrite(GUEST_FS_ACCESS_RIGHTS, GDT_AB_RW | GDT_AB_S | GDT_AB_P);
+    __vmwrite(GUEST_GS, __read_gs() & 0xf8);
+    __vmwrite(GUEST_GS_BASE, 0);
+    __vmwrite(GUEST_GS_LIMIT, 0xfffff);
+    __vmwrite(GUEST_GS_ACCESS_RIGHTS, GDT_AB_RW | GDT_AB_S | GDT_AB_P);
+
+    __vmwrite(GUEST_ACTIVITY_STATE, 0);
+
 }
 
 void init_vmm(){
@@ -46,4 +92,5 @@ void init_vmm(){
     puts("VMCS is now loaded\n");
 
     initialize_vmcs();
+    puts("Done initializing VMCS fields\n");
 }

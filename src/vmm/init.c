@@ -19,7 +19,7 @@ void prepare_vmxon(byte_t *vmxon_region_ptr){
     *(dword_t*)vmxon_region_ptr = (dword_t)__read_msr(IA32_VMX_BASIC);  // revision identifier
 }
 
-void prepare_vmcs(vmcs *vmcs_ptr){
+void prepare_vmcs(vmcs_t *vmcs_ptr){
     vmcs_ptr->revision_id = (dword_t)__read_msr(IA32_VMX_BASIC);  // revision identifier
     vmcs_ptr->revision_id &= ~(1<<31);                          // no shadow vmcs
     
@@ -99,7 +99,7 @@ void init_vmm(){
     __vmxon(vmxon_region_ptr);
     puts("Entered VMX root operation!\n");
 
-    vmcs* vmcs_ptr = (vmcs*)allocate_memory(0x1000);   // 4kb aligned. size should actually be read from IA32_VMX_BASIC[32:44], but it's 0x1000 max.
+    vmcs_t* vmcs_ptr = (vmcs_t*)allocate_memory(0x1000);   // 4kb aligned. size should actually be read from IA32_VMX_BASIC[32:44], but it's 0x1000 max.
     prepare_vmcs(vmcs_ptr);
     __vmclear(vmcs_ptr);
     __vmptrld(vmcs_ptr);

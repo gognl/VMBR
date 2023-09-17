@@ -1,3 +1,5 @@
+#ifndef __INIT_H
+#define __INIT_H
 #include <types.h>
 
  #define IA32_VMX_BASIC 0x480
@@ -18,6 +20,7 @@ typedef struct {
     uint32_t revision_id; // bits 0-30 are the id, bit 31 is the shadow-vmcs indicator.
     uint32_t vmx_abort;
     // vmcs data
-} __attribute__((__packed__)) vmcs;
+} __attribute__((__packed__)) vmcs_t;
 
 extern void init_vmm(void);
+#endif

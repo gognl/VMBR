@@ -15,9 +15,9 @@ void puts(unsigned char *s, ...){
         if(s[i] == '%'){
             switch(s[i+1]){
                 case 'd': {
-                    DWORD num = va_arg(args, DWORD);
-                    DWORD digits = digitCount(num);
-                    DWORD delimiter = pow(10, digits-1);
+                    uint32_t num = va_arg(args, uint32_t);
+                    uint32_t digits = digitCount(num);
+                    uint32_t delimiter = pow(10, digits-1);
 
                     while(delimiter){
                         putch((num/delimiter)%10 + '0');
@@ -31,9 +31,9 @@ void puts(unsigned char *s, ...){
                     break;
                 }
                 case 'q': {
-                    UINT64 num = va_arg(args, UINT64);
-                    UINT64 digits = digitCount(num);
-                    UINT64 delimiter = pow(10, digits-1);
+                    uint64_t num = va_arg(args, uint64_t);
+                    uint64_t digits = digitCount(num);
+                    uint64_t delimiter = pow(10, digits-1);
 
                     while(delimiter){
                         putch((num/delimiter)%10 + '0');
@@ -42,10 +42,10 @@ void puts(unsigned char *s, ...){
                     break;
                 }
                 case 'm': {
-                    BYTE len = s[i+2]-'0';
+                    byte_t len = s[i+2]-'0';
                     
-                    BYTE *str = va_arg(args, BYTE*);
-                    for(BYTE j = 0; j<len; j++){
+                    byte_t *str = va_arg(args, byte_t*);
+                    for(byte_t j = 0; j<len; j++){
                         putch(*str);
                         str++;
                     }

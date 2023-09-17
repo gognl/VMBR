@@ -5,54 +5,54 @@
 #define MADT_SIGNATURE "APIC"
 
 typedef struct _RSDP {
-    CHAR magic[8];
-    BYTE checksum;
-    CHAR OEM_id[6];
-    BYTE revision;
-    UINT32 rsdt_addr;
+    char_t magic[8];
+    byte_t checksum;
+    char_t OEM_id[6];
+    byte_t revision;
+    uint32_t rsdt_addr;
 } __attribute__((__packed__)) RSDP;
 
 typedef struct _RSDP2 {
     RSDP original;
-    UINT32 length;
-    UINT64 xsdt_addr;
-    BYTE extended_checksum;
-    BYTE reserved[3];
+    uint32_t length;
+    uint64_t xsdt_addr;
+    byte_t extended_checksum;
+    byte_t reserved[3];
 } __attribute__((__packed__)) RSDP2;
 
 typedef struct _ACPISDTHeader {
-    BYTE magic[4];
-    UINT32 length;
-    BYTE revision;
-    BYTE checksum;
-    BYTE OEM_id[6];
-    BYTE OEM_table_id[8];
-    UINT32 OEM_revision;
-    UINT32 creator_id;
-    UINT32 creator_revision;
+    byte_t magic[4];
+    uint32_t length;
+    byte_t revision;
+    byte_t checksum;
+    byte_t OEM_id[6];
+    byte_t OEM_table_id[8];
+    uint32_t OEM_revision;
+    uint32_t creator_id;
+    uint32_t creator_revision;
 } __attribute__((__packed__)) ACPISDTHeader;
 
 typedef struct _MADT {
     ACPISDTHeader header;
-    UINT32 local_APIC_addr;
-    UINT32 flags;
+    uint32_t local_APIC_addr;
+    uint32_t flags;
     #define MADT_TABLE_START 0x2C
 } __attribute__((__packed__)) MADT;
 
 typedef struct _MADT_ENTRY_HEADER {
-    BYTE type;
-    BYTE length;
+    byte_t type;
+    byte_t length;
     #define MADT_TYPE_LOCAL_APIC 0
 } __attribute__((__packed__)) MADT_ENTRY_HEADER;
 
 typedef struct _XSDT {
     ACPISDTHeader h;
-    UINT64 SDT_ptr[];
+    uint64_t SDT_ptr[];
 } __attribute__((__packed__)) XSDT;
 
 typedef struct _RSDT {
     ACPISDTHeader h;
-    UINT32 SDT_ptr[];
+    uint32_t SDT_ptr[];
 } __attribute__((__packed__)) RSDT;
 
-extern UINT32 get_cpu_count(void);
+extern uint32_t get_cpu_count(void);

@@ -9,12 +9,12 @@ Sources:
 #include <rsdt.h>
 
 RSDP* detect_RSDP(void);
-UINT32 get_cpu_count(void);
+uint32_t get_cpu_count(void);
 
 RSDP* detect_RSDP(void){
-    BYTE magic[8] = RSDP_MAGIC;
-    BYTE *EBDA_ptr = (*(WORD*)EBDA_PTR_ADDR);
-    UINT32 i;
+    byte_t magic[8] = RSDP_MAGIC;
+    byte_t *EBDA_ptr = (*(word_t*)EBDA_PTR_ADDR);
+    uint32_t i;
     RSDP *RSDP_ptr = NULLPTR;
 
     for(i = 0; i < 0x400; i += 16){
@@ -36,8 +36,8 @@ RSDP* detect_RSDP(void){
 
 }
 
-void* search_SDT(RSDP *rsdp_ptr, CHAR signature[4]){
-    UINT32 entries, i;
+void* search_SDT(RSDP *rsdp_ptr, char_t signature[4]){
+    uint32_t entries, i;
     ACPISDTHeader *h;
     RSDT *rsdt_ptr;
     XSDT *xsdt_ptr;
@@ -68,15 +68,15 @@ void* search_SDT(RSDP *rsdp_ptr, CHAR signature[4]){
 
 }
 
-UINT32 get_cpu_count(void){
+uint32_t get_cpu_count(void){
     RSDP *rsdp_ptr = detect_RSDP();
     MADT *madt_ptr = (MADT*)search_SDT(rsdp_ptr, MADT_SIGNATURE);
 
-    UINT32 cpu_count = 0;
-    UINT32 madt_length = madt_ptr->header.length;
-    MADT_ENTRY_HEADER *current_entry = (MADT_ENTRY_HEADER*)((BYTE*)madt_ptr+MADT_TABLE_START);
+    uint32_t cpu_count = 0;
+    uint32_t madt_length = madt_ptr->header.length;
+    MADT_ENTRY_HEADER *current_entry = (MADT_ENTRY_HEADER*)((byte_t*)madt_ptr+MADT_TABLE_START);
 
-    for(; current_entry < (BYTE*)madt_ptr + madt_length; current_entry = (MADT_ENTRY_HEADER*)((BYTE*)current_entry+current_entry->length)){
+    for(; current_entry < (byte_t*)madt_ptr + madt_length; current_entry = (MADT_ENTRY_HEADER*)((byte_t*)current_entry+current_entry->length)){
         if (current_entry->type == MADT_TYPE_LOCAL_APIC) cpu_count++;
     }
 

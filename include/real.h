@@ -5,6 +5,6 @@
 
 extern void init_mmap(void);
 extern void init_real(void);
-extern BYTE *allocate_memory(UINT32 length);
+extern byte_t *allocate_memory(uint64_t length);
 
 #endif

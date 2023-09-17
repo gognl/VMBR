@@ -1,18 +1,18 @@
 #ifndef __TYPES_H
 #define __TYPES_H
 
-typedef unsigned long long QWORD, *PQWORD;
-typedef unsigned int DWORD, *PDWORD;
-typedef unsigned short WORD, *PWORD;
-typedef unsigned char BYTE, *PBYTE;
-typedef unsigned char CHAR, *PCHAR;
+typedef unsigned long long qword_t;
+typedef unsigned int dword_t;
+typedef unsigned short word_t;
+typedef unsigned char byte_t;
+typedef unsigned char char_t;
 
-typedef unsigned int UINT32;
-typedef unsigned long long UINT64;
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
 
 #define FALSE 0
 #define TRUE 1
-#define BOOL BYTE
+#define BOOL byte_t
 
 #define NULL 0
 #define NULLPTR ((void*)0)
@@ -28,20 +28,20 @@ typedef unsigned long long UINT64;
 #define DBG_PORT ttyS0
 
 typedef struct _mmap_entry {
-    UINT64 base_addr;
-    UINT64 length;
-    UINT32 type;
+    qword_t base_addr;
+    qword_t length;
+    dword_t type;
     #define E820_USABLE 1
     #define E820_RESERVED 2
     #define E820_ACPI_RECLAIMABLE 3
     #define E820_ACPI_NVS 4
     #define E820_BAD 5
-    UINT32 acpi_ea;
+    dword_t acpi_ea;
 } __attribute__((__packed__)) mmap_entry;
 
 
 typedef struct _mmap_table {
-    UINT32 length;
+    dword_t length;
     mmap_entry entries[];
 } __attribute__((__packed__)) mmap_table;
 

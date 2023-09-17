@@ -1,28 +1,28 @@
 #include <types.h>
 
-unsigned char *memcpy(unsigned char *dest, const unsigned char *src, int count){
+byte_t *memcpy(byte_t *dest, const byte_t *src, uint32_t count){
     for(int i = 0; i<count; i++){
         dest[i] = src[i];
     }
     return dest;
 }
 
-unsigned char *memset(unsigned char *dest, unsigned char val, int count){
+byte_t *memset(byte_t *dest, byte_t val, uint32_t count){
+    for(uint32_t i = 0; i<count; i++){
+        dest[i] = val;
+    }
+    return dest;
+}
+
+word_t *memsetw(word_t *dest, word_t val, uint32_t count){
     for(int i = 0; i<count; i++){
         dest[i] = val;
     }
     return dest;
 }
 
-unsigned short *memsetw(unsigned short *dest, unsigned short val, int count){
-    for(int i = 0; i<count; i++){
-        dest[i] = val;
-    }
-    return dest;
-}
-
-BOOL memcmp(BYTE *src1, BYTE *src2, UINT32 count){
-    for(UINT32 i = 0; i<count; i++){
+BOOL memcmp(byte_t *src1, byte_t *src2, uint32_t count){
+    for(uint32_t i = 0; i<count; i++){
         if (*src1 != *src2) return FALSE;
         src1++;
         src2++;
@@ -30,7 +30,7 @@ BOOL memcmp(BYTE *src1, BYTE *src2, UINT32 count){
     return TRUE;
 }
 
-int strlen(const char *str){
+uint32_t strlen(const char_t *str){
     for(int c=0; ; c++) if(str[c] == '\0') return c;
 }
 
@@ -44,16 +44,16 @@ void outportb (unsigned short _port, unsigned char _data){
     __asm__ __volatile__ ("outb %1, %0" : : "dN" (_port), "a" (_data));
 }
 
-DWORD digitCount(DWORD num){
-    DWORD n, c = 0;
+uint32_t digitCount(uint32_t num){
+    uint32_t n, c = 0;
     if (num == 0) return 1;
     for(n = num; n != 0; n/=10) c++;
     return c;
 }
 
-DWORD pow(DWORD m, DWORD n){
-    DWORD out = 1;
-    for(DWORD i = 0; i < n; i++){
+uint32_t pow(uint32_t m, uint32_t n){
+    uint32_t out = 1;
+    for(uint32_t i = 0; i < n; i++){
         out *= m;
     }
     return out;

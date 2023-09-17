@@ -34,16 +34,6 @@ uint32_t strlen(const char_t *str){
     for(int c=0; ; c++) if(str[c] == '\0') return c;
 }
 
-unsigned char inportb (unsigned short _port){
-    unsigned char in;
-    __asm__ __volatile__ ("inb %1, %0" : "=a" (in) : "dN" (_port));
-    return in;
-}
-
-void outportb (unsigned short _port, unsigned char _data){
-    __asm__ __volatile__ ("outb %1, %0" : : "dN" (_port), "a" (_data));
-}
-
 uint32_t digitCount(uint32_t num){
     uint32_t n, c = 0;
     if (num == 0) return 1;

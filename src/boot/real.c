@@ -1,5 +1,6 @@
 #include <types.h>
 #include <system.h>
+#include <real.h>
 #include <debug.h>
 
 extern void CallReal(void (*)());
@@ -24,7 +25,7 @@ void init_mmap(void){
 }
 
 void print_mmap(void){
-    mmap_table *mmap = (mmap_table*)MMAP_TABLE;
+    mmap_table_t *mmap = (mmap_table_t*)MMAP_TABLE;
     uint32_t len = mmap->length;
     puts("\n######### PRINTING MMAP #########\nThe length is %d\n", len);
     for(int i = 0; i<len; i++){
@@ -37,7 +38,7 @@ void print_mmap(void){
 
 byte_t* allocate_memory(uint64_t length){
     uint64_t len = ALIGN_UP(length, PAGE_SIZE);
-    mmap_table *mmap = (mmap_table*)MMAP_TABLE;
+    mmap_table_t *mmap = (mmap_table_t*)MMAP_TABLE;
     uint32_t mmap_size = mmap->length;
     uint32_t i, chosen = mmap_size;
     byte_t *out;

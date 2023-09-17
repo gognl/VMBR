@@ -8,7 +8,7 @@ Sources:
 #include <system.h>
 #include <rsdt.h>
 
-rsdp_t* detect_RSDP(void);
+rsdp_t* detect_rsdp(void);
 uint32_t get_cpu_count(void);
 
 rsdp_t* detect_rsdp(void){
@@ -69,7 +69,7 @@ void* search_SDT(rsdp_t *rsdp_ptr, char_t signature[4]){
 }
 
 uint32_t get_cpu_count(void){
-    rsdp_t *rsdp_ptr = detect_RSDP();
+    rsdp_t *rsdp_ptr = detect_rsdp();
     madt_t *madt_ptr = (madt_t*)search_SDT(rsdp_ptr, MADT_SIGNATURE);
 
     uint32_t cpu_count = 0;

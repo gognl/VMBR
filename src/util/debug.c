@@ -1,8 +1,10 @@
 #include <system.h>
+#include <debug.h>
 #include <types.h>
+#include <instr.h>
 
 void putch(unsigned char c){
-        outportb(DBG_PORT, c);
+        __outb(DBG_PORT, c);
 }
 
 void puts(unsigned char *s, ...){

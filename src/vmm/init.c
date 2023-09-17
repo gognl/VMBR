@@ -5,10 +5,10 @@ Sources:
 
 #include <rsdt.h>
 #include <types.h>
-#include <real.h>
-#include <system.h>
 #include <init.h>
 #include <vmcs.h>
+#include <instr.h>
+
 extern byte_t *_sys_stack(void);
 
 

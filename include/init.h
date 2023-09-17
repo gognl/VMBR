@@ -8,6 +8,11 @@
  #define CR4_VMXE (1 << 13)
  #define CR0_NE (1 << 5)
 
+#define GDT_AB_RW (1<<1)        // R/W bit - R for code segments, W for data segments
+#define GDT_AB_DC (1<<2)        // Direction bit (0 for growing up, 1 for growing down)
+#define GDT_AB_E (1<<3)         // Executable bit
+#define GDT_AB_S (1<<4)         // S bit (type) - 1 if code/data segment
+#define GDT_AB_P (1<<7)         // Present bit
 
 typedef struct _vmcs {
     UINT32 revision_id; // bits 0-30 are the id, bit 31 is the shadow-vmcs indicator.
@@ -16,5 +21,3 @@ typedef struct _vmcs {
 } __attribute__((__packed__)) vmcs;
 
 extern void init_vmm(void);
-
-

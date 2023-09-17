@@ -1,6 +1,7 @@
 %include "src/boot/macros.asm"
 
 global _start
+global _sys_stack
 
 %define MEM_SIZE 512
 

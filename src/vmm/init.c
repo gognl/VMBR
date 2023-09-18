@@ -26,11 +26,11 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
 }
 
 void vmentry_handler(){
-    puts("Entered the VM Entry handler\n");
+    LOG_INFO("Entered the VM Entry handler\n");
 }
 
 void vmexit_handler(){
-    puts("Entered the VM Exit handler\n");
+    LOG_INFO("Entered the VM Exit handler\n");
 }
 
 void initialize_vmcs(){
@@ -88,23 +88,22 @@ void initialize_vmcs(){
 }
 
 void init_vmm(){
-    puts("basic is %d\n", (dword_t)__read_msr(IA32_VMX_BASIC));
 
     uint32_t cpu_count = get_cpu_count();
-    puts("Found cpu count (%d)\n", cpu_count);
+    LOG_INFO("Found cpu count (%d)\n", cpu_count);
 
     byte_t *vmxon_region_ptr = allocate_memory(0x1000);   // 4kb aligned. size should actually be read from IA32_VMX_BASIC[32:44], but it's 0x1000 max.
     prepare_vmxon(vmxon_region_ptr);
-    puts("Prepared for vmxon\n");
+    LOG_INFO("Prepared for vmxon\n");
     __vmxon(vmxon_region_ptr);
-    puts("Entered VMX root operation!\n");
+    LOG_INFO("Entered VMX root operation!\n");
 
     vmcs_t* vmcs_ptr = (vmcs_t*)allocate_memory(0x1000);   // 4kb aligned. size should actually be read from IA32_VMX_BASIC[32:44], but it's 0x1000 max.
     prepare_vmcs(vmcs_ptr);
     __vmclear(vmcs_ptr);
     __vmptrld(vmcs_ptr);
-    puts("VMCS is now loaded\n");
+    LOG_INFO("VMCS is now loaded\n");
 
     initialize_vmcs();
-    puts("Done initializing VMCS fields\n");
+    LOG_INFO("Done initializing VMCS fields\n");
 }

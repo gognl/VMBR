@@ -106,4 +106,7 @@ void init_vmm(){
 
     initialize_vmcs();
     LOG_INFO("Done initializing VMCS fields\n");
+
+    __vmlaunch();
+
 }

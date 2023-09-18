@@ -1,5 +1,5 @@
-#ifndef __SYSTEM_H
-#define __SYSTEM_H
+#ifndef __UTIL_H
+#define __UTIL_H
 
 #include <types.h>
 

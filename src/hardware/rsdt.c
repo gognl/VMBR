@@ -5,7 +5,7 @@ Sources:
 
 #include <types.h>
 #include <debug.h>
-#include <system.h>
+#include <util.h>
 #include <rsdt.h>
 
 rsdp_t* detect_rsdp(void);

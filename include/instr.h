@@ -3,6 +3,10 @@
 
 #include <types.h>
 #include <vmcs.h>
+#include <debug.h>
+
+#define CARRY_FLAG (1<<0)
+#define ZERO_FLAG (1<<6)
 
 // control registers read & write
 
@@ -84,20 +88,49 @@ __attribute__((always_inline)) void inline __read_idtr(idtr_t* idtr){
 
 // vmx instructions
 
-__attribute__((always_inline)) void inline __vmxon(byte_t *vmxon_region){
-    __asm__ __volatile__("vmxon %0" :: "m" (vmxon_region));
-}
-__attribute__((always_inline)) void inline __vmclear(byte_t *vmcs_ptr){
-    __asm__ __volatile__("vmclear %0" :: "m" (vmcs_ptr));
-}
-__attribute__((always_inline)) void inline __vmptrld(byte_t *vmcs_ptr){
-    __asm__ __volatile__("vmptrld %0" :: "m" (vmcs_ptr));
-}
 __attribute__((always_inline)) void inline __vmwrite(VMCS_ENCODING field, qword_t value){
     __asm__ __volatile__("vmwrite %1, %0" :: "r" ((qword_t)field), "r" (value));
 }
+__attribute__((always_inline)) qword_t inline __vmread(VMCS_ENCODING field){
+    qword_t value;
+    __asm__ __volatile__("vmread %0, %1" : "=r"(value) : "r"((qword_t)field));
+    return value;
+}
+__attribute__((always_inline)) void inline __vmxon(byte_t *vmxon_region){
+    qword_t rflags;
+    __asm__ __volatile__("vmxon %1; pushfq; pop %0" : "=r"(rflags) : "m" (vmxon_region));
+
+    if (rflags & CARRY_FLAG)
+        LOG_ERROR("vmxon VM_FAIL_INVALID\n");
+    if (rflags & ZERO_FLAG)
+        LOG_ERROR("vmxon VM_FAIL_VALID (%d)\n", (dword_t)__vmread(RODATA_VM_INSTRUCTION_ERROR));
+}
+__attribute__((always_inline)) void inline __vmclear(byte_t *vmcs_ptr){
+    qword_t rflags;
+    __asm__ __volatile__("vmclear %1; pushfq; pop %0" : "=r"(rflags) : "m" (vmcs_ptr));
+
+    if (rflags & CARRY_FLAG)
+        LOG_ERROR("vmclear VM_FAIL_INVALID\n");
+    if (rflags & ZERO_FLAG)
+        LOG_ERROR("vmclear VM_FAIL_VALID (%d)\n", (dword_t)__vmread(RODATA_VM_INSTRUCTION_ERROR));
+}
+__attribute__((always_inline)) void inline __vmptrld(byte_t *vmcs_ptr){
+    qword_t rflags;
+    __asm__ __volatile__("vmptrld %1; pushfq; pop %0" : "=r"(rflags) : "m" (vmcs_ptr));
+
+    if (rflags & CARRY_FLAG)
+        LOG_ERROR("vmptrld VM_FAIL_INVALID\n");
+    if (rflags & ZERO_FLAG)
+        LOG_ERROR("vmptrld VM_FAIL_VALID (%d)\n", (dword_t)__vmread(RODATA_VM_INSTRUCTION_ERROR));
+}
 __attribute__((always_inline)) void inline __vmlaunch(){
-    __asm__ __volatile__("vmlaunch");
+    qword_t rflags;
+    __asm__ __volatile__("vmlaunch; pushfq; pop %0" : "=r"(rflags));
+
+    if (rflags & CARRY_FLAG)
+        LOG_ERROR("vmlaunch VM_FAIL_INVALID\n");
+    if (rflags & ZERO_FLAG)
+        LOG_ERROR("vmlaunch VM_FAIL_VALID (%d)\n", (dword_t)__vmread(RODATA_VM_INSTRUCTION_ERROR));
 }
 
 // ports

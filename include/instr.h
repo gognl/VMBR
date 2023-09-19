@@ -8,6 +8,12 @@
 #define CARRY_FLAG (1<<0)
 #define ZERO_FLAG (1<<6)
 
+#define CPUID_VMXON (1<<5)
+
+__attribute__((always_inline)) void inline __hlt(){
+    __asm__ __volatile__ ("hlt");
+}
+
 // control registers read & write
 
 __attribute__((always_inline)) qword_t inline __get_cpuid(){

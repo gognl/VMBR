@@ -14,6 +14,8 @@ extern byte_t *_sys_stack(void);
 
 void prepare_vmxon(byte_t *vmxon_region_ptr){
     // TODO check that vmx is available in cpuid. Also take care of edge cases (intel manual vol. 3c, section 23.8)
+    if (!(__get_cpuid() & CPUID_VMXON))
+        LOG_ERROR("No VMX support in cpuid\n");
     __write_cr0((__read_cr0() | __read_msr(IA32_VMX_CR0_FIXED0) | CR0_NE) & __read_msr(IA32_VMX_CR0_FIXED1));
     __write_cr4((__read_cr4() | __read_msr(IA32_VMX_CR4_FIXED0) | CR4_VMXE) & __read_msr(IA32_VMX_CR4_FIXED1));
     *(dword_t*)vmxon_region_ptr = (dword_t)__read_msr(IA32_VMX_BASIC);  // revision identifier
@@ -108,5 +110,4 @@ void init_vmm(){
     LOG_INFO("Done initializing VMCS fields\n");
 
     __vmlaunch();
-
 }

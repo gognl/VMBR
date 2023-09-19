@@ -144,5 +144,6 @@ void LOG_ERROR(char_t *s, ...){
         va_start(args, s);
         vputs(s, args);
         va_end(args);
+        __hlt();
     #endif
 }

@@ -119,31 +119,34 @@ void vputs(char_t *s, va_list args){
 
 void LOG_DEBUG(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 0
-        puts("[DEBUG] ");
+        puts("\033[35m[DEBUG]\t");
         va_list args;
         va_start(args, s);
         vputs(s, args);
         va_end(args);
+        puts("\x1b[0m");
     #endif 
 }
 
 void LOG_INFO(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 1
-        puts("[INFO] ");
+        puts("\e[36m[INFO]\e[36m\t");
         va_list args;
         va_start(args, s);
         vputs(s, args);
         va_end(args);
+        puts("\e[0m");
     #endif
 }
 
 void LOG_ERROR(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 2
-        puts("[ERROR] ");
+        puts("\e[0;31m[ERROR]\t");
         va_list args;
         va_start(args, s);
         vputs(s, args);
         va_end(args);
+        puts("\e[0m");
         __hlt();
     #endif
 }

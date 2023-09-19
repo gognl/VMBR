@@ -1,5 +1,3 @@
-#include <system.h>
-#include <debug.h>
 #include <real.h>
 #include <init.h>
 

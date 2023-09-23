@@ -43,6 +43,15 @@ void puts(char_t *s, ...){
                     }
                     break;
                 }
+                // case 'b': {
+                //     uint32_t num = va_arg(args, uint32_t);
+                //     putch("|");
+                //     for (uint32_t bit_id = 0; bit_id < 32; bit_id++){
+                //         if (num & (1<<bit_id))
+                //             puts("%d|", bit_id);
+                //     }
+                //     break;
+                // }
                 case 'm': {
                     byte_t len = s[i+2]-'0';
                     
@@ -130,7 +139,7 @@ void LOG_DEBUG(char_t *s, ...){
 
 void LOG_INFO(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 1
-        puts("\e[36m[INFO]\e[36m\t");
+        puts("\e[36m[INFO]\t");
         va_list args;
         va_start(args, s);
         vputs(s, args);
@@ -141,7 +150,7 @@ void LOG_INFO(char_t *s, ...){
 
 void LOG_ERROR(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 2
-        puts("\e[0;31m[ERROR]\t");
+        puts("\e[31m[ERROR]\t");
         va_list args;
         va_start(args, s);
         vputs(s, args);

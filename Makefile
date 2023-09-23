@@ -40,6 +40,9 @@ run: build
 gdb: build
 	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio -smp cores=1 -cpu host & gdb
 
+gef: build
+	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio -smp cores=1 -cpu host & gef
+
 clean:
 	rm -rf build
 

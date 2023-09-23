@@ -49,11 +49,11 @@ LoadMemoryMap:
     test ebx, ebx               ; done if ebx=0
     jne .load_loop
 .finished:
-    println "Loaded memory map!"
+    ; println "Loaded memory map!"
     mov dword [MMAP_TABLE], ebp
     clc
     ret
 .failed:
-    println "Failed to load memory map"
+    ; println "Failed to load memory map"
     stc
     ret

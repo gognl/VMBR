@@ -20,7 +20,7 @@ ASM_MAINO_FILE := build/boot.o
 
 C_FILES = $(shell find src/ -name '*.c')
 ASM_FILES = $(shell find src/ -name '*.asm')
-OBJ_FILES = $(addprefix build/, $(notdir $(C_FILES:.c=.o))) $(ASM_MAINO_FILE)
+OBJ_FILES =  $(ASM_MAINO_FILE) $(addprefix build/, $(notdir $(C_FILES:.c=.o)))
 
 LINKER_SCRIPT := src/linker.ld
 GRUB_CFG := src/boot/grub.cfg
@@ -51,6 +51,7 @@ build/%.o: src/*/*%.c
 	$(C_COMPILER) $(C_FLAGS) -o $@ $<
 
 $(ASM_MAINO_FILE): $(ASM_FILES)
+	mkdir -p build
 	$(ASM_ASSEMBLER) $(ASM_FLAGS) $(ASM_MAIN_FILE) -o $@ 
 
 build/vmbr.so: $(OBJ_FILES) $(LINKER_SCRIPT)

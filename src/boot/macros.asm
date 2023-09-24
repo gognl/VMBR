@@ -11,7 +11,8 @@
 ; -----------------------------------------------------------------------------
 
 ; -------------- Real Address Macro -------------------------------------------
-%define REAL_ADDR(addr) (addr-low_functions_start+REAL_START)
+; %define REAL_ADDR(addr) (addr-low_functions_start+REAL_START)
+%define REAL_ADDR(addr) (addr)
 ; -----------------------------------------------------------------------------
 
 ; -------------- ESER MSR bits ------------------------------------------------

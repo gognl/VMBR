@@ -56,5 +56,7 @@ byte_t* allocate_memory(uint64_t length){
     mmap->entries[chosen].length -= len + unalignedBaseLeftover;
     mmap->entries[chosen].base_addr += len + unalignedBaseLeftover;
 
+    memset(out, 0, length);
+
     return out;    
 }

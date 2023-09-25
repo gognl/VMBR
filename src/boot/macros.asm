@@ -11,12 +11,13 @@
 ; -----------------------------------------------------------------------------
 
 ; -------------- Real Address Macro -------------------------------------------
-%define REAL_ADDR(addr) (addr-low_functions_start+REAL_START)
+; %define REAL_ADDR(addr) (addr-low_functions_start+REAL_START)
+%define REAL_ADDR(addr) (addr)
 ; -----------------------------------------------------------------------------
 
-; -------------- ESER MSR bits ------------------------------------------------
-%define ESER_MSR 0xC0000080
-%define ESER_LM (1<<8)          ; Long Mode enabled bit
+; -------------- EFER MSR bits ------------------------------------------------
+%define EFER_MSR 0xC0000080
+%define EFER_LM (1<<8)          ; Long Mode enabled bit
 ; -----------------------------------------------------------------------------
 
 ; -------------- CR0 bits -----------------------------------------------------
@@ -32,6 +33,7 @@
 %define SEG_DSCR_P (1<<47)      ; Present bit
 %define SEG_DSCR_L (1<<53)      ; Long mode code flag
 
+%define GDT_AB_A (1<<0)         ; A bit
 %define GDT_AB_RW (1<<1)        ; R/W bit - R for code segments, W for data segments
 %define GDT_AB_DC (1<<2)        ; Direction bit (0 for growing up, 1 for growing down)
 %define GDT_AB_E (1<<3)         ; Executable bit

@@ -14,9 +14,8 @@ CallReal:
     
     ; Passing a register to a macro is not possible
 
-    ;lea rsi, [rdi-low_functions_start+REAL_START]
-    sub rdi, low_functions_start
-    add rdi, REAL_START
+    ; sub rdi, low_functions_start
+    ; add rdi, REAL_START
 
     mov rsi, REAL_ADDR(LongToProtected)
     call rsi

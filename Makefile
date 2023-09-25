@@ -6,7 +6,7 @@ C_FLAGS = -c -nostdlib -fno-builtin -nostdinc -fno-stack-protector -Wall -I./inc
 # LINKER
 
 LINKER = ld
-LINKER_FLAGS = -nostdlib --oformat elf64-x86-64 -n -Ttext 0x7c00
+LINKER_FLAGS = -nostdlib --oformat elf64-x86-64 -n -Ttext 0x6c00
 
 # ASM ASSEMBLER
 
@@ -27,7 +27,7 @@ GRUB_CFG := src/boot/grub.cfg
 
 default: run
 
-.PHONY: default build run clean scr gdb
+.PHONY: default build run clean scr gdb gef
 
 build: build/vmbr.iso
 

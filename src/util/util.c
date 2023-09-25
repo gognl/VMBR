@@ -34,16 +34,16 @@ uint32_t strlen(const char_t *str){
     for(int c=0; ; c++) if(str[c] == '\0') return c;
 }
 
-uint32_t digitCount(uint32_t num){
-    uint32_t n, c = 0;
+uint64_t digitCount(uint64_t num){
+    uint64_t n, c = 0;
     if (num == 0) return 1;
     for(n = num; n != 0; n/=10) c++;
     return c;
 }
 
-uint32_t pow(uint32_t m, uint32_t n){
-    uint32_t out = 1;
-    for(uint32_t i = 0; i < n; i++){
+uint64_t pow(uint64_t m, uint64_t n){
+    uint64_t out = 1;
+    for(uint64_t i = 0; i < n; i++){
         out *= m;
     }
     return out;

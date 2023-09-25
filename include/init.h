@@ -27,11 +27,16 @@
 #define CR4_VMXE (1 << 13)
 #define CR0_NE (1 << 5)
 
+#define GDT_AB_A (1<<0)         // Accessed bit 
 #define GDT_AB_RW (1<<1)        // R/W bit - R for code segments, W for data segments
 #define GDT_AB_DC (1<<2)        // Direction bit (0 for growing up, 1 for growing down)
 #define GDT_AB_E (1<<3)         // Executable bit
 #define GDT_AB_S (1<<4)         // S bit (type) - 1 if code/data segment
 #define GDT_AB_P (1<<7)         // Present bit
+#define GDT_AB_L (1<<13)        // Long mode bit
+#define GDT_AB_DB (1<<14)        // Size bit
+#define GDT_AB_G (1<<15)        // Granularity flag
+#define UNUSABLE_SELECTOR (1<<16)
 
 typedef struct {
     uint32_t revision_id; // bits 0-30 are the id, bit 31 is the shadow-vmcs indicator.

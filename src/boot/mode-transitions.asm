@@ -23,9 +23,9 @@ ProtectedToLong:
     mov cr4, eax
 
     ; Set long mode
-    mov ecx, ESER_MSR
+    mov ecx, EFER_MSR
     rdmsr
-    or eax, ESER_LM  
+    or eax, EFER_LM  
     wrmsr
 
     ; Enable paging
@@ -63,9 +63,9 @@ bits 32
     mov cr0, eax
 
     ; Disable long mode
-    mov ecx, ESER_MSR
+    mov ecx, EFER_MSR
     rdmsr
-    and eax, ~ESER_LM  
+    and eax, ~EFER_LM  
     wrmsr
 
     ; Disable PAE (Physical Address Extension)

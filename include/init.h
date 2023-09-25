@@ -22,6 +22,8 @@
 #define DEFAULT_EXIT_CTLS ((1ull<<0) | (1ull<<1) | (1ull<<2) | (1ull<<3) | (1ull<<4) | (1ull<<5) | (1ull<<6) | (1ull<<7) | (1ull<<8) | (1ull<<10) | (1ull<<11) | (1ull<<13) | (1ull<<14) | (1ull<<16) | (1ull<<17))
 #define DEFAULT_ENTRY_CTLS ((1ull<<0) | (1ull<<1) | (1ull<<2) | (1ull<<3) | (1ull<<4) | (1ull<<5) | (1ull<<6) | (1ull<<7) | (1ull<<8) | (1ull<<12))
 
+#define CANONICAL_ADDRESS 0xffffffff
+
 #define CR4_VMXE (1 << 13)
 #define CR0_NE (1 << 5)
 

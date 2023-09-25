@@ -37,6 +37,8 @@ void vmexit_handler(){
     LOG_INFO("Entered the VM Exit handler\n");
     LOG_DEBUG("Exit information: %d\n", __vmread(RODATA_EXIT_REASON));
     LOG_DEBUG("Exit qualification: %d\n", __vmread(RODATA_EXIT_QUALIFICATION));
+    LOG_DEBUG("Exit interruption information: %d (%d)\n", __vmread(RODATA_VMEXIT_INTERRUPTION_INFO), __vmread(RODATA_VMEXIT_INTERRUPTION_INFO) & 0xff);
+    LOG_DEBUG("Exit interruption code: %d\n", __vmread(RODATA_VMEXIT_INTERRUPTION_ERRORCODE));
 }
 
 void initialize_vmcs(){
@@ -138,6 +140,8 @@ void initialize_vmcs(){
         __vmwrite(CONTROL_PRIMARY_VMEXIT_CONTROLS, __read_msr(IA32_VMX_EXIT_CTLS) | (1ull<<9));
         __vmwrite(CONTROL_VMENTRY_CONTROLS, __read_msr(IA32_VMX_ENTRY_CTLS) | (1ull<<9));
     }
+
+    __vmwrite(CONTROL_EXCEPTION_BITMAP, 0xffffffff);
 
 }
 

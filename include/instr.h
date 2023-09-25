@@ -143,6 +143,15 @@ __attribute__((always_inline)) void inline __vmlaunch(){
     if (rflags & ZERO_FLAG)
         LOG_ERROR("vmlaunch VM_FAIL_VALID (%d)\n", (dword_t)__vmread(RODATA_VM_INSTRUCTION_ERROR));
 }
+__attribute__((always_inline)) void inline __vmresume(){
+    qword_t rflags;
+    __asm__ __volatile__("vmresume; pushfq; pop %0" : "=r"(rflags));
+
+    if (rflags & CARRY_FLAG)
+        LOG_ERROR("vmresume VM_FAIL_INVALID\n");
+    if (rflags & ZERO_FLAG)
+        LOG_ERROR("vmresume VM_FAIL_VALID (%d)\n", (dword_t)__vmread(RODATA_VM_INSTRUCTION_ERROR));
+}
 
 // ports
 

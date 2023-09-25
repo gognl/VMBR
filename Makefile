@@ -6,7 +6,7 @@ C_FLAGS = -c -nostdlib -fno-builtin -nostdinc -fno-stack-protector -Wall -I./inc
 # LINKER
 
 LINKER = ld
-LINKER_FLAGS = -nostdlib --oformat elf64-x86-64 -n -Ttext 0x4c00
+LINKER_FLAGS = -nostdlib --oformat elf64-x86-64 -n -Ttext 0x6c00
 
 # ASM ASSEMBLER
 

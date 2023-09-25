@@ -43,15 +43,6 @@ void puts(char_t *s, ...){
                     }
                     break;
                 }
-                // case 'b': {
-                //     uint32_t num = va_arg(args, uint32_t);
-                //     putch("|");
-                //     for (uint32_t bit_id = 0; bit_id < 32; bit_id++){
-                //         if (num & (1<<bit_id))
-                //             puts("%d|", bit_id);
-                //     }
-                //     break;
-                // }
                 case 'm': {
                     byte_t len = s[i+2]-'0';
                     
@@ -95,7 +86,7 @@ void vputs(char_t *s, va_list args){
                     putch(va_arg(args, int));   
                     break;
                 }
-                case 'q': {
+                case 'q': { // broken for some reason
                     uint64_t num = va_arg(args, uint64_t);
                     uint64_t digits = digitCount(num);
                     uint64_t delimiter = pow(10, digits-1);
@@ -103,6 +94,19 @@ void vputs(char_t *s, va_list args){
                     while(delimiter){
                         putch((num/delimiter)%10 + '0');
                         delimiter /= 10;
+                    }
+                    break;
+                }
+                case 'x': {
+                    uint64_t num = va_arg(args, uint64_t);
+
+                }
+                case 'b': {
+                    uint64_t num = va_arg(args, uint64_t);
+                    putch('|');
+                    for (uint8_t bit_id = 0; bit_id < 64; bit_id++){
+                        if (num & (1ull<<bit_id))
+                            puts("%d|", bit_id);
                     }
                     break;
                 }

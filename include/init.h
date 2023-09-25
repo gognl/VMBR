@@ -38,6 +38,10 @@
 #define GDT_AB_G (1<<15)        // Granularity flag
 #define UNUSABLE_SELECTOR (1<<16)
 
+#define PTE_P (1<<0)            // Present bit
+#define PTE_W (1<<1)            // Writeable bit
+#define PTE_PS (1<<7)           // Huge Page bit (2MB)
+
 typedef struct {
     uint32_t revision_id; // bits 0-30 are the id, bit 31 is the shadow-vmcs indicator.
     uint32_t vmx_abort;

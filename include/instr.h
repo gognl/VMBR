@@ -51,6 +51,11 @@ __attribute__((always_inline)) qword_t inline __read_dr7(void){
     __asm__ __volatile__("mov %%dr7, %0" : "=r"(dr7));
     return dr7;
 }
+__attribute__((always_inline)) qword_t inline __read_rsp(void){
+    qword_t rsp;
+    __asm__ __volatile__("mov %%rsp, %0" : "=r"(rsp));
+    return rsp;
+}
 __attribute__((always_inline)) void inline __write_cr0(qword_t cr0){
     __asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
 }

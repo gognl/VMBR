@@ -11,6 +11,26 @@ Sources:
 
 extern byte_t *_sys_stack(void);
 
+qword_t initialize_host_paging(){
+    qword_t *pml4 = (qword_t*)allocate_memory(0x1000);     // page map level 4
+    qword_t *pdpt = (qword_t*)allocate_memory(0x1000);     // page directory pointer table
+    qword_t *pd = (qword_t*)allocate_memory(0x1000);       // page directory; points to pages and not page tables bc size=2mb.
+
+    // connect pml4 to pdpt
+    pml4[0] = (qword_t)pdpt | PTE_P | PTE_W;
+
+    // connect pdpt to pd
+    for(qword_t i = 0; i<8; i++){
+        pdpt[i] = (qword_t)(&pd[i*512]) | PTE_P | PTE_W;
+    }
+
+    // connect pd to pages
+    for(qword_t i = 0; i<512; i++){
+        pd[i] = (i*0x200000*8) | PTE_P | PTE_W | PTE_PS;
+    }
+
+    return (qword_t)pml4;
+}
 
 void prepare_vmxon(byte_t *vmxon_region_ptr){
     // TODO check that vmx is available in cpuid. Also take care of edge cases (intel manual vol. 3c, section 23.8)
@@ -29,7 +49,7 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
 
 void vmentry_handler(){
     // __hlt();
-    // LOG_INFO("Entered the VM Entry handler\n");
+    LOG_INFO("Entered the VM Entry handler\n");
     for(;;);
 }
 
@@ -44,7 +64,7 @@ void vmexit_handler(){
 void initialize_vmcs(){
 
     __vmwrite(HOST_CR0, __read_cr0());
-    __vmwrite(HOST_CR3, __read_cr3());  // todo initialize VMM paging, hidden from VM
+    __vmwrite(HOST_CR3, initialize_host_paging());
     __vmwrite(HOST_CR4, __read_cr4());
     __vmwrite(HOST_RIP, vmexit_handler);
     __vmwrite(HOST_RSP, _sys_stack);    // todo create a new VMM stack, hidden from VM
@@ -68,7 +88,7 @@ void initialize_vmcs(){
     __vmwrite(GUEST_CR4, __read_cr4());
     __vmwrite(GUEST_DR7, __read_dr7());
     __vmwrite(GUEST_RIP, vmentry_handler);
-    __vmwrite(GUEST_RSP, 0ull);
+    __vmwrite(GUEST_RSP, 0);
     __vmwrite(GUEST_RFLAGS, __read_rflags());
     // CS
     __vmwrite(GUEST_CS, __read_cs() & 0x00f8);
@@ -165,5 +185,6 @@ void init_vmm(){
     initialize_vmcs();
     LOG_INFO("Done initializing VMCS fields\n");
 
+    __vmwrite(GUEST_RSP, __read_rsp());
     __vmlaunch();
 }

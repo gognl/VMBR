@@ -34,10 +34,10 @@ uint32_t strlen(const char_t *str){
     for(int c=0; ; c++) if(str[c] == '\0') return c;
 }
 
-uint64_t digitCount(uint64_t num){
+uint64_t digitCount(uint64_t num, uint64_t base){
     uint64_t n, c = 0;
     if (num == 0) return 1;
-    for(n = num; n != 0; n/=10) c++;
+    for(n = num; n != 0; n/=base) c++;
     return c;
 }
 

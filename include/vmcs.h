@@ -206,7 +206,7 @@ typedef enum VMCS_ENCODINGS {
 } VMCS_ENCODING;
 
 typedef union {
-    uint32_t control;
+    uint32_t value;
     struct __attribute__((__packed__)) {
         uint32_t external_interrupt_exiting : 1;        // 0
         uint32_t _reserved1 : 2;                        // 1-2
@@ -219,7 +219,7 @@ typedef union {
 } pin_based_ctls_t;
 
 typedef union {
-    uint32_t control;
+    uint32_t value;
     struct __attribute__((__packed__)) {
         uint32_t _reserved1 : 2;                        // 0-1
         uint32_t interrupt_window_exiting : 1;          // 2
@@ -252,7 +252,7 @@ typedef union {
 } proc_based_ctls_t;
 
 typedef union {
-    uint32_t control;
+    uint32_t value;
     struct __attribute__((__packed__)) {
         uint32_t virtualize_apic_accesses : 1;          // 0
         uint32_t enable_ept : 1;                        // 1
@@ -280,10 +280,10 @@ typedef union {
         uint32_t _reserved2 : 2;                        // 23-24
         uint32_t use_tsc_scaling : 1;                   // 25
     };
-} secondary_proc_based_ctls_t;
+} proc_based_ctls2_t;
 
 typedef union {
-    uint32_t control;
+    uint32_t value;
     struct __attribute__((__packed__)) {
         uint32_t _reserved1 : 2;                        // 0-1
         uint32_t save_debug_controls : 1;               // 2
@@ -305,7 +305,7 @@ typedef union {
 } vmexit_ctls_t;
 
 typedef union {
-    uint32_t control;
+    uint32_t value;
     struct __attribute__((__packed__)) {
         uint32_t _reserved1 : 2;                        // 0-1
         uint32_t load_debug_controls : 1;               // 2

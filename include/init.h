@@ -42,11 +42,17 @@
 #define PTE_W (1<<1)            // Writeable bit
 #define PTE_PS (1<<7)           // Huge Page bit (2MB)
 
-typedef struct {
-    uint32_t revision_id; // bits 0-30 are the id, bit 31 is the shadow-vmcs indicator.
+typedef struct __attribute__((__packed__)) {
+    union {
+        uint32_t revision_id;
+        struct __attribute__((__packed__)){
+            uint32_t _reserved : 31;
+            uint32_t shadow_vmcs_indicator : 1;
+        };
+    };
     uint32_t vmx_abort;
     // vmcs data
-} __attribute__((__packed__)) vmcs_t;
+} vmcs_t;
 
 extern void init_vmm(void);
 #endif

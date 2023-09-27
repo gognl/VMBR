@@ -42,13 +42,11 @@ void prepare_vmxon(byte_t *vmxon_region_ptr){
 }
 
 void prepare_vmcs(vmcs_t *vmcs_ptr){
-    vmcs_ptr->revision_id = (dword_t)__read_msr(IA32_VMX_BASIC);  // revision identifier
-    vmcs_ptr->revision_id &= ~(1<<31);                          // no shadow vmcs
-    
+    vmcs_ptr->revision_id = (dword_t)__read_msr(IA32_VMX_BASIC);
+    vmcs_ptr->shadow_vmcs_indicator = FALSE;
 }
 
 void vmentry_handler(){
-    // __hlt();
     LOG_INFO("Entered the VM Entry handler\n");
     for(;;);
 }
@@ -147,18 +145,27 @@ void initialize_vmcs(){
     __vmwrite(GUEST_VMCS_LINK_PTR, -1ll);
 
     // Intel Manual Appendix A
+
+    pin_based_ctls_t pin_based_ctls; pin_based_ctls.control = 0;
+    proc_based_ctls_t proc_based_ctls; proc_based_ctls.control = 0;
+    vmexit_ctls_t vmexit_ctls; vmexit_ctls.control = 0;
+    vmentry_ctls_t vmentry_ctls; vmentry_ctls.control = 0;
+
+    vmexit_ctls.host_address_space_size = TRUE;
+    vmentry_ctls.ia32_mode_guest = TRUE;
+
     if (__read_msr(IA32_VMX_BASIC) & (1ull<<55)){
         LOG_DEBUG("IA32_VMX_BASIC:55 is set\n");
-        __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, __read_msr(IA32_VMX_TRUE_PINBASED_CTLS) | DEFAULT_PINBASED_CTLS);
-        __vmwrite(CONTROL_PRIMARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, __read_msr(IA32_VMX_TRUE_PROCBASED_CTLS) | DEFAULT_PROCBASED_CTLS);
-        __vmwrite(CONTROL_PRIMARY_VMEXIT_CONTROLS, __read_msr(IA32_VMX_TRUE_EXIT_CTLS) | DEFAULT_EXIT_CTLS | (1ull<<9));
-        __vmwrite(CONTROL_VMENTRY_CONTROLS, __read_msr(IA32_VMX_TRUE_ENTRY_CTLS) | DEFAULT_ENTRY_CTLS | (1ull<<9));
+        __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, __read_msr(IA32_VMX_TRUE_PINBASED_CTLS) | DEFAULT_PINBASED_CTLS | pin_based_ctls.control);
+        __vmwrite(CONTROL_PRIMARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, __read_msr(IA32_VMX_TRUE_PROCBASED_CTLS) | DEFAULT_PROCBASED_CTLS | proc_based_ctls.control);
+        __vmwrite(CONTROL_PRIMARY_VMEXIT_CONTROLS, __read_msr(IA32_VMX_TRUE_EXIT_CTLS) | DEFAULT_EXIT_CTLS | vmexit_ctls.control);
+        __vmwrite(CONTROL_VMENTRY_CONTROLS, __read_msr(IA32_VMX_TRUE_ENTRY_CTLS) | DEFAULT_ENTRY_CTLS | vmentry_ctls.control);
     } else {
         LOG_DEBUG("IA32_VMX_BASIC:55 is not set\n");
-        __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, __read_msr(IA32_VMX_PINBASED_CTLS));
-        __vmwrite(CONTROL_PRIMARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, __read_msr(IA32_VMX_PROCBASED_CTLS));
-        __vmwrite(CONTROL_PRIMARY_VMEXIT_CONTROLS, __read_msr(IA32_VMX_EXIT_CTLS) | (1ull<<9));
-        __vmwrite(CONTROL_VMENTRY_CONTROLS, __read_msr(IA32_VMX_ENTRY_CTLS) | (1ull<<9));
+        __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, __read_msr(IA32_VMX_PINBASED_CTLS) | pin_based_ctls.control);
+        __vmwrite(CONTROL_PRIMARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, __read_msr(IA32_VMX_PROCBASED_CTLS) | proc_based_ctls.control);
+        __vmwrite(CONTROL_PRIMARY_VMEXIT_CONTROLS, __read_msr(IA32_VMX_EXIT_CTLS) | vmexit_ctls.control);
+        __vmwrite(CONTROL_VMENTRY_CONTROLS, __read_msr(IA32_VMX_ENTRY_CTLS) | vmentry_ctls.control);
     }
 
     __vmwrite(CONTROL_EXCEPTION_BITMAP, 0xffffffff);

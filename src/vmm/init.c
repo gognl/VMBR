@@ -35,6 +35,10 @@ qword_t initialize_host_paging(){
 
 
 qword_t initialize_ept(){
+
+    if (!(__read_msr(IA32_VMX_EPT_VPID_CAP) & ((1ull<<6) | (1ull<<14))))
+        LOG_ERROR("Some necessary features of EPT are not supported.\n");
+
     ept_pml4e_t *ept_pml4 = (ept_pml4e_t*)allocate_memory(PAGE_SIZE);
     ept_pdpte_t *ept_pdpt = (ept_pdpte_t*)allocate_memory(PAGE_SIZE*1);
     ept_pde_t *ept_pd = (ept_pde_t*)allocate_memory(PAGE_SIZE*COMPUTER_RAM);
@@ -219,11 +223,6 @@ void initialize_vmcs(){
 }
 
 void init_vmm(){
-
-    // LOG_DEBUG("physical_address_width is %q\n", __get_physical_address_width());
-    // LOG_DEBUG("IA32_VMX_EPT_VPID_CAP is %b\n", __read_msr(IA32_VMX_EPT_VPID_CAP));
-    // LOG_DEBUG("CR0 is %b\n", __read_cr0());
-    // __hlt();
 
     uint32_t cpu_count = get_cpu_count();
     LOG_INFO("Found cpu count (%d)\n", cpu_count);

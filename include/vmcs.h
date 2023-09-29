@@ -209,9 +209,9 @@ typedef union {
     uint32_t value;
     struct __attribute__((__packed__)) {
         uint32_t external_interrupt_exiting : 1;        // 0
-        uint32_t _reserved1 : 2;                        // 1-2
+        uint32_t : 2;                                   // 1-2
         uint32_t nmi_exiting : 1;                       // 3
-        uint32_t _reserved2 : 1;                        // 4
+        uint32_t : 1;                                   // 4
         uint32_t virtual_nmis : 1;                      // 5
         uint32_t activate_vmx_preemption_timer : 1;     // 6
         uint32_t process_posted_interrupts : 1;         // 7
@@ -221,20 +221,20 @@ typedef union {
 typedef union {
     uint32_t value;
     struct __attribute__((__packed__)) {
-        uint32_t _reserved1 : 2;                        // 0-1
+        uint32_t : 2;                                   // 0-1
         uint32_t interrupt_window_exiting : 1;          // 2
         uint32_t use_tsc_offsetting : 1;                // 3
-        uint32_t _reserved2 : 3;                        // 4-6
+        uint32_t : 3;                                   // 4-6
         uint32_t hlt_exiting : 1;                       // 7
-        uint32_t _reserved3 : 1;                        // 8
+        uint32_t : 1;                                   // 8
         uint32_t invlpg_exiting : 1;                    // 9
         uint32_t mwait_exiting : 1;                     // 10
         uint32_t rdpmc_exiting : 1;                     // 11
         uint32_t rdtsc_exiting : 1;                     // 12
-        uint32_t _reserved4 : 2;                        // 13-14
+        uint32_t : 2;                                   // 13-14
         uint32_t cr3_load_exiting : 1;                  // 15
         uint32_t cr3_store_exiting : 1;                 // 16
-        uint32_t _reserved5 : 2;                        // 17-18
+        uint32_t : 2;                                   // 17-18
         uint32_t cr8_load_exiting : 1;                  // 19
         uint32_t cr8_store_exiting : 1;                 // 20
         uint32_t use_tpr_shadow : 1;                    // 21
@@ -242,7 +242,7 @@ typedef union {
         uint32_t mov_dr_exiting : 1;                    // 23
         uint32_t unconditional_io_exiting : 1;          // 24
         uint32_t use_io_bitmaps : 1;                    // 25
-        uint32_t _reserved6 : 1;                        // 26
+        uint32_t : 1;                                   // 26
         uint32_t monitor_trap_flag : 1;                 // 27
         uint32_t use_msr_bitmaps : 1;                   // 28
         uint32_t monitor_exiting : 1;                   // 29
@@ -275,9 +275,9 @@ typedef union {
         uint32_t ept_violation_ve : 1;                  // 18
         uint32_t conceal_nonroot_operation_from_pt : 1; // 19
         uint32_t enable_xsaves_xrstors : 1;             // 20
-        uint32_t _reserved1 : 1;                        // 21
+        uint32_t : 1;                                   // 21
         uint32_t mode_based_execute_ctrl_for_ept : 1;   // 22
-        uint32_t _reserved2 : 2;                        // 23-24
+        uint32_t : 2;                                   // 23-24
         uint32_t use_tsc_scaling : 1;                   // 25
     };
 } proc_based_ctls2_t;
@@ -285,15 +285,15 @@ typedef union {
 typedef union {
     uint32_t value;
     struct __attribute__((__packed__)) {
-        uint32_t _reserved1 : 2;                        // 0-1
+        uint32_t : 2;                                   // 0-1
         uint32_t save_debug_controls : 1;               // 2
-        uint32_t _reserved2 : 6;                        // 3-8
+        uint32_t : 6;                                   // 3-8
         uint32_t host_address_space_size : 1;           // 9
-        uint32_t _reserved3 : 2;                        // 10-11
+        uint32_t : 2;                                   // 10-11
         uint32_t load_ia32_perf_global_ctrl : 1;        // 12
-        uint32_t _reserved4 : 2;                        // 13-14
+        uint32_t : 2;                                   // 13-14
         uint32_t acknowledge_interrupt_on_exit : 1;     // 15
-        uint32_t _reserved5 : 2;                        // 16-17
+        uint32_t : 2;                                   // 16-17
         uint32_t save_ia32_pat : 1;                     // 18
         uint32_t load_ia32_pat : 1;                     // 19
         uint32_t save_ia32_efer : 1;                    // 20
@@ -307,13 +307,13 @@ typedef union {
 typedef union {
     uint32_t value;
     struct __attribute__((__packed__)) {
-        uint32_t _reserved1 : 2;                        // 0-1
+        uint32_t : 2;                                   // 0-1
         uint32_t load_debug_controls : 1;               // 2
-        uint32_t _reserved2 : 6;                        // 3-8
+        uint32_t : 6;                                   // 3-8
         uint32_t ia32_mode_guest : 1;                   // 9
         uint32_t entry_to_smm : 1;                      // 10
         uint32_t deactivate_dual_monitor_treatment : 1; // 11
-        uint32_t _reserved3 : 1;                        // 12
+        uint32_t : 1;                                   // 12
         uint32_t load_ia32_perf_global_ctrl : 1;        // 13
         uint32_t load_ia32_pat : 1;                     // 14
         uint32_t load_ia32_efer : 1;                    // 15

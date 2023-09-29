@@ -8,33 +8,70 @@ Sources:
 #include <init.h>
 #include <vmcs.h>
 #include <instr.h>
+#include <ept.h>
 
 extern byte_t *_sys_stack(void);
 
 qword_t initialize_host_paging(){
-    qword_t *pml4 = (qword_t*)allocate_memory(0x1000);     // page map level 4
-    qword_t *pdpt = (qword_t*)allocate_memory(0x1000);     // page directory pointer table
-    qword_t *pd = (qword_t*)allocate_memory(0x1000);       // page directory; points to pages and not page tables bc size=2mb.
+    qword_t *pml4 = (qword_t*)allocate_memory(PAGE_SIZE);                   // page map level 4
+    qword_t *pdpt = (qword_t*)allocate_memory(PAGE_SIZE*1);                 // page directory pointer table
+    qword_t *pd = (qword_t*)allocate_memory(PAGE_SIZE*COMPUTER_RAM);        // page directory; points to pages and not page tables bc size=2mb.
 
     // connect pml4 to pdpt
     pml4[0] = (qword_t)pdpt | PTE_P | PTE_W;
 
     // connect pdpt to pd
-    for(qword_t i = 0; i<8; i++){
+    for(uint32_t i = 0; i<COMPUTER_RAM; i++){
         pdpt[i] = (qword_t)(&pd[i*512]) | PTE_P | PTE_W;
     }
 
     // connect pd to pages
-    for(qword_t i = 0; i<512; i++){
-        pd[i] = (i*0x200000*8) | PTE_P | PTE_W | PTE_PS;
+    for(uint32_t i = 0; i<COMPUTER_RAM*512; i++){
+        pd[i] = (i*LARGE_PAGE_SIZE) | PTE_P | PTE_W | PTE_PS;
     }
 
     return (qword_t)pml4;
 }
 
-qword_t initialize_ept(){
-    qword_t *pml4e = (qword_t*)allocate_memory(0x1000);
 
+qword_t initialize_ept(){
+
+    if (!(__read_msr(IA32_VMX_EPT_VPID_CAP) & ((1ull<<6) | (1ull<<14))))
+        LOG_ERROR("Some necessary features of EPT are not supported.\n");
+
+    ept_pml4e_t *ept_pml4 = (ept_pml4e_t*)allocate_memory(PAGE_SIZE);
+    ept_pdpte_t *ept_pdpt = (ept_pdpte_t*)allocate_memory(PAGE_SIZE*1);
+    ept_pde_t *ept_pd = (ept_pde_t*)allocate_memory(PAGE_SIZE*COMPUTER_RAM);
+    ept_pte_t *ept_pt = (ept_pte_t*)allocate_memory(PAGE_SIZE*(COMPUTER_RAM*PAGE_SIZE/sizeof(ept_pde_t)));
+
+    ept_pml4[0].next_pd = (qword_t)ept_pdpt;
+    ept_pml4[0].read_access = TRUE;
+    ept_pml4[0].write_access = TRUE;
+    ept_pml4[0].execute_access = TRUE;
+
+    for(uint32_t i = 0; i<COMPUTER_RAM; i++){
+        ept_pdpt[i].next_pd = (qword_t)&ept_pd[i*512];
+        ept_pdpt[i].read_access = TRUE;
+        ept_pdpt[i].write_access = TRUE;
+        ept_pdpt[i].execute_access = TRUE;
+    }
+
+    for(uint32_t i = 0; i<COMPUTER_RAM*(PAGE_SIZE/sizeof(ept_pde_t)); i++){
+        ept_pd[i].next_pd = (qword_t)&ept_pt[i*512];
+        ept_pd[i].read_access = TRUE;
+        ept_pd[i].write_access = TRUE;
+        ept_pd[i].execute_access = TRUE;
+    }
+
+    for(uint64_t i = 0; i<COMPUTER_RAM*(PAGE_SIZE/sizeof(ept_pde_t))*(PAGE_SIZE/sizeof(ept_pte_t)); i++){
+        ept_pt[i].page = i*PAGE_SIZE;
+        ept_pt[i].read_access = TRUE;
+        ept_pt[i].write_access = TRUE;
+        ept_pt[i].execute_access = TRUE;
+        ept_pt[i].memory_type = WRITEBACK;
+    }
+
+    return (qword_t)ept_pml4;
 }
 
 void prepare_vmxon(byte_t *vmxon_region_ptr){
@@ -150,14 +187,14 @@ void initialize_vmcs(){
     __vmwrite(GUEST_VMCS_LINK_PTR, -1ll);
 
     // Intel Manual Appendix A
-    pin_based_ctls_t pin_based_ctls; pin_based_ctls.value = 0;
-    proc_based_ctls_t proc_based_ctls; proc_based_ctls.value = 0;
-    proc_based_ctls2_t proc_based_ctls2; proc_based_ctls2.value = 0;
-    vmexit_ctls_t vmexit_ctls; vmexit_ctls.value = 0;
-    vmentry_ctls_t vmentry_ctls; vmentry_ctls.value = 0;
+    pin_based_ctls_t pin_based_ctls = {0};
+    proc_based_ctls_t proc_based_ctls = {0};
+    proc_based_ctls2_t proc_based_ctls2 = {0};
+    vmexit_ctls_t vmexit_ctls = {0};
+    vmentry_ctls_t vmentry_ctls = {0};
 
     proc_based_ctls.activate_secondary_controls = TRUE;
-    // proc_based_ctls2.enable_ept = TRUE;
+    proc_based_ctls2.enable_ept = TRUE;
     vmexit_ctls.host_address_space_size = TRUE;
     vmentry_ctls.ia32_mode_guest = TRUE;
 
@@ -173,10 +210,15 @@ void initialize_vmcs(){
         __vmwrite(CONTROL_VMENTRY_CONTROLS, __read_msr(IA32_VMX_ENTRY_CTLS) | vmentry_ctls.value);
     }
 
-    qword_t *pml4e = initialize_ept();
+    eptp_t eptp = {0};
+    eptp.ept_pml4 = initialize_ept();
+    eptp.page_walk_length_m1 = 4-1;
+    eptp.memory_type = WRITEBACK;
+
     __vmwrite(CONTROL_SECONDARY_EXECUTION_CONTROLS, proc_based_ctls2.value);
-    // __vmwrite(CONTROL_EPTP, (6ull<<0) | (3ull<<3) | ((qword_t)pml4e<<12));
+    __vmwrite(CONTROL_EPTP, eptp.value);
     __vmwrite(CONTROL_EXCEPTION_BITMAP, 0xffffffff);
+
 
 }
 

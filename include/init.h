@@ -2,6 +2,10 @@
 #define __INIT_H
 #include <types.h>
 
+#define COMPUTER_RAM 8              // 8gb. TODO find this out instead of macro
+#define LARGE_PAGE_SIZE 0x200000
+#define PAGE_SIZE 0x1000
+
 #define IA32_VMX_BASIC 0x480
 #define IA32_VMX_CR0_FIXED0 0x486
 #define IA32_VMX_CR0_FIXED1 0x487
@@ -16,6 +20,8 @@
 #define IA32_VMX_TRUE_EXIT_CTLS 0x48f
 #define IA32_VMX_ENTRY_CTLS 0x484
 #define IA32_VMX_TRUE_ENTRY_CTLS 0x490
+
+#define IA32_VMX_EPT_VPID_CAP 0x48c
 
 #define DEFAULT_PINBASED_CTLS ((1ull<<1) | (1ull<<2) | (1ull<<4))
 #define DEFAULT_PROCBASED_CTLS ((1ull<<1) | (1ull<<4) | (1ull<<5) | (1ull<<6) | (1ull<<8) | (1ull<<13) | (1ull<<14) | (1ull<<15) | (1ull<<16) | (1ull<<26))
@@ -46,7 +52,7 @@ typedef struct __attribute__((__packed__)) {
     union {
         uint32_t revision_id;
         struct __attribute__((__packed__)){
-            uint32_t _reserved : 31;
+            uint32_t : 31;
             uint32_t shadow_vmcs_indicator : 1;
         };
     };

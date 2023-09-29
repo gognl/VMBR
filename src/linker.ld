@@ -14,9 +14,9 @@ SECTIONS {
         *(.text)
     }
 
-    .data :
+    .rodata :
     {
-        *(.data)
+        *(.rodata)
     }
 
     .bss :
@@ -24,9 +24,9 @@ SECTIONS {
         *(.bss)
     }
 
-    .rodata :
+    .data :
     {
-        *(.rodata)
+        *(.data)
     }
     
 }

@@ -57,7 +57,7 @@ byte_t* allocate_memory(uint64_t length){
     mmap->entries[chosen].length -= len + unalignedBaseLeftover;
     mmap->entries[chosen].base_addr += len + unalignedBaseLeftover;
 
-    LOG_DEBUG("Allocted %x bytes from %x; %x left in this section.\n", length, mmap->entries[chosen].base_addr, mmap->entries[chosen].length);
+    // LOG_DEBUG("Allocted %x bytes from %x; %x left in this section (%x).\n", length, mmap->entries[chosen].base_addr-len-unalignedBaseLeftover, mmap->entries[chosen].length, mmap->entries[chosen].base_addr);
 
     memset(out, 0, length);
 

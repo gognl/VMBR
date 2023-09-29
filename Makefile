@@ -6,7 +6,7 @@ C_FLAGS = -c -nostdlib -fno-builtin -nostdinc -fno-stack-protector -I./include -
 # LINKER
 
 LINKER = ld
-LINKER_FLAGS = -nostdlib --oformat elf64-x86-64 -n -Ttext 0x6c00
+LINKER_FLAGS = -nostdlib --oformat elf64-x86-64 -n -Ttext 0x7c00
 
 # ASM ASSEMBLER
 
@@ -35,7 +35,7 @@ scr: build
 	qemu-system-x86_64 -cdrom build/vmbr.iso -nographic --enable-kvm -serial mon:stdio -smp cores=1 -cpu host 
 
 run: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio --enable-kvm -smp cores=1 -cpu host 
+	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio --enable-kvm -smp cores=1 -cpu host -m 1024,maxmem=8G
 
 gdb: build
 	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio -smp cores=1 -cpu host & gdb

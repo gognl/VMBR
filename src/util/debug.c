@@ -1,7 +1,7 @@
-#include <debug.h>
-#include <util.h>
-#include <types.h>
-#include <instr.h>
+#include <lib/debug.h>
+#include <lib/util.h>
+#include <lib/types.h>
+#include <lib/instr.h>
 
 void putch(char_t c){
         __outb(DBG_PORT, c);

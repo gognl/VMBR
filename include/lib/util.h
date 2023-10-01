@@ -1,7 +1,7 @@
 #ifndef __UTIL_H
 #define __UTIL_H
 
-#include <types.h>
+#include <lib/types.h>
 
 #define ALIGN_UP(num, align) (((num)+(align)-1) & (-(align)))   // this is nice. Only works when align is a multiple of 2, though.
 

@@ -3,10 +3,10 @@ Sources:
     OSDev pages - Symmetric Multiprocessing, MADT, RSDT, RSDP
 */
 
-#include <types.h>
-#include <debug.h>
-#include <util.h>
-#include <rsdt.h>
+#include <lib/types.h>
+#include <lib/debug.h>
+#include <lib/util.h>
+#include <hardware/rsdt.h>
 
 rsdp_t* detect_rsdp(void);
 uint32_t get_cpu_count(void);

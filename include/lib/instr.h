@@ -1,14 +1,12 @@
 #ifndef __INSTR_H
 #define __INSTR_H
 
-#include <types.h>
-#include <vmcs.h>
-#include <debug.h>
+#include <lib/types.h>
+#include <vmm/vmcs.h>
+#include <lib/debug.h>
 
 #define CARRY_FLAG (1<<0)
 #define ZERO_FLAG (1<<6)
-
-#define CPUID_VMXON (1<<5)
 
 __attribute__((always_inline)) void inline __hlt(){
     __asm__ __volatile__ ("hlt");

@@ -1,7 +1,7 @@
 #ifndef __DEBUG_H
 #define __DEBUG_H
 
-#include <types.h>
+#include <lib/types.h>
 
 #define ttyS0 0x3F8
 #define DBG_PORT ttyS0

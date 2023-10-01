@@ -1,6 +1,28 @@
 #ifndef __VMCS_H
 #define __VMCS_H
 
+#include <lib/types.h>
+
+extern void initialize_vmcs();
+
+#define DEFAULT_PINBASED_CTLS ((1ull<<1) | (1ull<<2) | (1ull<<4))
+#define DEFAULT_PROCBASED_CTLS ((1ull<<1) | (1ull<<4) | (1ull<<5) | (1ull<<6) | (1ull<<8) | (1ull<<13) | (1ull<<14) | (1ull<<15) | (1ull<<16) | (1ull<<26))
+#define DEFAULT_EXIT_CTLS ((1ull<<0) | (1ull<<1) | (1ull<<2) | (1ull<<3) | (1ull<<4) | (1ull<<5) | (1ull<<6) | (1ull<<7) | (1ull<<8) | (1ull<<10) | (1ull<<11) | (1ull<<13) | (1ull<<14) | (1ull<<16) | (1ull<<17))
+#define DEFAULT_ENTRY_CTLS ((1ull<<0) | (1ull<<1) | (1ull<<2) | (1ull<<3) | (1ull<<4) | (1ull<<5) | (1ull<<6) | (1ull<<7) | (1ull<<8) | (1ull<<12))
+
+#define CANONICAL_ADDRESS 0xffffffff
+
+#define GDT_AB_A (1<<0)         // Accessed bit 
+#define GDT_AB_RW (1<<1)        // R/W bit - R for code segments, W for data segments
+#define GDT_AB_DC (1<<2)        // Direction bit (0 for growing up, 1 for growing down)
+#define GDT_AB_E (1<<3)         // Executable bit
+#define GDT_AB_S (1<<4)         // S bit (type) - 1 if code/data segment
+#define GDT_AB_P (1<<7)         // Present bit
+#define GDT_AB_L (1<<13)        // Long mode bit
+#define GDT_AB_DB (1<<14)        // Size bit
+#define GDT_AB_G (1<<15)        // Granularity flag
+#define UNUSABLE_SELECTOR (1<<16)
+
 typedef enum VMCS_ENCODINGS {
     // host fields
         // 16bit

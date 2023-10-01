@@ -1,7 +1,7 @@
-#include <types.h>
-#include <util.h>
-#include <real.h>
-#include <debug.h>
+#include <lib/types.h>
+#include <lib/util.h>
+#include <boot/mmap.h>
+#include <lib/debug.h>
 
 extern void CallReal(void (*)());
 extern byte_t *low_functions_start(void);

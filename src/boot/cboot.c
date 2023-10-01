@@ -1,5 +1,5 @@
-#include <real.h>
-#include <init.h>
+#include <boot/mmap.h>
+#include <vmm/vmm.h>
 
 int cboot(){
     //puts("\n\nSuccessfully entered long mode\n");

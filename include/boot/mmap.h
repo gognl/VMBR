@@ -1,7 +1,7 @@
-#ifndef __REAL_H
-#define __REAL_H
+#ifndef __MMAP_H
+#define __MMAP_H
 
-#include <types.h>
+#include <lib/types.h>
 
 extern void init_mmap(void);
 extern void init_real(void);

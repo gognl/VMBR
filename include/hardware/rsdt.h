@@ -1,6 +1,7 @@
 #ifndef __RSDT_H
 #define __RSDT_H
-#include <types.h>
+
+#include <lib/types.h>
 
 #define RSDP_MAGIC "RSD PTR "
 #define EBDA_PTR_ADDR 0x040e

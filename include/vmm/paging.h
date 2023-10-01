@@ -1,7 +1,18 @@
-#ifndef __EPT_H
-#define __EPT_H
+#ifndef __PAGING_H
+#define __PAGING_H
 
-#include <types.h>
+#include <lib/types.h>
+
+extern qword_t initialize_host_paging();
+extern qword_t initialize_ept();
+
+#define COMPUTER_RAM 8              // 8gb. TODO find this out instead of macro
+#define LARGE_PAGE_SIZE 0x200000
+#define PAGE_SIZE 0x1000
+
+#define PTE_P (1<<0)            // Present bit
+#define PTE_W (1<<1)            // Writeable bit
+#define PTE_PS (1<<7)           // Huge Page bit (2MB)
 
 typedef union {
     uint64_t ept_pml4;

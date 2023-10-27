@@ -8,7 +8,7 @@
 
 extern void InitializeSingleCore(void);
 extern void InitializeSingleCore_end(void);
-extern dword_t *cores_semaphore(void);
+extern byte_t *cores_semaphore(void);
 
 void activate_x2apic(){
     dword_t ecx, tmp;
@@ -32,14 +32,14 @@ void init_ap(byte_t apic_id, uint8_t page_idx){
     sipi_icr.vector = page_idx;
     sipi_icr.level = ASSERT;
     sipi_icr.destination_field = (uint32_t)apic_id;
-    *(dword_t*)cores_semaphore = 0;
+    *(byte_t*)cores_semaphore = 0;
     __wrmsr(IA32_X2APIC_ICR, sipi_icr.value);
 
     uint64_t i;
-    for(i = 0; i<0xfffffffull && (*(dword_t*)cores_semaphore == 0); i++);
+    for(i = 0; i<0xfffffffull && (*(byte_t*)cores_semaphore == 0); i++);
     if (i == 0xfffffffull)
         LOG_ERROR("Failed to initialize core %d\n", (dword_t)apic_id);
-    if (*(dword_t*)cores_semaphore == 1)
+    if (*(byte_t*)cores_semaphore == 1)
         LOG_INFO("Successfully initialized core %d\n", (dword_t)apic_id);
 }
 

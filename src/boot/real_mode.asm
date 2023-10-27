@@ -16,7 +16,6 @@ CallReal:
 
     ; sub rdi, low_functions_start
     ; add rdi, REAL_START
-
     mov rsi, REAL_ADDR(LongToProtected)
     call rsi
     bits 32
@@ -38,4 +37,5 @@ CallReal:
 low_functions_start:
 %include "src/boot/mode-transitions.asm"
 %include "src/boot/mmap.asm"
+%include "src/hardware/apic.asm"
 low_functions_end:

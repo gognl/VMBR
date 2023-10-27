@@ -14,6 +14,11 @@ SECTIONS {
         *(.text)
     }
 
+    .real :
+    {
+        *(.real)
+    }
+
     .rodata :
     {
         *(.rodata)
@@ -28,5 +33,7 @@ SECTIONS {
     {
         *(.data)
     }
+
+    vmbr_end = .;
     
 }

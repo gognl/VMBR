@@ -12,5 +12,6 @@ extern BOOL memcmp(byte_t *src1, byte_t *src2, uint32_t count);
 extern uint32_t strlen(const char_t *str);
 extern uint64_t digitCount(uint64_t num, uint64_t base);
 extern uint64_t pow(uint64_t m, uint64_t n);
+extern void sleep();
 
 #endif

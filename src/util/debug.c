@@ -3,8 +3,12 @@
 #include <lib/types.h>
 #include <lib/instr.h>
 
+extern void AcquireLock(dword_t* lock);
+extern void ReleaseLock(dword_t* lock);
+dword_t puts_lock;
+
 void putch(char_t c){
-        __outb(DBG_PORT, c);
+    __outb(DBG_PORT, c);
 }
 
 void puts(char_t *s, ...){
@@ -91,7 +95,6 @@ void puts(char_t *s, ...){
 }
 
 void vputs(char_t *s, va_list args){
-
     int len = strlen(s);
     for(int i = 0; i<len; i++){
         if(s[i] == '%'){
@@ -171,28 +174,33 @@ void vputs(char_t *s, va_list args){
 
 void LOG_DEBUG(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 0
+        AcquireLock(&puts_lock);
         puts("\033[35m[DEBUG]\t");
         va_list args;
         va_start(args, s);
         vputs(s, args);
         va_end(args);
         puts("\x1b[0m");
+        ReleaseLock(&puts_lock);
     #endif 
 }
 
 void LOG_INFO(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 1
+        AcquireLock(&puts_lock);
         puts("\e[36m[INFO]\t");
         va_list args;
         va_start(args, s);
         vputs(s, args);
         va_end(args);
         puts("\e[0m");
+        ReleaseLock(&puts_lock);
     #endif
 }
 
 void LOG_ERROR(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 2
+        AcquireLock(&puts_lock);
         puts("\e[31m[ERROR]\t");
         va_list args;
         va_start(args, s);
@@ -200,5 +208,6 @@ void LOG_ERROR(char_t *s, ...){
         va_end(args);
         puts("\e[0m");
         __hlt();
+        ReleaseLock(&puts_lock);
     #endif
 }

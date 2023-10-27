@@ -18,4 +18,7 @@
 
 #define IA32_VMX_EPT_VPID_CAP 0x48c
 
+#define IA32_APIC_BASE 0x01b
+#define IA32_X2APIC_ICR 0x830
+
 #endif

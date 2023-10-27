@@ -77,7 +77,11 @@ uint32_t get_cpu_count(void){
     madt_entry_header_t *current_entry = (madt_entry_header_t*)((byte_t*)madt_ptr+MADT_TABLE_START);
 
     for(; current_entry < (byte_t*)madt_ptr + madt_length; current_entry = (madt_entry_header_t*)((byte_t*)current_entry+current_entry->length)){
-        if (current_entry->type == MADT_TYPE_LOCAL_APIC) cpu_count++;
+        if (current_entry->type == MADT_TYPE_LOCAL_APIC 
+        && (current_entry->type0.flags.processor_enabled | current_entry->type0.flags.online_capable)){
+            cpu_count++;
+        }
+
     }
 
     return cpu_count;

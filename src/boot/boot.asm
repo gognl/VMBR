@@ -11,7 +11,7 @@ section .rodata
 section .bss
 
 align 0x1000
-    resb 0x2000
+    resb 0x4000
 _sys_stack:
 
 section .text

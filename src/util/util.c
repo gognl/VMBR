@@ -1,4 +1,5 @@
 #include <lib/types.h>
+#include <lib/instr.h>
 
 byte_t *memcpy(byte_t *dest, const byte_t *src, uint32_t count){
     for(int i = 0; i<count; i++){
@@ -47,4 +48,8 @@ uint64_t pow(uint64_t m, uint64_t n){
         out *= m;
     }
     return out;
+}
+
+void sleep(){
+    for(uint64_t i = 0; i<0xffffffull; i++);
 }

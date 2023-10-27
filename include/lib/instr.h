@@ -14,12 +14,10 @@ __attribute__((always_inline)) void inline __hlt(){
 
 // control registers read & write
 
-__attribute__((always_inline)) qword_t inline __get_cpuid(){
-    dword_t ecx, edx;
-    __asm__ __volatile__("cpuid": "=d" (edx), "=c" (ecx) : "a"(1));
-    return ((qword_t)edx << 32) | ecx;
+__attribute__((always_inline)) void inline __cpuid(dword_t eax_in, dword_t ecx_in, dword_t* eax, dword_t* ebx, dword_t* ecx, dword_t* edx){
+    __asm__ __volatile__("cpuid" : "=a"(*eax), "=b"(*ebx), "=c" (*ecx), "=d" (*edx) : "a"(eax_in), "c"(ecx_in));
 }
-__attribute__((always_inline)) qword_t inline __read_msr(qword_t msr){
+__attribute__((always_inline)) qword_t inline __rdmsr(qword_t msr){
     dword_t upper = 0, lower = 0;
     __asm__ __volatile__("rdmsr" : "=d" (upper), "=a" (lower) : "c"(msr));
     return ((qword_t)upper << 32) | lower;
@@ -45,9 +43,9 @@ __attribute__((always_inline)) qword_t inline __read_cr4(void){
     return cr4;
 }
 __attribute__((always_inline)) qword_t inline __read_dr7(void){
-    qword_t dr7;
-    __asm__ __volatile__("mov %%dr7, %0" : "=r"(dr7));
-    return dr7;
+	qword_t dr7;
+	__asm__ __volatile__("mov %%dr7, %0" : "=r"(dr7));
+	return dr7;
 }
 __attribute__((always_inline)) qword_t inline __read_rsp(void){
     qword_t rsp;
@@ -55,10 +53,13 @@ __attribute__((always_inline)) qword_t inline __read_rsp(void){
     return rsp;
 }
 __attribute__((always_inline)) void inline __write_cr0(qword_t cr0){
-    __asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
+	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
 }
 __attribute__((always_inline)) void inline __write_cr4(qword_t cr4){
-    __asm__ __volatile__("mov %0, %%cr4" :: "r"(cr4));
+	__asm__ __volatile__("mov %0, %%cr4" :: "r"(cr4));
+}
+__attribute__((always_inline)) void inline __wrmsr(qword_t msr, qword_t value){
+	__asm__ __volatile__("wrmsr" :: "c"(msr), "a"(value & 0xffffffff), "d"(value>>32));
 }
 
 // read selectors
@@ -160,11 +161,11 @@ __attribute__((always_inline)) void inline __vmresume(){
 
 __attribute__((always_inline)) byte_t inline __inb(word_t port){
     byte_t in;
-    __asm__ __volatile__ ("inb %1, %0" : "=a" (in) : "dN" (port));
+    __asm__ __volatile__ ("inb %%dx, %%al" : "=a" (in) : "d" (port));
     return in;
 }
 __attribute__((always_inline)) void inline __outb(word_t port, byte_t data){
-    __asm__ __volatile__ ("outb %1, %0" : : "dN" (port), "a" (data));
+    __asm__ __volatile__ ("outb %%al, %%dx" : : "a" (data), "d" (port));
 }
 
 #endif

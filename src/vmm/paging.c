@@ -27,7 +27,7 @@ qword_t initialize_host_paging(){
 
 qword_t initialize_ept(){
 
-    if (!(__read_msr(IA32_VMX_EPT_VPID_CAP) & ((1ull<<6) | (1ull<<14))))
+    if (!(__rdmsr(IA32_VMX_EPT_VPID_CAP) & ((1ull<<6) | (1ull<<14))))
         LOG_ERROR("Some necessary features of EPT are not supported.\n");
 
     ept_pml4e_t *ept_pml4 = (ept_pml4e_t*)allocate_memory(PAGE_SIZE);

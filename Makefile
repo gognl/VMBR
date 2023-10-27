@@ -35,13 +35,13 @@ scr: build
 	qemu-system-x86_64 -cdrom build/vmbr.iso -nographic --enable-kvm -serial mon:stdio -smp cores=1 -cpu host 
 
 run: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio --enable-kvm -smp cores=4 -cpu host -m 1024,maxmem=8G
+	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio --enable-kvm -smp 4 -cpu host -m 1024,maxmem=8G
 
 gdb: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio -smp cores=1 -cpu host & gdb
+	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio -smp 4 -cpu host & gdb
 
 gef: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio -smp cores=1 -cpu host & gef
+	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio -smp 4 -cpu host & gef
 
 clean:
 	rm -rf build

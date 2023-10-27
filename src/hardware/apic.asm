@@ -1,6 +1,10 @@
 global InitializeSingleCore
 global InitializeSingleCore_end
 global cores_semaphore
+global AcquireLock
+global ReleaseLock
+
+extern init_vmm
 
 section .real
 cores_semaphore db 0
@@ -61,8 +65,26 @@ bits 64
 
     mov al, 1
     mov byte [cores_semaphore], al
+    
+    call init_vmm
 
     hlt
     ret
 
 InitializeSingleCore_end:
+
+AcquireLock:
+    lock bts dword [rdi], 0        ; Attempt to acquire the lock (in case lock is uncontended)
+    jc AcquireLock.spin_with_pause
+    ret
+ 
+.spin_with_pause:
+    pause                    ; Tell CPU we're spinning
+    test dword [rdi], 1       ; Is the lock free?
+    jnz AcquireLock.spin_with_pause     ; no, wait
+    jmp AcquireLock          ; retry
+ 
+ReleaseLock:
+    mov dword [rdi], 0
+    ret
+

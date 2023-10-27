@@ -7,9 +7,13 @@ extern void CallReal(void (*)());
 extern byte_t *low_functions_start(void);
 extern byte_t *low_functions_end(void);
 extern void LoadMemoryMap(void (*)());
+extern void AcquireLock(dword_t* lock);
+extern void ReleaseLock(dword_t* lock);
 
 void print_mmap(void);
 byte_t *allocate_memory(uint64_t length);
+
+static dword_t allocation_lock;
 
 #define REAL_START 0x4000
 #define MMAP_TABLE 0x5000
@@ -21,6 +25,8 @@ void init_real(void){
 }
 
 void init_mmap(void){
+    allocation_lock = 0;
+
     CallReal(LoadMemoryMap);
 
     extern byte_t vmbr_end[];
@@ -42,6 +48,8 @@ void print_mmap(void){
 }
 
 byte_t* allocate_memory(uint64_t length){
+
+    AcquireLock(&allocation_lock);
 
     uint64_t len = ALIGN_UP(length, PAGE_SIZE);
     mmap_table_t *mmap = (mmap_table_t*)MMAP_TABLE;
@@ -65,8 +73,12 @@ byte_t* allocate_memory(uint64_t length){
     mmap->entries[chosen].base_addr += len + unalignedBaseLeftover;
     // LOG_DEBUG("Allocted %x bytes from %x; %x left in this section (%x).\n", length, mmap->entries[chosen].base_addr-len-unalignedBaseLeftover, mmap->entries[chosen].length, mmap->entries[chosen].base_addr);
 
+    ReleaseLock(&allocation_lock);
+
     if (out != 0)
         memset(out, 0, len);
+
+
 
     return out;    
 }

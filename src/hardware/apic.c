@@ -70,6 +70,7 @@ void init_vmm_all_cores(){
             init_ap(current_entry->type0.apic_id, (uint8_t)((uint64_t)mp_code_cpy/PAGE_SIZE));
         }
     }
+
 }
 
 void init_cores(){

@@ -5,6 +5,8 @@
 #include <lib/instr.h>
 #include <lib/msr.h>
 
+shared_cores_data_t shared_cores_data;
+
 void prepare_vmxon(byte_t *vmxon_region_ptr){
     dword_t ecx, tmp;
     __cpuid(1, 0, &tmp, &tmp, &ecx, &tmp);

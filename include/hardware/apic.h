@@ -25,7 +25,6 @@ typedef union {
     };
 } x2apic_icr_t;
 
-
 extern void init_cores();
 
 #endif

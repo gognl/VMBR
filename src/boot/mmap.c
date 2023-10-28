@@ -2,6 +2,7 @@
 #include <lib/util.h>
 #include <boot/mmap.h>
 #include <lib/debug.h>
+#include <vmm/vmm.h>
 
 extern void CallReal(void (*)());
 extern byte_t *low_functions_start(void);
@@ -13,8 +14,6 @@ extern void ReleaseLock(dword_t* lock);
 void print_mmap(void);
 byte_t *allocate_memory(uint64_t length);
 
-static dword_t allocation_lock;
-
 #define REAL_START 0x4000
 #define MMAP_TABLE 0x5000
 
@@ -25,7 +24,7 @@ void init_real(void){
 }
 
 void init_mmap(void){
-    allocation_lock = 0;
+    shared_cores_data.allocation_lock = 0;
 
     CallReal(LoadMemoryMap);
 
@@ -38,18 +37,18 @@ void init_mmap(void){
 void print_mmap(void){
     mmap_table_t *mmap = (mmap_table_t*)MMAP_TABLE;
     uint32_t len = mmap->length;
-    puts("\n######### PRINTING MMAP #########\nThe length is %d\n", len);
+    LOG_DEBUG("\n######### PRINTING MMAP #########\nThe length is %d\n", len);
     for(int i = 0; i<len; i++){
-        puts("Entry %d at %x\n", i, &(mmap->entries[i]));
-        puts("Entry %d:\n\tBase: %x\n\tLength: %x\n\tType: %d\n\tNext: %x\n", 
+        LOG_DEBUG("Entry %d at %x\n", i, &(mmap->entries[i]));
+        LOG_DEBUG("Entry %d:\n\tBase: %x\n\tLength: %x\n\tType: %d\n\tNext: %x\n", 
         i, mmap->entries[i].base_addr, mmap->entries[i].length, mmap->entries[i].type, mmap->entries[i].base_addr + mmap->entries[i].length);
     }
-    puts("#################################\n");
+    LOG_DEBUG("#################################\n");
 }
 
 byte_t* allocate_memory(uint64_t length){
 
-    AcquireLock(&allocation_lock);
+    AcquireLock(&shared_cores_data.allocation_lock);
 
     uint64_t len = ALIGN_UP(length, PAGE_SIZE);
     mmap_table_t *mmap = (mmap_table_t*)MMAP_TABLE;
@@ -73,7 +72,7 @@ byte_t* allocate_memory(uint64_t length){
     mmap->entries[chosen].base_addr += len + unalignedBaseLeftover;
     // LOG_DEBUG("Allocted %x bytes from %x; %x left in this section (%x).\n", length, mmap->entries[chosen].base_addr-len-unalignedBaseLeftover, mmap->entries[chosen].length, mmap->entries[chosen].base_addr);
 
-    ReleaseLock(&allocation_lock);
+    ReleaseLock(&shared_cores_data.allocation_lock);
 
     if (out != 0)
         memset(out, 0, len);

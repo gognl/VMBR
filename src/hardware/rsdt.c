@@ -31,7 +31,7 @@ rsdp_t* detect_rsdp(void){
         }
     }
 
-    puts("ERROR: RSDP not found\n");
+    LOG_ERROR("RSDP not found\n");
     return rsdp_ptr;
 
 }
@@ -63,7 +63,7 @@ void* search_SDT(rsdp_t *rsdp_ptr, char_t signature[4]){
         }
     }
 
-    puts("ERROR: No %m4 table found in XSDT/RSDT.\n", signature);
+    LOG_ERROR("No %m4 table found in XSDT/RSDT.\n", signature);
     return NULLPTR;
 
 }

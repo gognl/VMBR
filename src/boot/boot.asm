@@ -19,6 +19,9 @@ section .text
 
 bits 32
 _start:
+
+    mov esp, _sys_stack
+
     call InitializePageTables
     call ProtectedToLong
 

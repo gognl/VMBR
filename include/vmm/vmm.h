@@ -9,6 +9,13 @@ extern void vmexit_handler();
 #define CR4_VMXE (1 << 13)
 #define CR0_NE (1 << 5)
 
+typedef struct {
+    word_t int15h_segment;
+    word_t int15h_offset;
+    dword_t allocation_lock;
+    dword_t puts_lock;
+} shared_cores_data_t;
+
 typedef struct __attribute__((__packed__)) {
     union {
         uint32_t revision_id;
@@ -22,4 +29,5 @@ typedef struct __attribute__((__packed__)) {
 } vmcs_t;
 
 extern void init_vmm(void);
+extern shared_cores_data_t shared_cores_data;
 #endif

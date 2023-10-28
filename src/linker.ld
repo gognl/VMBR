@@ -9,14 +9,14 @@ SECTIONS {
         *(.mb2_header)
     }
 
-    .text :
-    {
-        *(.text)
-    }
-
     .real :
     {
         *(.real)
+    }
+
+    .text :
+    {
+        *(.text)
     }
 
     .rodata :

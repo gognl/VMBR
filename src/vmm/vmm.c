@@ -24,6 +24,7 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
 
 void vmentry_handler(){
     LOG_INFO("Entered the VM Entry handler\n");
+    get_current_core_id();
     for(;;);
 }
 
@@ -34,7 +35,6 @@ void vmexit_handler(){
     LOG_DEBUG("Exit interruption information: %d (%d)\n", __vmread(RODATA_VMEXIT_INTERRUPTION_INFO), __vmread(RODATA_VMEXIT_INTERRUPTION_INFO) & 0xff);
     LOG_DEBUG("Exit interruption code: %d\n", __vmread(RODATA_VMEXIT_INTERRUPTION_ERRORCODE));
 }
-
 
 void init_vmm(){
 

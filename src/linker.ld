@@ -1,7 +1,7 @@
 ENTRY(_start)
 
 SECTIONS {
-    . = 0x3300000;
+    . = 0x7c00;
 
     .boot :
     {
@@ -9,14 +9,14 @@ SECTIONS {
         *(.mb2_header)
     }
 
-    .real :
-    {
-        *(.real)
-    }
-
     .text :
     {
         *(.text)
+    }
+
+    .real :
+    {
+        *(.real)
     }
 
     .rodata :
@@ -24,14 +24,14 @@ SECTIONS {
         *(.rodata)
     }
 
-    .bss :
-    {
-        *(.bss)
-    }
-
     .data :
     {
         *(.data)
+    }
+
+    .bss :
+    {
+        *(.bss)
     }
 
     vmbr_end = .;

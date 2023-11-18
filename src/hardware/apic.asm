@@ -4,9 +4,9 @@ global cores_semaphore
 global AcquireLock
 global ReleaseLock
 
-extern init_vmm
+extern prepare_vmm
 
-section .real
+section .data
 cores_semaphore db 0
 
 section .text
@@ -66,10 +66,10 @@ bits 64
     mov al, 1
     mov byte [cores_semaphore], al
     
-    call init_vmm
+    call prepare_vmm
 
     hlt
-    ret
+    jmp $ - 2
 
 InitializeSingleCore_end:
 

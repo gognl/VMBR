@@ -24,7 +24,7 @@ void init_real(void){
 }
 
 void init_mmap(void){
-    shared_cores_data.allocation_lock = 0;
+    // shared_cores_data.allocation_lock = 0;
 
     CallReal(LoadMemoryMap);
 

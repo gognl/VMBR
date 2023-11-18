@@ -28,6 +28,6 @@ typedef struct __attribute__((__packed__)) {
     // vmcs data
 } vmcs_t;
 
-extern void init_vmm(void);
+extern void prepare_vmm(void);
 extern shared_cores_data_t shared_cores_data;
 #endif

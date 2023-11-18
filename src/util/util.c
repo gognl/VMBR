@@ -51,5 +51,5 @@ uint64_t pow(uint64_t m, uint64_t n){
 }
 
 void sleep(){
-    for(uint64_t i = 0; i<0xffffffull; i++);
+    for(uint32_t i = 0; i<0xffffff; i++);
 }

@@ -14,11 +14,6 @@ SECTIONS {
         *(.text)
     }
 
-    .real :
-    {
-        *(.real)
-    }
-
     .rodata :
     {
         *(.rodata)

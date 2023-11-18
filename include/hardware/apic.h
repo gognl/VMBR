@@ -1,6 +1,8 @@
 #ifndef __APIC_H
 #define __APIC_H
 
+#include <lib/types.h>
+
 #define CPUID_X2APIC (1<<21)
 
 #define X2APIC_ENABLE (1<<10)

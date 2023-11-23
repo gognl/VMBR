@@ -3,22 +3,24 @@
 #include <vmm/vmm.h>
 #include <lib/msr.h>
 #include <lib/instr.h>
+#include <boot/mmap.h>
 
 extern byte_t *_sys_stack(void);
+extern void VmExitHandler(void);
 
 void initialize_vmcs(){
 
     __vmwrite(HOST_CR0, __read_cr0());
     __vmwrite(HOST_CR3, initialize_host_paging());
     __vmwrite(HOST_CR4, __read_cr4());
-    __vmwrite(HOST_RIP, vmexit_handler);
+    __vmwrite(HOST_RIP, VmExitHandler);
     __vmwrite(HOST_RSP, _sys_stack);    // todo create a new VMM stack, hidden from VM
     __vmwrite(HOST_ES, __read_es());
     __vmwrite(HOST_CS, __read_cs());
     __vmwrite(HOST_SS, __read_ss());
     __vmwrite(HOST_DS, __read_ds());
     __vmwrite(HOST_TR, __read_ds());
-    __vmwrite(HOST_FS, 0);
+    __vmwrite(HOST_FS, allocate_memory(sizeof(guest_registers_t)));
     __vmwrite(HOST_GS, 0);
     __vmwrite(HOST_FS_BASE, CANONICAL_ADDRESS);
     __vmwrite(HOST_GS_BASE, CANONICAL_ADDRESS);

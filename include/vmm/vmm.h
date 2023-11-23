@@ -1,9 +1,9 @@
 #ifndef __VMM_H
 #define __VMM_H
 #include <lib/types.h>
+#include <vmm/vmcs.h>
 
 extern void vmentry_handler();
-extern void vmexit_handler();
 
 #define CPUID_VMXON (1<<5)
 #define CR4_VMXE (1 << 13)
@@ -27,6 +27,38 @@ typedef struct __attribute__((__packed__)) {
     uint32_t vmx_abort;
     // vmcs data
 } vmcs_t;
+
+typedef struct __attribute__((__packed__)) {
+    qword_t rax;
+    qword_t rbx;
+    qword_t rcx;
+    qword_t rdx;
+    qword_t rdi;
+    qword_t rsi;
+    qword_t r8;
+    qword_t r9;
+    qword_t r10;
+    qword_t r11;
+    qword_t r12;
+    qword_t r13;
+    qword_t r14;
+    qword_t r15;
+} guest_registers_t;
+
+typedef struct {
+    guest_registers_t *registers;
+    BASIC_EXIT_REASON exit_reason;
+    exit_qualification_t exit_qual;
+    qword_t guest_linear_address;
+    qword_t guest_physical_address;
+    exit_interruption_info_t interruption_info;
+    uint32_t interruption_errorcode;
+    exit_interruption_info_t idt_info;
+    uint32_t idt_errorcode;
+    uint32_t instr_length;
+    instruction_info_t instr_info;
+    uint32_t vmx_error;
+} vmexit_data_t;
 
 extern void prepare_vmm(void);
 extern shared_cores_data_t shared_cores_data;

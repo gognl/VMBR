@@ -34,6 +34,7 @@ bits 64
 
 %include "src/boot/paging.asm"
 %include "src/boot/real_mode.asm"
+%include "src/vmm/vmexit.asm"
 
 section .mb2_header
 %include "src/boot/mb2_header.asm"

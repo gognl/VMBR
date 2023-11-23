@@ -344,4 +344,395 @@ typedef union {
     };
 } vmentry_ctls_t;
 
+typedef enum BASIC_EXIT_REASONS {
+    EXIT_REASON_EXCEPTION_NMI = 0,
+    EXIT_REASON_EXTERNAL_INTERRUPT = 1,
+    EXIT_REASON_TRIPLE_FAULT = 2,
+    EXIT_REASON_INIT = 3,
+    EXIT_REASON_SIPI = 4,
+    EXIT_REASON_IO_SMI = 5,
+    EXIT_REASON_OTHER_SMI = 6,
+    EXIT_REASON_INTERRUPT_WINDOW = 7,
+    EXIT_REASON_NMI_WINDOW = 8,
+    EXIT_REASON_TASK_SWITCH = 9,
+    EXIT_REASON_CPUID = 10,
+    EXIT_REASON_GETSEC = 11,
+    EXIT_REASON_HLT = 12,
+    EXIT_REASON_INVD = 13,
+    EXIT_REASON_INVLPG = 14,
+    EXIT_REASON_RDPMC = 15,
+    EXIT_REASON_RDTSC = 16,
+    EXIT_REASON_RSM = 17,
+    EXIT_REASON_VMCALL = 18,
+    EXIT_REASON_VMCLEAR = 19,
+    EXIT_REASON_VMLAUNCH = 20,
+    EXIT_REASON_VMPTRLD = 21,
+    EXIT_REASON_VMPTRST = 22,
+    EXIT_REASON_VMREAD = 23,
+    EXIT_REASON_VMRESUME = 24,
+    EXIT_REASON_VMWRITE = 25,
+    EXIT_REASON_VMXOFF = 26,
+    EXIT_REASON_VMXON = 27,
+    EXIT_REASON_CR_ACCESS = 28,
+    EXIT_REASON_MOV_DR = 29,
+    EXIT_REASON_IO_INSTRUCTION = 30,
+    EXIT_REASON_RDMSR = 31,
+    EXIT_REASON_WRMSR = 32,
+    EXIT_REASON_VMENTRY_FAIL_INVALID_GUEST_STATE = 33,
+    EXIT_REASON_VMENTRY_FAIL_MSR_LOADING = 34,
+    EXIT_REASON_MWAIT = 36,
+    EXIT_REASON_MONITOR_TRAP_FLAG = 37,
+    EXIT_REASON_MONITOR = 39,
+    EXIT_REASON_PAUSE = 40,
+    EXIT_REASON_VMENTRY_FAIL_MACHINE_CHECK = 41,
+    EXIT_REASON_TPR_BELOW_THRESHOLD = 43,
+    EXIT_REASON_APIC_ACCESS = 44,
+    EXIT_REASON_VIRTUALIZED_EOI = 45,
+    EXIT_REASON_GDTR_IDTR_ACCESS = 46,
+    EXIT_REASON_LDTR_TR_ACCESS = 47,
+    EXIT_REASON_EPT_VIOLATION = 48,
+    EXIT_REASON_EPT_MISCONFIGURATION = 49,
+    EXIT_REASON_INVEPT = 50,
+    EXIT_REASON_RDTSCP = 51,
+    EXIT_REASON_VMX_PREEMPTION_TIMER = 52,
+    EXIT_REASON_INVVPID = 53,
+    EXIT_REASON_WBINVD_WBNOINVD = 54,
+    EXIT_REASON_XSETBV = 55,
+    EXIT_REASON_APIC_WRITE = 56,
+    EXIT_REASON_RDRAND = 57,
+    EXIT_REASON_INVPCID = 58,
+    EXIT_REASON_VMFUNC = 59,
+    EXIT_REASON_ENCLS = 60,
+    EXIT_REASON_RDSEED = 61,
+    EXIT_REASON_PAGE_MODIFICATION_LOG_FULL = 62,
+    EXIT_REASON_XSAVES = 63,
+    EXIT_REASON_XRSTORS = 64,
+    EXIT_REASON_PCONFIG = 65,
+    EXIT_REASON_SPP_RELATED_EVENT = 66,
+    EXIT_REASON_UMWAIT = 67,
+    EXIT_REASON_TPAUSE = 68,
+    EXIT_REASON_LOADIWKEY = 69,
+    EXIT_REASON_ENCLV = 70,
+    EXIT_REASON_ENQCMD_PASID_TRANSLATION_FAIL = 72,
+    EXIT_REASON_ENQCMDS_PASID_TRANSLATION_FAILURE = 73,
+    EXIT_REASON_BUS_LOCK = 74,
+    EXIT_REASON_INSTRUCTION_TIMEOUT = 75,
+    EXIT_REASON_SEAMCALL = 76,
+    EXIT_REASON_TDCALL = 77
+} BASIC_EXIT_REASON;
+
+typedef union {
+    uint32_t value;
+    struct __attribute__((__packed__)) {
+        BASIC_EXIT_REASON basic_exit_reason : 16;    // 0-15
+        uint32_t : 11;                              // 16-26
+        uint32_t inclave_mode : 1;                  // 27
+        uint32_t pending_mtf : 1;                   // 28
+        uint32_t vmx_root : 1;                      // 29
+        uint32_t : 1;                               // 30
+        uint32_t vmentry_fail : 1;                  // 31
+    };
+} exit_reason_t;
+
+typedef enum {
+    EXCEPTION_DE = 0,
+    EXCEPTION_DB = 1,
+    EXCEPTION_NMI = 2,
+    EXCEPTION_BP = 3,
+    EXCEPTION_OF = 4,
+    EXCEPTION_BR = 5,
+    EXCEPTION_UD = 6,
+    EXCEPTION_NM = 7,
+    EXCEPTION_DF = 8,
+    EXCEPTION_TS = 10,
+    EXCEPTION_NP = 11,
+    EXCEPTION_SS = 12,
+    EXCEPTION_GP = 13,
+    EXCEPTION_PF = 14,
+    EXCEPTION_MF = 16,
+    EXCEPTION_AC = 17,
+    EXCEPTION_MC = 18,
+    EXCEPTION_XMXF = 19,
+    EXCEPTION_VE = 20,
+    EXCEPTION_CP = 21,
+    EXCEPTION_HV = 28,
+    EXCEPTION_VC = 29,
+    EXCEPTION_SX = 30,
+} EXCEPTION_VECTOR;
+
+typedef enum {
+    INTERRUPTION_EXTERNAL = 0,
+    INTERRUPTION_NMI = 2,
+    INTERRUPTION_HARDWARE_EXCEPTION = 3,
+    INTERRUPTION_PRIVILEGED_SOFTWARE = 5,
+    INTERRUPTION_SOFTWARE = 6
+} INTERRUPTION_TYPE;
+
+typedef union {
+    uint32_t value;
+    struct __attribute__((__packed__)) {
+        EXCEPTION_VECTOR vector : 8;        // 0-7
+        INTERRUPTION_TYPE type : 3;         // 8-10
+        uint32_t valid_error_code : 1;      // 11
+        uint32_t nmi_blocking_iret : 1;     // 12
+        uint32_t : 18;                      // 13-30
+        uint32_t valid : 1;                 // 31
+    };
+} exit_interruption_info_t;
+
+typedef union {
+    uint64_t value;
+    struct __attribute__((__packed__)) {
+        uint64_t bp_cond : 4;
+        uint64_t : 7;
+        uint64_t bld : 1;
+        uint64_t : 1;
+        uint64_t bd : 1;
+        uint64_t bs : 1;
+        uint64_t : 1;
+        uint64_t rtm : 1;
+        uint64_t : 47;
+    } debug_exceptions;
+    struct __attribute__((__packed__)) {
+        uint64_t linear_address;
+    } page_fault;
+    struct __attribute__((__packed__)) {
+        uint64_t vector : 8;
+    } sipi;
+    struct __attribute__((__packed__)) { 
+        uint64_t tss_selector : 16;
+        uint64_t : 14;
+        uint64_t source : 2;    // call=0,iret=1,jmp=2,idt=3
+    } task_switch;
+    struct __attribute__((__packed__)) {
+        uint64_t linear_address;
+    } invlpg;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } invept;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } invpcid;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } invvpid;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } lgdt;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } lidt;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } lldt;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } ltr;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } sgdt;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } sidt;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } sldt;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } str;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } vmclear;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } vmptrld;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } vmptrst;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } vmread;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } vmwrite;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } vmxon;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } xrstors;
+    struct __attribute__((__packed__)){
+        uint64_t displacement;
+    } xsaves;
+    struct __attribute__((__packed__)){
+        uint64_t cr_number : 4;
+        uint64_t access_type : 2;
+        uint64_t lmsw_type : 1;
+        uint64_t : 1;
+        uint64_t reg : 4;
+        uint64_t : 4;
+        uint64_t lmsw_source_data : 16;
+    } control_registers;
+    struct __attribute__((__packed__)) {
+        uint64_t debug_register : 3;
+        uint64_t : 1;
+        uint64_t direction : 1;
+        uint64_t : 3;
+        uint64_t reg : 4;
+    } mov_dr;
+    struct __attribute__((__packed__)) {
+        uint64_t size : 3;
+        uint64_t direction : 1;
+        uint64_t string : 1;
+        uint64_t rep : 1;
+        uint64_t operand : 6;
+        uint64_t : 9;
+        uint64_t port : 16;
+    } io_instruction;
+    struct __attribute__((__packed__)) {
+        uint64_t address_range_monitoring_hw : 1;
+    } mwait;
+    struct __attribute__((__packed__)) {
+        uint64_t wbinvd_wbnoinvd : 1;
+    } wbinvd_wbnoinvd;
+    struct __attribute__((__packed__)) {
+        uint64_t apic_page_offset : 12;
+        uint64_t access_type : 4;
+        uint64_t special_bit : 1;
+    } apic_access;
+    struct __attribute__((__packed__)) {
+        uint64_t data_read : 1;
+        uint64_t data_write : 1;
+        uint64_t instr_fetch : 1;
+        uint64_t readable : 1;
+        uint64_t writeable : 1;
+        uint64_t executable_user_super : 1;
+        uint64_t executable_user : 1;
+        uint64_t valid_linear_address : 1;
+        uint64_t not_paging_structs_access : 1;
+        uint64_t user_mode_linear_address : 1;
+        uint64_t not_read_only : 1;
+        uint64_t not_executable : 1;
+        uint64_t nmi_iret_blocking : 1;
+        uint64_t shadow_stack_access : 1;
+        uint64_t lmao_what_even : 1;
+        uint64_t guest_paging_verification : 1;
+        uint64_t asynchronous : 1;
+    } ept_violation;
+    struct __attribute__((__packed__)) {
+        uint64_t vector : 8;
+    } eoi_virtualization;
+    struct __attribute__((__packed__)) {
+        uint64_t offset : 12;
+    } apic_write;
+    struct __attribute__((__packed__)) {
+        uint64_t : 12;
+        uint64_t nmi_unblocking_iret : 1;
+        uint64_t : 3;
+        uint64_t tapt_pebs_user : 1;
+    } page_modification_log_full;
+    struct __attribute__((__packed__)) {
+        uint64_t : 11;
+        uint64_t type : 1;
+        uint64_t nmi_unblocking_iret : 1;
+        uint64_t : 3;
+        uint64_t tapt_pebs_user : 1;
+    } spp;
+    struct __attribute__((__packed__)) {
+        uint64_t value;
+    } pasid;
+    struct __attribute__((__packed__)) {
+        uint64_t invalid : 1;
+        uint64_t : 11;
+        uint64_t nmi_unblocking_iret : 1;
+    } timeout;
+} exit_qualification_t;     // SDM 28.2.1
+
+typedef union {
+    uint32_t value;
+    struct __attribute__((__packed__)) {
+        uint32_t : 7;
+        uint32_t address_size : 3;
+        uint32_t : 5;
+        uint32_t segment_register : 3; 
+    } ins_outs; // Table 28-8
+    struct __attribute__((__packed__)) {
+        uint32_t scaling : 2;
+        uint32_t : 5;
+        uint32_t address_size : 3;
+        uint32_t : 5;
+        uint32_t segment_register : 3;
+        uint32_t index_reg : 4;
+        uint32_t index_reg_invalid : 1;
+        uint32_t base_reg : 4;
+        uint32_t base_reg_invalid : 1;
+        uint32_t reg2 : 4;
+    } invept_invpcid_invvpid; // Table 28-9
+    struct __attribute__((__packed__)) {
+        uint32_t scaling : 2;
+        uint32_t : 5;
+        uint32_t address_size : 3;
+        uint32_t : 1;
+        uint32_t operand_size : 1;
+        uint32_t : 3;
+        uint32_t segment_register : 3;
+        uint32_t index_reg : 4;
+        uint32_t index_reg_invalid : 1;
+        uint32_t base_reg : 4;
+        uint32_t base_reg_invalid : 1;
+        uint32_t instruction_identity : 2;
+    } lidt_lgdt_sidt_sgdt; // Table 28-10
+    struct __attribute__((__packed__)) {
+        uint32_t scaling : 2;
+        uint32_t : 1;
+        uint32_t reg1 : 4;
+        uint32_t address_size : 3;
+        uint32_t mem_or_reg : 1;
+        uint32_t : 4;
+        uint32_t segment_register : 3;
+        uint32_t index_reg : 4;
+        uint32_t index_reg_invalid : 1;
+        uint32_t base_reg : 4;
+        uint32_t base_reg_invalid : 1;
+        uint32_t instruction_identity : 2;
+    } lldt_ltr_sldt_str; // table 28-11
+    struct __attribute__((__packed__)) {
+        uint32_t : 3;
+        uint32_t operand_register : 4;
+        uint32_t : 4;
+        uint32_t operand_size : 2; // table 28-12
+    } rdrand_rdseed_tpause_umwait;
+    struct __attribute__((__packed__)) {
+        uint32_t scaling : 2;
+        uint32_t : 5;
+        uint32_t address_size : 3;
+        uint32_t : 5;
+        uint32_t segment_register : 3;
+        uint32_t index_reg : 4;
+        uint32_t index_reg_invalid : 1;
+        uint32_t base_reg : 4;
+        uint32_t base_reg_invalid : 1;
+    } vmclear_vmptrld_vmptrst_vmxon_xrstors_xsaves; // table 28-13
+    struct __attribute__((__packed__)) {
+        uint32_t scaling : 2;
+        uint32_t : 1;
+        uint32_t reg1 : 4;
+        uint32_t address_size : 3;
+        uint32_t mem_or_reg : 1;
+        uint32_t : 4;
+        uint32_t segment_register : 3;
+        uint32_t index_reg : 4;
+        uint32_t index_reg_invalid : 1;
+        uint32_t base_reg : 4;
+        uint32_t base_reg_invalid : 1;
+        uint32_t reg2 : 4;
+    } vmread_vmwrite;
+    struct __attribute__((__packed__)) {
+        uint32_t : 3;
+        uint32_t reg1 : 4;
+        uint32_t : 21;
+        uint32_t reg2 : 4;
+    } loadiwkey;
+} instruction_info_t;
+
 #endif

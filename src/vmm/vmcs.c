@@ -4,6 +4,7 @@
 #include <lib/msr.h>
 #include <lib/instr.h>
 #include <boot/mmap.h>
+#include <hardware/apic.h>
 
 extern byte_t *_sys_stack(void);
 extern void VmExitHandler(void);
@@ -20,9 +21,9 @@ void initialize_vmcs(){
     __vmwrite(HOST_SS, __read_ss());
     __vmwrite(HOST_DS, __read_ds());
     __vmwrite(HOST_TR, __read_ds());
-    __vmwrite(HOST_FS, allocate_memory(sizeof(guest_registers_t)));
+    __vmwrite(HOST_FS, REGISTERS_ADDRESS+sizeof(guest_registers_t)*get_current_core_id());
     __vmwrite(HOST_GS, 0);
-    __vmwrite(HOST_FS_BASE, CANONICAL_ADDRESS);
+    __vmwrite(HOST_FS_BASE, REGISTERS_ADDRESS+sizeof(guest_registers_t)*get_current_core_id());
     __vmwrite(HOST_GS_BASE, CANONICAL_ADDRESS);
     __vmwrite(HOST_GDTR_BASE, CANONICAL_ADDRESS);
     __vmwrite(HOST_IDTR_BASE, CANONICAL_ADDRESS);
@@ -87,7 +88,7 @@ void initialize_vmcs(){
     __vmwrite(GUEST_LDTR_BASE, 0);
     __vmwrite(GUEST_LDTR_LIMIT, 0xff);
     __vmwrite(GUEST_LDTR_ACCESS_RIGHTS, UNUSABLE_SELECTOR);
-
+    
     __vmwrite(GUEST_ACTIVITY_STATE, 0ull);
     __vmwrite(GUEST_IA32_SYSENTER_EIP, CANONICAL_ADDRESS);
     __vmwrite(GUEST_IA32_SYSENTER_ESP, CANONICAL_ADDRESS);
@@ -103,6 +104,7 @@ void initialize_vmcs(){
     proc_based_ctls.activate_secondary_controls = TRUE;
     proc_based_ctls2.enable_ept = TRUE;
     proc_based_ctls2.unrestricted_guest = TRUE;
+    proc_based_ctls2.virtualize_x2apic_mode = TRUE;
     vmexit_ctls.host_address_space_size = TRUE;
     vmentry_ctls.ia32_mode_guest = TRUE;
 

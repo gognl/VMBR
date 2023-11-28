@@ -5,6 +5,8 @@
 
 extern void initialize_vmcs();
 
+#define REGISTERS_ADDRESS 0x7000
+
 #define DEFAULT_PINBASED_CTLS ((1ull<<1) | (1ull<<2) | (1ull<<4))
 #define DEFAULT_PROCBASED_CTLS ((1ull<<1) | (1ull<<4) | (1ull<<5) | (1ull<<6) | (1ull<<8) | (1ull<<13) | (1ull<<14) | (1ull<<15) | (1ull<<16) | (1ull<<26))
 #define DEFAULT_EXIT_CTLS ((1ull<<0) | (1ull<<1) | (1ull<<2) | (1ull<<3) | (1ull<<4) | (1ull<<5) | (1ull<<6) | (1ull<<7) | (1ull<<8) | (1ull<<10) | (1ull<<11) | (1ull<<13) | (1ull<<14) | (1ull<<16) | (1ull<<17))

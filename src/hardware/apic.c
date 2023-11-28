@@ -60,7 +60,6 @@ void init_vmm_all_cores(){
     rsdp_t *rsdp_ptr = detect_rsdp();
     madt_t *madt_ptr = (madt_t*)search_SDT(rsdp_ptr, MADT_SIGNATURE);
 
-    uint32_t cpu_count = 0;
     uint32_t madt_length = madt_ptr->header.length;
     madt_entry_header_t *current_entry = (madt_entry_header_t*)((byte_t*)madt_ptr+MADT_TABLE_START);
 

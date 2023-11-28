@@ -11,7 +11,7 @@ void initialize_vmexit_data(vmexit_data_t *data){
     data->exit_qual = (exit_qualification_t)__vmread(RODATA_EXIT_QUALIFICATION);
     data->guest_linear_address = __vmread(RODATA_GUEST_LINEAR_ADDRESS);
     data->guest_physical_address = __vmread(RODATA_GUEST_PHYSICAL_ADDRESS);
-    
+
     // Intel SDM 25.9.2
     data->interruption_info.value = __vmread(RODATA_VMEXIT_INTERRUPTION_INFO);
     data->interruption_errorcode = __vmread(RODATA_VMEXIT_INTERRUPTION_ERRORCODE);
@@ -32,22 +32,25 @@ void vmexit_handler(){
     
     vmexit_data_t vmexit_data;
     initialize_vmexit_data(&vmexit_data);
+    LOG_DEBUG("Well actually it's in %x\n", vmexit_data.registers);
 
-    if (!vmexit_data.vmx_error)
+    if (vmexit_data.vmx_error)
         LOG_ERROR("VMX ERROR %d\n", vmexit_data.vmx_error);
 
     switch (vmexit_data.exit_reason){
-        case EXIT_REASON_INIT:
-            LOG_DEBUG("INIT VMEXIT\n");
+        case EXIT_REASON_WRMSR:
+            qword_t msr = vmexit_data.registers->rcx & 0xffffffffull;
+            qword_t value = (vmexit_data.registers->rax & 0xffffffffull) | (vmexit_data.registers->rdx<<32);
+            LOG_DEBUG("WRMSR VMEXIT (%x, %x)\n", msr, value);
+            __wrmsr(msr, value);
             break;
         case EXIT_REASON_SIPI:
             LOG_DEBUG("SIPI VMEXIT\n");
             break;
-        case EXIT_REASON_CPUID:
-            LOG_DEBUG("CPUID VMEXIT\n");
-            break;
         default:
             LOG_DEBUG("Unknown VMEXIT (%q)\n", (BASIC_EXIT_REASON)__vmread(RODATA_EXIT_REASON));
     }
+
+    __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+vmexit_data.instr_length);
 
 }

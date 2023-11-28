@@ -26,7 +26,9 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
 
 void vmentry_handler(){
     LOG_INFO("Entered the VM Entry handler\n");
-    get_current_core_id();
+    // sleep();
+    init_ap(1, 4);
+    LOG_DEBUG("VMENTRY on core %d\n", (dword_t)get_current_core_id());
     for(;;);
 }
 
@@ -42,6 +44,7 @@ void prepare_vmm(){
     __vmptrld(vmcs_ptr);
 
     initialize_vmcs();
-    LOG_INFO("Done initializing VMCS fields\n");
+    LOG_INFO("Done initializing VMCS fields on core %d\n", (dword_t)get_current_core_id());
+
 
 }

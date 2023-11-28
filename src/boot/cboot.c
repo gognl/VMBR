@@ -2,15 +2,17 @@
 #include <hardware/apic.h>
 #include <vmm/vmm.h>
 #include <lib/debug.h>
+#include <vmm/vmcs.h>
+#include <lib/instr.h>
 
 int cboot(){
-
-    puts_lock = 0;
-    //puts("\n\nSuccessfully entered long mode\n");
+    
     init_real();
     init_mmap();
     init_cores();
-    init_vmm();
+    prepare_vmm();
+    __vmwrite(GUEST_RSP, __read_rsp());
+    __vmlaunch();
 
     for(;;);
 }

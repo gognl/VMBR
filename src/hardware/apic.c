@@ -27,6 +27,7 @@ void init_ap(byte_t apic_id, uint8_t page_idx){
     __wrmsr(IA32_X2APIC_ICR, init_icr.value);
     sleep();
 
+
     x2apic_icr_t sipi_icr = {0};
     sipi_icr.delivery_mode = SIPI;
     sipi_icr.vector = page_idx;
@@ -40,7 +41,7 @@ void init_ap(byte_t apic_id, uint8_t page_idx){
     if (i == 0xfffffffull)
         LOG_ERROR("Failed to initialize core %d\n", (dword_t)apic_id);
     if (*(byte_t*)cores_semaphore == 1)
-        LOG_INFO("Successfully initialized core %d\n", (dword_t)apic_id);
+        LOG_DEBUG("Successfully initialized core %d\n", (dword_t)apic_id);
 }
 
 uint8_t get_current_core_id(){
@@ -53,13 +54,12 @@ void init_vmm_all_cores(){
 
     uint8_t current_core_id = get_current_core_id();
 
-    byte_t *mp_code_cpy = 0x4000;
+    byte_t *mp_code_cpy = (byte_t*)0x4000;
     memcpy(mp_code_cpy, (byte_t*)InitializeSingleCore, (uint64_t)InitializeSingleCore_end-(uint64_t)InitializeSingleCore);
 
     rsdp_t *rsdp_ptr = detect_rsdp();
     madt_t *madt_ptr = (madt_t*)search_SDT(rsdp_ptr, MADT_SIGNATURE);
 
-    uint32_t cpu_count = 0;
     uint32_t madt_length = madt_ptr->header.length;
     madt_entry_header_t *current_entry = (madt_entry_header_t*)((byte_t*)madt_ptr+MADT_TABLE_START);
 

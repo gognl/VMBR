@@ -19,6 +19,9 @@ section .text
 
 bits 32
 _start:
+
+    mov esp, _sys_stack
+
     call InitializePageTables
     call ProtectedToLong
 
@@ -31,7 +34,7 @@ bits 64
 
 %include "src/boot/paging.asm"
 %include "src/boot/real_mode.asm"
-;%include "src/boot/mode-transitions.asm"
+%include "src/vmm/vmexit.asm"
 
 section .mb2_header
 %include "src/boot/mb2_header.asm"

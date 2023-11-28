@@ -15,9 +15,4 @@ extern void LOG_DEBUG(char_t *s, ...);
 extern void LOG_INFO(char_t *s, ...);
 extern void LOG_ERROR(char_t *s, ...);
 
-extern void putch(char_t c);
-extern void puts(char_t *s, ...);
-
-extern dword_t puts_lock;
-
 #endif

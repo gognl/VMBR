@@ -32,7 +32,6 @@ void vmexit_handler(){
     
     vmexit_data_t vmexit_data;
     initialize_vmexit_data(&vmexit_data);
-    LOG_DEBUG("Well actually it's in %x\n", vmexit_data.registers);
 
     if (vmexit_data.vmx_error)
         LOG_ERROR("VMX ERROR %d\n", vmexit_data.vmx_error);
@@ -44,8 +43,8 @@ void vmexit_handler(){
             LOG_DEBUG("WRMSR VMEXIT (%x, %x)\n", msr, value);
             __wrmsr(msr, value);
             break;
-        case EXIT_REASON_SIPI:
-            LOG_DEBUG("SIPI VMEXIT\n");
+        case EXIT_REASON_CPUID:
+            LOG_DEBUG("CPUID VMEXIT\n");
             break;
         default:
             LOG_DEBUG("Unknown VMEXIT (%q)\n", (BASIC_EXIT_REASON)__vmread(RODATA_EXIT_REASON));

@@ -104,7 +104,6 @@ void initialize_vmcs(){
     proc_based_ctls.activate_secondary_controls = TRUE;
     proc_based_ctls2.enable_ept = TRUE;
     proc_based_ctls2.unrestricted_guest = TRUE;
-    proc_based_ctls2.virtualize_x2apic_mode = TRUE;
     vmexit_ctls.host_address_space_size = TRUE;
     vmentry_ctls.ia32_mode_guest = TRUE;
 

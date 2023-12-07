@@ -26,7 +26,10 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
 
 void vmentry_handler(){
     LOG_INFO("Entered the VM Entry handler\n");
-    get_current_core_id();
+    __rdmsr(IA32_VMX_BASIC);
+    dword_t ebx, tmp;
+    __cpuid(1, 0, &tmp, &ebx, &tmp, &tmp);
+    LOG_INFO("Exited the VM Entry handler\n");
     for(;;);
 }
 

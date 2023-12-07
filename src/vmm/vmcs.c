@@ -15,7 +15,7 @@ void initialize_vmcs(){
     __vmwrite(HOST_CR3, initialize_host_paging());
     __vmwrite(HOST_CR4, __read_cr4());
     __vmwrite(HOST_RIP, VmExitHandler);
-    __vmwrite(HOST_RSP, _sys_stack);    // todo create a new VMM stack, hidden from VM
+    __vmwrite(HOST_RSP, 0x7000);    // todo create a new VMM stack, hidden from VM
     __vmwrite(HOST_ES, __read_es());
     __vmwrite(HOST_CS, __read_cs());
     __vmwrite(HOST_SS, __read_ss());
@@ -93,6 +93,7 @@ void initialize_vmcs(){
     __vmwrite(GUEST_IA32_SYSENTER_EIP, CANONICAL_ADDRESS);
     __vmwrite(GUEST_IA32_SYSENTER_ESP, CANONICAL_ADDRESS);
     __vmwrite(GUEST_VMCS_LINK_PTR, -1ll);
+    __vmwrite(CONTROL_MSR_BITMAPS, allocate_memory(0x4000));
 
     // Intel Manual Appendix A
     pin_based_ctls_t pin_based_ctls = {0};
@@ -102,6 +103,7 @@ void initialize_vmcs(){
     vmentry_ctls_t vmentry_ctls = {0};
 
     proc_based_ctls.activate_secondary_controls = TRUE;
+    // proc_based_ctls.use_msr_bitmaps = TRUE;
     proc_based_ctls2.enable_ept = TRUE;
     proc_based_ctls2.unrestricted_guest = TRUE;
     vmexit_ctls.host_address_space_size = TRUE;

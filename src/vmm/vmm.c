@@ -6,6 +6,7 @@
 #include <lib/msr.h>
 #include <hardware/apic.h>
 #include <boot/mmap.h>
+#include <vmm/hooks.h>
 
 shared_cores_data_t shared_cores_data = {0};
 
@@ -31,6 +32,7 @@ void vmentry_handler(){
     // dword_t ebx, tmp;
     // __cpuid(1, 0, &tmp, &ebx, &tmp, &tmp);
     CallReal(LoadMemoryMap);
+    print_mmap();
     // init_mmap();
     LOG_INFO("Exited the VM Entry handler\n");
     for(;;);
@@ -50,4 +52,5 @@ void prepare_vmm(){
     initialize_vmcs();
     LOG_INFO("Done initializing VMCS fields\n");
 
+    setup_int15h_hook();
 }

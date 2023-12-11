@@ -9,7 +9,7 @@ int cboot(){
     
     init_real();
     init_mmap();
-    init_cores();
+    // init_cores();
     prepare_vmm();
     __vmwrite(GUEST_RSP, __read_rsp());
     __vmlaunch();

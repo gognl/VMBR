@@ -7,6 +7,9 @@ extern void init_mmap(void);
 extern void init_real(void);
 extern byte_t *allocate_memory(uint64_t length);
 
+#define REAL_START 0x4000
+#define MMAP_TABLE 0x5000
+
 typedef struct {
     qword_t base_addr;
     qword_t length;

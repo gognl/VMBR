@@ -111,10 +111,10 @@ void initialize_vmcs(){
     vmentry_ctls.ia32_mode_guest = TRUE;
 
     if (__rdmsr(IA32_VMX_BASIC) & (1ull<<55)){
-        __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, __rdmsr(IA32_VMX_TRUE_PINBASED_CTLS) | DEFAULT_PINBASED_CTLS | pin_based_ctls.value);
-        __vmwrite(CONTROL_PRIMARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, __rdmsr(IA32_VMX_TRUE_PROCBASED_CTLS) | DEFAULT_PROCBASED_CTLS | proc_based_ctls.value);
-        __vmwrite(CONTROL_PRIMARY_VMEXIT_CONTROLS, __rdmsr(IA32_VMX_TRUE_EXIT_CTLS) | DEFAULT_EXIT_CTLS | vmexit_ctls.value);
-        __vmwrite(CONTROL_VMENTRY_CONTROLS, __rdmsr(IA32_VMX_TRUE_ENTRY_CTLS) | DEFAULT_ENTRY_CTLS | vmentry_ctls.value);
+        __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, __rdmsr(IA32_VMX_TRUE_PINBASED_CTLS) | pin_based_ctls.value);
+        __vmwrite(CONTROL_PRIMARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, __rdmsr(IA32_VMX_TRUE_PROCBASED_CTLS) | proc_based_ctls.value);
+        __vmwrite(CONTROL_PRIMARY_VMEXIT_CONTROLS, __rdmsr(IA32_VMX_TRUE_EXIT_CTLS) | vmexit_ctls.value);
+        __vmwrite(CONTROL_VMENTRY_CONTROLS, __rdmsr(IA32_VMX_TRUE_ENTRY_CTLS) | vmentry_ctls.value);
     } else {
         __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, __rdmsr(IA32_VMX_PINBASED_CTLS) | pin_based_ctls.value);
         __vmwrite(CONTROL_PRIMARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, __rdmsr(IA32_VMX_PROCBASED_CTLS) | proc_based_ctls.value);

@@ -41,7 +41,7 @@ void init_ap(byte_t apic_id, uint8_t page_idx){
     if (i == 0xfffffffull)
         LOG_ERROR("Failed to initialize core %d\n", (dword_t)apic_id);
     if (*(byte_t*)cores_semaphore == 1)
-        LOG_DEBUG("Successfully initialized core %d\n", (dword_t)apic_id);
+        LOG_INFO("Successfully initialized core %d\n", (dword_t)apic_id);
 }
 
 uint8_t get_current_core_id(){

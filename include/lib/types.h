@@ -27,13 +27,13 @@ typedef unsigned long long uint64_t;
 #define PAGE_SIZE 0x1000
 
 typedef struct {
+    uint16_t limit;
     uint64_t base;
-    uint32_t limit;
 } __attribute__((__packed__)) gdtr_t;
 
 typedef struct {
+    uint16_t limit;
     uint64_t base;
-    uint32_t limit;
 } __attribute__((__packed__)) idtr_t;
 
 #endif

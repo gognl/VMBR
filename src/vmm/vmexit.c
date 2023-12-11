@@ -48,7 +48,7 @@ void vmexit_handler(){
             break;
         case EXIT_REASON_RDMSR:
             msr = LOWER_DWORD(vmexit_data.registers->rcx);
-            LOG_DEBUG("RDMSR VMEXIT (%x)\n", msr);
+            LOG_DEBUG("RDMSR VMEXIT (%x, rcx=%x)\n", msr, vmexit_data.registers->rcx);
             value = __rdmsr(msr);
             vmexit_data.registers->rdx = (vmexit_data.registers->rdx>>32<<32) | value >> 32;
             vmexit_data.registers->rax = LOWER_DWORD(value);
@@ -103,11 +103,11 @@ void vmexit_handler(){
         case EXIT_REASON_VMXON:
             LOG_DEBUG("VMXON VMEXIT\n");
             break;
-        default:
-            LOG_DEBUG("Unknown VMEXIT (%q)\n", (BASIC_EXIT_REASON)__vmread(RODATA_EXIT_REASON));
-            LOG_DEBUG("Qual: %x\n\tInt. info: %x\n\tIDT info: %x\n", vmexit_data.exit_qual.value, (qword_t)vmexit_data.interruption_info.value, (qword_t)vmexit_data.idt_info.value);
+        default:     
+            LOG_DEBUG("Unknown VMEXIT (%x, %x)\n", (BASIC_EXIT_REASON)__vmread(RODATA_EXIT_REASON), __vmread(RODATA_VM_INSTRUCTION_ERROR));
+            LOG_DEBUG("Qual: %x\n\tInterruption info: %x (%x)\n\tIDT info: %x (%x)\n", vmexit_data.exit_qual.value, (qword_t)vmexit_data.interruption_info.value, (qword_t)vmexit_data.interruption_errorcode, (qword_t)vmexit_data.idt_info.value, (qword_t)vmexit_data.idt_errorcode);
     }
 
-    // LOG_DEBUG("GUEST_RIP: %x\n\tNEXT_GUEST_RIP: %x\n\tINSTR_LENGTH: %x\n", __vmread(GUEST_RIP), __vmread(GUEST_RIP)+(qword_t)vmexit_data.instr_length, (qword_t)vmexit_data.instr_length);
+    LOG_DEBUG("GUEST_RIP: %x\n\tNEXT_GUEST_RIP: %x\n\tINSTR_LENGTH: %x\n", __vmread(GUEST_RIP), __vmread(GUEST_RIP)+(qword_t)vmexit_data.instr_length, (qword_t)vmexit_data.instr_length);
     __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)vmexit_data.instr_length);
 }

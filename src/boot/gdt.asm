@@ -3,6 +3,8 @@
 
 %include "src/boot/macros.asm"
 
+global _gdt
+
 _gdt:
 .null:
     dq 0

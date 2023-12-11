@@ -20,6 +20,7 @@ typedef union {
     struct __attribute__((__packed__, __aligned__(8))) {
         uint64_t memory_type : 3;           // 0-2
         #define WRITEBACK 6
+        #define UNCACHEABLE 0
         uint64_t page_walk_length_m1 : 3;   // 3-5
         uint64_t enable_accessed_dirty : 1; // 6
     };

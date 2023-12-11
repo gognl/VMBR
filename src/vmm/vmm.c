@@ -24,11 +24,14 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
     vmcs_ptr->shadow_vmcs_indicator = FALSE;
 }
 
+extern void LoadMemoryMap();
 void vmentry_handler(){
     LOG_INFO("Entered the VM Entry handler\n");
-    __rdmsr(IA32_VMX_BASIC);
-    dword_t ebx, tmp;
-    __cpuid(1, 0, &tmp, &ebx, &tmp, &tmp);
+    // __rdmsr(IA32_VMX_BASIC);
+    // dword_t ebx, tmp;
+    // __cpuid(1, 0, &tmp, &ebx, &tmp, &tmp);
+    CallReal(LoadMemoryMap);
+    // init_mmap();
     LOG_INFO("Exited the VM Entry handler\n");
     for(;;);
 }

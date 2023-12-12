@@ -7,9 +7,6 @@
 #include <hardware/apic.h>
 #include <boot/addresses.h>
 
-extern byte_t *_sys_stack(void);
-extern void VmExitHandler(void);
-
 void initialize_vmcs(){
 
     __vmwrite(HOST_CR0, __read_cr0());

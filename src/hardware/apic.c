@@ -6,10 +6,6 @@
 #include <boot/mmap.h>
 #include <lib/util.h>
 
-extern void InitializeSingleCore(void);
-extern void InitializeSingleCore_end(void);
-extern byte_t *cores_semaphore(void);
-
 void activate_x2apic(){
     qword_t ecx, tmp;
     __cpuid(1, 0, &tmp, &tmp, &ecx, &tmp);

@@ -4,9 +4,6 @@
 #include <lib/instr.h>
 #include <vmm/vmm.h>
 
-extern void AcquireLock(dword_t* lock);
-extern void ReleaseLock(dword_t* lock);
-
 static void putch(char_t c){
     __outb(DBG_PORT, c);
 }

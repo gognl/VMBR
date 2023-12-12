@@ -5,7 +5,8 @@
 
 extern void initialize_vmcs();
 
-
+extern byte_t *_sys_stack(void);
+extern void VmExitHandler(void);
 
 #define CANONICAL_ADDRESS 0xffffffff
 

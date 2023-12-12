@@ -25,7 +25,6 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
     vmcs_ptr->shadow_vmcs_indicator = FALSE;
 }
 
-extern void LoadMemoryMap();
 void vmentry_handler(){
     LOG_INFO("Entered the VM Entry handler\n");
 

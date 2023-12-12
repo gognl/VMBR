@@ -14,9 +14,17 @@ __attribute__((always_inline)) void inline __hlt(){
 
 // control registers read & write
 
-__attribute__((always_inline)) void inline __cpuid(qword_t eax_in, qword_t ecx_in, qword_t* eax, qword_t* ebx, qword_t* ecx, qword_t* edx){
-    __asm__ __volatile__("cpuid" : "=a"(*eax), "=b"(*ebx), "=c" (*ecx), "=d" (*edx) : "a"(eax_in), "c"(ecx_in));
+__attribute__((always_inline)) void inline __cpuid(qword_t eax_in, qword_t ecx_in, 
+                                                    qword_t* eax, qword_t* ebx, 
+                                                    qword_t* ecx, qword_t* edx){
+    __asm__ __volatile__("cpuid" :  "=a"(*eax), 
+                                    "=b"(*ebx), 
+                                    "=c" (*ecx), 
+                                    "=d" (*edx) : 
+                                    "a"(eax_in), 
+                                    "c"(ecx_in));
 }
+
 __attribute__((always_inline)) qword_t inline __rdmsr(qword_t msr){
     dword_t upper = 0, lower = 0;
     __asm__ __volatile__("rdmsr" : "=d" (upper), "=a" (lower) : "c"(msr));
@@ -31,12 +39,6 @@ __attribute__((always_inline)) qword_t inline __read_cr0(void){
     qword_t cr0;
     __asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
     return cr0;
-}
-
-__attribute__((always_inline)) qword_t inline __read_rbp(void){
-    qword_t rbp;
-    __asm__ __volatile__("mov %%rbp, %0" : "=r"(rbp));
-    return rbp;
 }
 
 __attribute__((always_inline)) qword_t inline __read_cr3(void){

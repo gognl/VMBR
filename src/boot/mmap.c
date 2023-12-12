@@ -3,6 +3,7 @@
 #include <boot/mmap.h>
 #include <lib/debug.h>
 #include <vmm/vmm.h>
+#include <boot/addresses.h>
 
 extern void CallReal(void (*)());
 extern byte_t *low_functions_start(void);

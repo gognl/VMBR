@@ -11,7 +11,7 @@
 shared_cores_data_t shared_cores_data = {0};
 
 void prepare_vmxon(byte_t *vmxon_region_ptr){
-    dword_t ecx, tmp;
+    qword_t ecx, tmp;
     __cpuid(1, 0, &tmp, &tmp, &ecx, &tmp);
     if (!(ecx & CPUID_VMXON))
         LOG_ERROR("No VMX support in cpuid\n");
@@ -28,12 +28,7 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
 extern void LoadMemoryMap();
 void vmentry_handler(){
     LOG_INFO("Entered the VM Entry handler\n");
-    // __rdmsr(IA32_VMX_BASIC);
-    // dword_t ebx, tmp;
-    // __cpuid(1, 0, &tmp, &ebx, &tmp, &tmp);
-    CallReal(LoadMemoryMap);
-    print_mmap();
-    // init_mmap();
+
     LOG_INFO("Exited the VM Entry handler\n");
     for(;;);
 }

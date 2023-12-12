@@ -2,8 +2,8 @@
 %define __MACROS
 
 ; -------------- Constant Addresses -------------------------------------------
-%define REAL_START 0x4000       ; Also defined in real.c    
-%define MMAP_TABLE 0x5000       ; Also defined in real.c
+%define REAL_START 0x4000   
+%define MMAP_TABLE 0x5000
 ; -----------------------------------------------------------------------------
 
 ; -------------- Magic Numbers ------------------------------------------------

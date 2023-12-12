@@ -5,7 +5,7 @@
 
 extern void initialize_vmcs();
 
-#define REGISTERS_ADDRESS 0x7000
+
 
 #define CANONICAL_ADDRESS 0xffffffff
 

@@ -5,6 +5,7 @@
 #include <lib/instr.h>
 #include <boot/mmap.h>
 #include <hardware/apic.h>
+#include <boot/addresses.h>
 
 extern byte_t *_sys_stack(void);
 extern void VmExitHandler(void);
@@ -15,7 +16,7 @@ void initialize_vmcs(){
     __vmwrite(HOST_CR3, initialize_host_paging());
     __vmwrite(HOST_CR4, __read_cr4());
     __vmwrite(HOST_RIP, VmExitHandler);
-    __vmwrite(HOST_RSP, 0x7000);    // todo create a new VMM stack, hidden from VM
+    __vmwrite(HOST_RSP, allocate_memory(0x4000)+0x4000);
     __vmwrite(HOST_ES, __read_es());
     __vmwrite(HOST_CS, __read_cs());
     __vmwrite(HOST_SS, __read_ss());

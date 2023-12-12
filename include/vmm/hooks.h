@@ -3,8 +3,6 @@
 
 #include <lib/types.h>
 
-#define HOOK_INT15H 0x1000
-
 #define E820_MAGIC 0x0534D4150
 #define RFLAGS_CARRY (1<<0)
 

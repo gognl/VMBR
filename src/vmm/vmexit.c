@@ -2,10 +2,11 @@
 #include <lib/instr.h>
 #include <vmm/vmm.h>
 #include <vmm/hooks.h>
+#include <boot/addresses.h>
 
 #define LOWER_DWORD(x) ((x) & 0xffffffffull)
 #define UPPER_DWORD(x) ((x) >> 32)
-// TODO ept and memory types
+
 void initialize_vmexit_data(vmexit_data_t *data){
 
     data->registers = (guest_registers_t*)__read_fs();
@@ -56,7 +57,7 @@ void vmexit_handler(){
             break;
         case EXIT_REASON_CPUID:
             LOG_DEBUG("CPUID VMEXIT\n");
-            dword_t eax_in, ecx_in, eax, ebx, ecx, edx;
+            qword_t eax_in, ecx_in, eax, ebx, ecx, edx;
             eax_in = LOWER_DWORD(state.registers->rax);
             ecx_in = LOWER_DWORD(state.registers->rcx);
             __cpuid(eax_in, ecx_in, &eax, &ebx, &ecx, &edx);
@@ -64,6 +65,12 @@ void vmexit_handler(){
             state.registers->rcx = (qword_t)ecx;
             state.registers->rbx = (qword_t)ebx;
             state.registers->rdx = (qword_t)edx;
+
+            if (eax_in == 1){
+                // state.registers->rcx &= ~(1<<31);   // hypervisor present bit
+                state.registers->rcx &= ~(1<<5);    // no VMX support (todo nested virtualization)
+            }
+            LOG_DEBUG("rcx is %x\n", (qword_t)state.registers->rcx);
             break;
         case EXIT_REASON_GETSEC:
             LOG_DEBUG("GETSEC VMEXIT\n");

@@ -3,6 +3,7 @@
 #include <vmm/vmm.h>
 #include <boot/mmap.h>
 #include <lib/instr.h>
+#include <boot/addresses.h>
 
 #define LOWER_WORD(x) ((x) & 0xffffull)
 

@@ -3,19 +3,10 @@
 #include <boot/mmap.h>
 #include <lib/debug.h>
 #include <vmm/vmm.h>
+#include <boot/addresses.h>
 
-extern void CallReal(void (*)());
-extern byte_t *low_functions_start(void);
-extern byte_t *low_functions_end(void);
-extern void LoadMemoryMap(void (*)());
-extern void AcquireLock(dword_t* lock);
-extern void ReleaseLock(dword_t* lock);
 
-void print_mmap(void);
 byte_t *allocate_memory(uint64_t length);
-
-#define REAL_START 0x4000
-#define MMAP_TABLE 0x5000
 
 void init_real(void){
     memcpy((byte_t*)REAL_START, 
@@ -28,8 +19,8 @@ void init_mmap(void){
 
     CallReal(LoadMemoryMap);
 
-    extern byte_t vmbr_end[];
-    byte_t *tmp = allocate_memory(vmbr_end);
+    // extern byte_t vmbr_end[];
+    // byte_t *tmp = allocate_memory(vmbr_end);
 
     // print_mmap();
 }
@@ -59,25 +50,20 @@ byte_t* allocate_memory(uint64_t length){
     for(i = 0; i<mmap_size; i++){
         if (mmap->entries[i].type == E820_USABLE && mmap->entries[i].length > len){
             chosen = i;
-            break;
         }
     }
-
 
     out = (byte_t*)ALIGN_UP(mmap->entries[chosen].base_addr, PAGE_SIZE);
 
     // Edit the mmap for future allocations
-    uint64_t unalignedBaseLeftover = ((uint64_t)out-mmap->entries[chosen].base_addr);
-    mmap->entries[chosen].length -= len + unalignedBaseLeftover;
-    mmap->entries[chosen].base_addr += len + unalignedBaseLeftover;
-    // LOG_DEBUG("Allocted %x bytes from %x; %x left in this section (%x).\n", length, mmap->entries[chosen].base_addr-len-unalignedBaseLeftover, mmap->entries[chosen].length, mmap->entries[chosen].base_addr);
+    uint64_t unaligned_base_leftover = ((uint64_t)out-mmap->entries[chosen].base_addr);
+    mmap->entries[chosen].length -= len + unaligned_base_leftover;
+    mmap->entries[chosen].base_addr += len + unaligned_base_leftover;
 
     ReleaseLock(&shared_cores_data.allocation_lock);
 
     if (out != 0)
         memset(out, 0, len);
-
-
 
     return out;    
 }

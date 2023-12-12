@@ -14,8 +14,6 @@ section .text
 bits 16
 InitializeSingleCore:
 
-    ; println 'Hello'
-
     cli
 
     mov eax, cr0

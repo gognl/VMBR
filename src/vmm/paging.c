@@ -59,7 +59,7 @@ qword_t initialize_ept(){
         ept_pt[i].read_access = TRUE;
         ept_pt[i].write_access = TRUE;
         ept_pt[i].execute_access = TRUE;
-        ept_pt[i].memory_type = WRITEBACK;
+        ept_pt[i].memory_type = UNCACHEABLE;
     }
 
     return (qword_t)ept_pml4;

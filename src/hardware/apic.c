@@ -6,13 +6,9 @@
 #include <boot/mmap.h>
 #include <lib/util.h>
 
-extern void InitializeSingleCore(void);
-extern void InitializeSingleCore_end(void);
-extern byte_t *cores_semaphore(void);
-
 void activate_x2apic(){
-    dword_t ecx, tmp;
-    __cpuid(1u, 0u, &tmp, &tmp, &ecx, &tmp);
+    qword_t ecx, tmp;
+    __cpuid(1, 0, &tmp, &tmp, &ecx, &tmp);
     if(!(ecx & CPUID_X2APIC))
         LOG_ERROR("No x2APIC support\n");
     
@@ -41,11 +37,11 @@ void init_ap(byte_t apic_id, uint8_t page_idx){
     if (i == 0xfffffffull)
         LOG_ERROR("Failed to initialize core %d\n", (dword_t)apic_id);
     if (*(byte_t*)cores_semaphore == 1)
-        LOG_DEBUG("Successfully initialized core %d\n", (dword_t)apic_id);
+        LOG_INFO("Successfully initialized core %d\n", (dword_t)apic_id);
 }
 
 uint8_t get_current_core_id(){
-    dword_t ebx, tmp;
+    qword_t ebx, tmp;
     __cpuid(1, 0, &tmp, &ebx, &tmp, &tmp);
     return ebx>>24;
 }

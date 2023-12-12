@@ -10,9 +10,10 @@ section .rodata
 
 section .bss
 
-align 0x1000
-    resb 0x4000
-_sys_stack:
+; align 0x1000
+;     resb 0x4000
+; _sys_stack:
+%define _sys_stack 0x7000
 
 section .text
 

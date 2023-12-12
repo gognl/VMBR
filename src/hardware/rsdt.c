@@ -8,9 +8,6 @@ Sources:
 #include <lib/util.h>
 #include <hardware/rsdt.h>
 
-rsdp_t* detect_rsdp(void);
-uint32_t get_cpu_count(void);
-
 rsdp_t* detect_rsdp(void){
     byte_t magic[8] = RSDP_MAGIC;
     byte_t *ebda_ptr = (*(word_t*)EBDA_PTR_ADDR);

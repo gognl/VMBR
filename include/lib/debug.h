@@ -15,4 +15,7 @@ extern void LOG_DEBUG(char_t *s, ...);
 extern void LOG_INFO(char_t *s, ...);
 extern void LOG_ERROR(char_t *s, ...);
 
+extern void AcquireLock(dword_t* lock);
+extern void ReleaseLock(dword_t* lock);
+
 #endif

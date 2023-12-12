@@ -32,4 +32,8 @@ extern void init_ap(byte_t apic_id, uint8_t page_idx);
 extern uint8_t get_current_core_id();
 // extern BOOL is_bsp();
 
+extern void InitializeSingleCore(void);
+extern void InitializeSingleCore_end(void);
+extern byte_t *cores_semaphore(void);
+
 #endif

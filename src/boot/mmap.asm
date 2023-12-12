@@ -9,7 +9,7 @@ section .text
 bits 16
 LoadMemoryMap:
 
-    mov di, MMAP_TABLE+4        ; The first dword is for the length of the table
+    mov edi, MMAP_TABLE+4        ; The first dword is for the length of the table
     xor ebx, ebx
     xor ebp, ebp
     mov edx, E820_MAGIC

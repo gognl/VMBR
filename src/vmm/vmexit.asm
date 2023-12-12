@@ -1,11 +1,8 @@
-; %include "src/boot/macros.asm"
 
 global VmExitHandler
 extern vmexit_handler
 
 VmExitHandler:
-
-    ; mov rcx, 0x1234
     mov qword [fs:0], rax
     mov qword [fs:8], rbx
     mov qword [fs:16], rcx

@@ -6,11 +6,12 @@
 #include <lib/msr.h>
 #include <hardware/apic.h>
 #include <boot/mmap.h>
+#include <vmm/hooks.h>
 
 shared_cores_data_t shared_cores_data = {0};
 
 void prepare_vmxon(byte_t *vmxon_region_ptr){
-    dword_t ecx, tmp;
+    qword_t ecx, tmp;
     __cpuid(1, 0, &tmp, &tmp, &ecx, &tmp);
     if (!(ecx & CPUID_VMXON))
         LOG_ERROR("No VMX support in cpuid\n");
@@ -26,9 +27,8 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
 
 void vmentry_handler(){
     LOG_INFO("Entered the VM Entry handler\n");
-    // sleep();
-    init_ap(1, 4);
-    LOG_DEBUG("VMENTRY on core %d\n", (dword_t)get_current_core_id());
+
+    LOG_INFO("Exited the VM Entry handler\n");
     for(;;);
 }
 
@@ -44,7 +44,7 @@ void prepare_vmm(){
     __vmptrld(vmcs_ptr);
 
     initialize_vmcs();
-    LOG_INFO("Done initializing VMCS fields on core %d\n", (dword_t)get_current_core_id());
+    LOG_INFO("Done initializing VMCS fields\n");
 
-
+    setup_int15h_hook();
 }

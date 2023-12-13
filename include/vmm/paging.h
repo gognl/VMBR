@@ -7,8 +7,8 @@ extern qword_t initialize_host_paging();
 extern qword_t initialize_ept();
 
 #define COMPUTER_RAM 8              // 8gb. TODO find this out instead of macro
-#define LARGE_PAGE_SIZE 0x200000
-#define PAGE_SIZE 0x1000
+#define LARGE_PAGE_SIZE 0x200000ull
+#define PAGE_SIZE 0x1000ull
 
 #define PTE_P (1<<0)            // Present bit
 #define PTE_W (1<<1)            // Writeable bit
@@ -19,8 +19,8 @@ typedef union {
     uint64_t value;
     struct __attribute__((__packed__, __aligned__(8))) {
         uint64_t memory_type : 3;           // 0-2
-        #define WRITEBACK 6
         #define UNCACHEABLE 0
+        #define WRITEBACK 6
         uint64_t page_walk_length_m1 : 3;   // 3-5
         uint64_t enable_accessed_dirty : 1; // 6
     };
@@ -65,5 +65,66 @@ typedef union {
         uint64_t suppress_ve : 1;           // 63
     };
 } ept_pte_t;
+
+#define IA32_MTRR_DEF_TYPE 0x2ff
+#define IA32_MTRRCAP 0xfe
+
+#define IA32_MTRR_FIX64K_00000 0x250
+#define IA32_MTRR_FIX16K_80000 0x258
+#define IA32_MTRR_FIX16K_A0000 0x259
+#define IA32_MTRR_FIX4K_C0000 0x268
+#define IA32_MTRR_FIX4K_C8000 0x269
+#define IA32_MTRR_FIX4K_D0000 0x26a
+#define IA32_MTRR_FIX4K_D8000 0x26b
+#define IA32_MTRR_FIX4K_E0000 0x26c
+#define IA32_MTRR_FIX4K_E8000 0x26d
+#define IA32_MTRR_FIX4K_F0000 0x26e
+#define IA32_MTRR_FIX4K_F8000 0x26f
+
+#define GET_TYPE_RANGED(address, msr, start, jump) (((msr) >> ((((address)-(start)) / (jump)) << 3)) & 0xffull)
+
+#define IA32_MTRR_PHYSBASE0 0x200
+#define IA32_MTRR_PHYSMASK0 0x201
+
+#define GET_ENTRY_LENGTH(mask) ((mask) & (-(mask)))     // leave only the rightmost set bit
+
+typedef union {
+    qword_t value;
+    struct {
+        qword_t type : 8;
+        qword_t : 2;
+        qword_t fixed_enabled : 1;
+        qword_t enabled : 1;
+    };
+} ia32_mtrr_def_type_t;
+
+typedef union {
+    qword_t value;
+    struct {
+        qword_t vcnt : 8;
+        qword_t fix: 1;
+        qword_t : 1;
+        qword_t wc : 1;
+        qword_t smrr : 1;
+    };
+} ia32_mtrrcap_t;
+
+typedef union {
+    qword_t value;
+    struct {
+        qword_t type : 8;
+        qword_t : 4;
+        qword_t page_idx : 24;
+    };
+} ia32_mtrr_physbase_t;
+
+typedef union {
+    qword_t value;
+    struct {
+        qword_t : 11;
+        qword_t valid : 1;
+        qword_t page_idx : 24;
+    };
+} ia32_mtrr_physmask_t;
 
 #endif

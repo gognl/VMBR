@@ -43,32 +43,32 @@ void initialize_vmcs(){
     // ES
     __vmwrite(GUEST_ES, __read_es() & 0x00f8);
     __vmwrite(GUEST_ES_BASE, 0ull);
-    __vmwrite(GUEST_ES_LIMIT, 0xfffffffff);
+    __vmwrite(GUEST_ES_LIMIT, 0xffffffff);
     __vmwrite(GUEST_ES_ACCESS_RIGHTS, GDT_AB_A | GDT_AB_RW | GDT_AB_S | GDT_AB_P | GDT_AB_DB | GDT_AB_G);
     // SS (the selector)
     __vmwrite(GUEST_SS, __read_ss() & 0x00f8);
     __vmwrite(GUEST_SS_BASE, 0ull);
-    __vmwrite(GUEST_SS_LIMIT, 0xfffffffff);
+    __vmwrite(GUEST_SS_LIMIT, 0xffffffff);
     __vmwrite(GUEST_SS_ACCESS_RIGHTS, GDT_AB_A | GDT_AB_RW | GDT_AB_S | GDT_AB_P | GDT_AB_DB | GDT_AB_G);
     // DS
     __vmwrite(GUEST_DS, __read_ds() & 0x00f8);
     __vmwrite(GUEST_DS_BASE, 0ull);
-    __vmwrite(GUEST_DS_LIMIT, 0xfffffffff);
+    __vmwrite(GUEST_DS_LIMIT, 0xffffffff);
     __vmwrite(GUEST_DS_ACCESS_RIGHTS, GDT_AB_A | GDT_AB_RW | GDT_AB_S | GDT_AB_P | GDT_AB_DB | GDT_AB_G);
     // FS
     __vmwrite(GUEST_FS, __read_fs() & 0x00f8);
     __vmwrite(GUEST_FS_BASE, 0ull);
-    __vmwrite(GUEST_FS_LIMIT, 0xfffffffff);
+    __vmwrite(GUEST_FS_LIMIT, 0xffffffff);
     __vmwrite(GUEST_FS_ACCESS_RIGHTS, GDT_AB_A | GDT_AB_RW | GDT_AB_S | GDT_AB_P | GDT_AB_DB | GDT_AB_G);
     // GS
     __vmwrite(GUEST_GS, __read_gs() & 0x00f8);
     __vmwrite(GUEST_GS_BASE, 0ull);
-    __vmwrite(GUEST_GS_LIMIT, 0xfffffffff);
+    __vmwrite(GUEST_GS_LIMIT, 0xffffffff);
     __vmwrite(GUEST_GS_ACCESS_RIGHTS, GDT_AB_A | GDT_AB_RW | GDT_AB_S | GDT_AB_P | GDT_AB_DB | GDT_AB_G);
     // TR
     __vmwrite(GUEST_TR, __read_ds());
     __vmwrite(GUEST_TR_BASE, 0ull);
-    __vmwrite(GUEST_TR_LIMIT, 0xfffffffff);
+    __vmwrite(GUEST_TR_LIMIT, 0xffffffff);
     __vmwrite(GUEST_TR_ACCESS_RIGHTS, GDT_AB_A | GDT_AB_RW | GDT_AB_E | GDT_AB_P | GDT_AB_DB | GDT_AB_G);
     // GDTR
     gdtr_t gdtr;

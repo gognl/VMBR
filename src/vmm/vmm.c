@@ -28,6 +28,8 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
 void vmentry_handler(){
     LOG_INFO("Entered the VM Entry handler\n");
 
+    load_guest();
+
     LOG_INFO("Exited the VM Entry handler\n");
     for(;;);
 }

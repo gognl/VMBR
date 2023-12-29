@@ -37,5 +37,6 @@ CallReal:
 low_functions_start:
 %include "src/boot/mode-transitions.asm"
 %include "src/boot/mmap.asm"
+%include "src/hardware/serial.asm"
 %include "src/hardware/apic.asm"
 low_functions_end:

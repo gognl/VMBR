@@ -27,7 +27,7 @@ GRUB_CFG := src/boot/grub.cfg
 
 default: run
 
-.PHONY: default build run clean scr gdb gef
+.PHONY: default build run clean scr gdb gef win
 
 build: build/vmbr.iso
 
@@ -35,13 +35,16 @@ scr: build
 	qemu-system-x86_64 -cdrom build/vmbr.iso -nographic --enable-kvm -serial mon:stdio -smp cores=1 -cpu host 
 
 run: build
-	qemu-system-x86_64 -cdrom build/vmbr.iso -serial stdio --enable-kvm -smp 4 -cpu host -m 1024,maxmem=8G
+	qemu-system-x86_64 -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -serial stdio --enable-kvm -smp 4 -cpu host -m 1024,maxmem=8G
 
 gdb: build
 	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio -smp 4 -cpu host & gdb
 
 gef: build
 	qemu-system-x86_64 -cdrom build/vmbr.iso -s -S --enable-kvm -serial stdio -smp 4 -cpu host & gef
+
+win: win10.vhd
+	qemu-system-x86_64 -drive file=win10.vhd,format=raw --enable-kvm -smp 1 -cpu host -m 1024,maxmem=8G -vga std
 
 clean:
 	rm -rf build

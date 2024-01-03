@@ -2,6 +2,7 @@
 
 global low_functions_start
 global low_functions_end
+global call_real_end
 global CallReal
 
 section .text
@@ -33,10 +34,11 @@ CallReal:
     bits 64
     
     ret
+call_real_end:
 
 low_functions_start:
-%include "src/boot/mode-transitions.asm"
 %include "src/boot/mmap.asm"
+%include "src/boot/mode-transitions.asm"
 %include "src/hardware/serial.asm"
 %include "src/hardware/apic.asm"
 low_functions_end:

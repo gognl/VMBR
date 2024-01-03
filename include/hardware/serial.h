@@ -3,7 +3,12 @@
 
 #include <lib/types.h>
 
-extern void ReadDisk(void (*)());
+extern void ReadDisk();
+extern void JumpToGuest();
+extern void CallReal(void (*)(void));
+extern void low_functions_start();
+extern void low_functions_end();
+extern void call_real_end();
 
 extern void load_guest();
 

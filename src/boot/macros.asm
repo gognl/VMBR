@@ -2,7 +2,7 @@
 %define __MACROS
 
 ; -------------- Constant Addresses -------------------------------------------
-%define REAL_START 0x4000   
+%define REAL_START 0x4000
 %define MMAP_TABLE 0x5000
 ; -----------------------------------------------------------------------------
 
@@ -11,8 +11,8 @@
 ; -----------------------------------------------------------------------------
 
 ; -------------- Real Address Macro -------------------------------------------
-; %define REAL_ADDR(addr) (addr-low_functions_start+REAL_START)
-%define REAL_ADDR(addr) (addr)
+%define REAL_ADDR(addr) (addr-low_functions_start+REAL_START)
+; %define REAL_ADDR(addr) (addr)
 ; -----------------------------------------------------------------------------
 
 ; -------------- EFER MSR bits ------------------------------------------------

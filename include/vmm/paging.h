@@ -17,7 +17,7 @@ extern qword_t initialize_ept();
 typedef union {
     uint64_t ept_pml4;
     uint64_t value;
-    struct __attribute__((__packed__, __aligned__(8))) {
+    struct __attribute__((__packed__)) {
         uint64_t memory_type : 3;           // 0-2
         #define UNCACHEABLE 0
         #define WRITEBACK 6
@@ -29,7 +29,7 @@ typedef union {
 typedef union {
     uint64_t next_pd;
     uint64_t value;
-    struct __attribute__((__packed__, __aligned__(8))) {
+    struct __attribute__((__packed__)) {
         uint64_t read_access : 1;           // 0
         uint64_t write_access : 1;          // 1
         uint64_t execute_access : 1;        // 2
@@ -45,7 +45,7 @@ typedef ept_pde_t ept_pml4e_t;
 typedef union {
     uint64_t page;
     uint64_t value;
-    struct __attribute__((__packed__, __aligned__(8))) {
+    struct __attribute__((__packed__)) {
         uint64_t read_access : 1;           // 0
         uint64_t write_access : 1;          // 1
         uint64_t execute_access : 1;        // 2
@@ -90,7 +90,7 @@ typedef union {
 
 typedef union {
     qword_t value;
-    struct {
+    struct __attribute__((__packed__)) {
         qword_t type : 8;
         qword_t : 2;
         qword_t fixed_enabled : 1;
@@ -100,7 +100,7 @@ typedef union {
 
 typedef union {
     qword_t value;
-    struct {
+    struct __attribute__((__packed__)) {
         qword_t vcnt : 8;
         qword_t fix: 1;
         qword_t : 1;
@@ -111,7 +111,7 @@ typedef union {
 
 typedef union {
     qword_t value;
-    struct {
+    struct __attribute__((__packed__)) {
         qword_t type : 8;
         qword_t : 4;
         qword_t page_idx : 24;
@@ -120,7 +120,7 @@ typedef union {
 
 typedef union {
     qword_t value;
-    struct {
+    struct __attribute__((__packed__)) {
         qword_t : 11;
         qword_t valid : 1;
         qword_t page_idx : 24;

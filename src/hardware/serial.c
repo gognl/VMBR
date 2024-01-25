@@ -1,5 +1,6 @@
 #include <hardware/serial.h>
 #include <boot/addresses.h>
+#include <lib/util.h>
 
 void read_first_sector(byte_t drive){
     dap_t *dap_ptr = (dap_t*)DAP_ADDRESS;
@@ -14,15 +15,20 @@ void read_first_sector(byte_t drive){
 }
 
 void load_guest(){
-
     mbr_t *mbr_ptr = (mbr_t*)MBR_ADDRESS;
+
+    memcpy(REAL_START+low_functions_end-low_functions_start, CallReal, call_real_end-CallReal);
+    void (*CallRealCopy)(void(*)(void)) = (void (*)(void(*)(void)))(REAL_START+low_functions_end-low_functions_start);
 
     for (byte_t drive_index = 0x80; drive_index < 0xff; drive_index++){
         read_first_sector(drive_index);
         if (mbr_ptr->signature == BIOS_SIGNATURE){
-            LOG_DEBUG("BOOTABLE DRIVE %x\n", (qword_t)drive_index);
+            *(byte_t*)DRIVE_IDX_ADDRESS = drive_index;
+            memcpy(0x7c00, (byte_t*)mbr_ptr, sizeof(mbr_t));
             break;
         }
     }
+    
+    CallRealCopy(JumpToGuest);
 }
 

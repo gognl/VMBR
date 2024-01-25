@@ -150,15 +150,32 @@ static void vputs(char_t *s, va_list args){
                     break;
                 }
                 case 'm': {
-                    byte_t len = s[i+2]-'0';
+                    uint32_t j;
+                    for(j = i+2; s[j] != '%'; j++);    // len = s[i+2:j]
+                    uint32_t len = 0, d = 1;
+                    for(uint32_t k = j-1; k>=i+2; k--, d*=10){
+                        len += d*(s[k]-'0');
+                    }
                     
-                    byte_t *str = va_arg(args, byte_t*);
-                    for(byte_t j = 0; j<len; j++){
-                        putch(*str);
-                        str++;
+                    byte_t *buffer = va_arg(args, byte_t*);
+                    for (uint32_t c = 0; c<len; c++){
+                        byte_t num = buffer[c];
+                        byte_t digits = 2;
+                        byte_t delimeter = pow(16, digits-1);
+
+                        while(delimeter){
+                            if ((num/delimeter)%16 > 9){
+                                putch((num/delimeter)%16 + 'a' - 10);
+                            }
+                            else {
+                                putch((num/delimeter)%16 + '0');
+                            }
+                            delimeter /= 16;
+                        }
+                        // putch('.');
                     }
 
-                    i++;
+                    i += j-i-1;
                     break;
                 }
             }

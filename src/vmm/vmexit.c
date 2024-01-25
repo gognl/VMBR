@@ -123,6 +123,8 @@ void vmexit_handler(){
         default:     
             LOG_DEBUG("Unknown VMEXIT (%x, %x)\n", (BASIC_EXIT_REASON)__vmread(RODATA_EXIT_REASON), __vmread(RODATA_VM_INSTRUCTION_ERROR));
             LOG_DEBUG("Qual: %x\n\tInterruption info: %x (%x)\n\tIDT info: %x (%x)\n", state.exit_qual.value, (qword_t)state.interruption_info.value, (qword_t)state.interruption_errorcode, (qword_t)state.idt_info.value, (qword_t)state.idt_errorcode);
+            LOG_DEBUG("GUEST_RIP: %x\n\tNEXT_GUEST_RIP: %x\n\tINSTR_LENGTH: %x\n", __vmread(GUEST_RIP), __vmread(GUEST_RIP)+(qword_t)state.instr_length, (qword_t)state.instr_length);
+            while(1);
     }
 
     LOG_DEBUG("GUEST_RIP: %x\n\tNEXT_GUEST_RIP: %x\n\tINSTR_LENGTH: %x\n", __vmread(GUEST_RIP), __vmread(GUEST_RIP)+(qword_t)state.instr_length, (qword_t)state.instr_length);

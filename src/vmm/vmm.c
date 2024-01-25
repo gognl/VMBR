@@ -25,14 +25,17 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
     vmcs_ptr->shadow_vmcs_indicator = FALSE;
 }
 
+extern void JumpToGuest();
 void vmentry_handler(){
     LOG_INFO("Entered the VM Entry handler\n");
 
-    load_guest();
+    CallReal(JumpToGuest);
+    // load_guest();
 
     LOG_INFO("Exited the VM Entry handler\n");
     for(;;);
 }
+
 
 void prepare_vmm(){
 

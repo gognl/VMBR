@@ -1,7 +1,7 @@
 #include <lib/types.h>
 #include <lib/instr.h>
 
-byte_t *memcpy(byte_t *dest, const byte_t *src, uint32_t count){
+byte_t *memcpy(byte_t *dest, const byte_t *src, uint64_t count){
     for(int i = 0; i<count; i++){
         dest[i] = src[i];
     }

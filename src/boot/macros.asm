@@ -2,7 +2,7 @@
 %define __MACROS
 
 ; -------------- Constant Addresses -------------------------------------------
-%define REAL_START 0x4000   
+%define REAL_START 0x4000
 %define MMAP_TABLE 0x5000
 ; -----------------------------------------------------------------------------
 

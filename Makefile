@@ -41,7 +41,7 @@ gdb: build
 	qemu-system-x86_64 -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -s -S --enable-kvm -serial stdio -smp 1 -cpu host & gdb
 
 gef: build
-	qemu-system-x86_64 -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -s -S --enable-kvm -serial stdio -smp 1 -cpu host & gef
+	qemu-system-x86_64 -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -s -S -serial stdio --enable-kvm -cpu host -m 1024,maxmem=8G & gef
 
 win: win10.vhd
 	qemu-system-x86_64 -drive file=win10.vhd,format=raw --enable-kvm -smp 1 -cpu host -m 1024,maxmem=8G -vga std

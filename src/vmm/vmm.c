@@ -29,8 +29,8 @@ extern void JumpToGuest();
 void vmentry_handler(){
     LOG_INFO("Entered the VM Entry handler\n");
 
-    CallReal(JumpToGuest);
-    // load_guest();
+    // CallReal(JumpToGuest);
+    load_guest();
 
     LOG_INFO("Exited the VM Entry handler\n");
     for(;;);
@@ -38,10 +38,12 @@ void vmentry_handler(){
 
 
 void prepare_vmm(){
-
+    
     byte_t *vmxon_region_ptr = allocate_memory(0x1000);   // 4kb aligned. size should actually be read from IA32_VMX_BASIC[32:44], but it's 0x1000 max.
     prepare_vmxon(vmxon_region_ptr);
     __vmxon(vmxon_region_ptr);
+
+    
 
     vmcs_t* vmcs_ptr = (vmcs_t*)allocate_memory(0x1000);   // 4kb aligned. size should actually be read from IA32_VMX_BASIC[32:44], but it's 0x1000 max.
     prepare_vmcs(vmcs_ptr);

@@ -9,11 +9,27 @@ section .text
 
 bits 16
 JumpToGuest:
+    ; vmcall
+    ; println "here"
+    ; in al, 0x70
 
-    mov ax, 0xbb00
-    int 0x1a
-    println "Success!"
-    hlt
+    ; mov al, 0xb5
+    ; mov ebx, 0xf7d2a
+    ; mov ecx, 0x1234
+    ; out 0xb2, al
+    ; nop
+    ; hlt
+
+    ; mov ax, 0xbb00
+    ; int 0x1a
+    ; push 0xf000
+    ; push 0xd009
+    ; push 0xcb00
+    ; push 0x0018
+    ; retf
+
+    ; println "Success!"
+    ; hlt
 
     ; mov ebx, 0xffe6e
     ; mov byte [ebx], 0xcb ; retf
@@ -25,9 +41,10 @@ JumpToGuest:
     ; .here:
     ; println "Passed!"
     ; hlt
-    ; mov dl, byte [DRIVE_IDX_ADDRESS]
-    ; UpdateSelectorsAX 0
-    ; jmp 0:0x7c00
+    ; println "here"
+    mov dl, byte [DRIVE_IDX_ADDRESS]
+    UpdateSelectorsAX 0
+    jmp 0:0x7c00
 
 bits 16
 ReadDisk:

@@ -95,7 +95,9 @@ void initialize_vmcs(){
     __vmwrite(GUEST_IA32_SYSENTER_CS, 8);
     __vmwrite(GUEST_VMCS_LINK_PTR, -1ull);
     __vmwrite(CONTROL_MSR_BITMAPS, allocate_memory(0x4000));
-    __vmwrite(CONTROL_IO_BITMAP_A, allocate_memory(0x1000));
+    byte_t *bitmap_a = allocate_memory(0x1000);
+    // bitmap_a[0x16] |= 0b100;
+    __vmwrite(CONTROL_IO_BITMAP_A, (qword_t)bitmap_a);
     __vmwrite(CONTROL_IO_BITMAP_B, allocate_memory(0x1000));
     __vmwrite(GUEST_IA32_EFER, __rdmsr(0xC0000080ull));
     // __vmwrite(CONTROL_CR0_GUESTHOST_MASK, 0);
@@ -119,12 +121,15 @@ void initialize_vmcs(){
     proc_based_ctls.use_io_bitmaps = TRUE;
     proc_based_ctls2.enable_ept = TRUE;
     proc_based_ctls2.unrestricted_guest = TRUE;
-    // proc_based_ctls2.enable_rdtscp = TRUE;
+    proc_based_ctls2.enable_rdtscp = TRUE;
+    proc_based_ctls2.enable_invpcid = TRUE;
     vmexit_ctls.host_address_space_size = TRUE;
     vmexit_ctls.save_ia32_efer = TRUE;
     vmexit_ctls.load_ia32_efer = TRUE;
     vmentry_ctls.ia32_mode_guest = TRUE;
     vmentry_ctls.load_ia32_efer = TRUE;
+    // proc_based_ctls.hlt_exiting = TRUE;
+
 
     if (__rdmsr(IA32_VMX_BASIC) & (1ull<<55)){
         __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, __rdmsr(IA32_VMX_TRUE_PINBASED_CTLS) | pin_based_ctls.value);

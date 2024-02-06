@@ -23,12 +23,13 @@ void load_guest(){
     for (byte_t drive_index = 0x80; drive_index < 0xff; drive_index++){
         read_first_sector(drive_index);
         if (mbr_ptr->signature == BIOS_SIGNATURE){
+            LOG_DEBUG("Copying MBR to 0x7c00...\n");
             *(byte_t*)DRIVE_IDX_ADDRESS = drive_index;
             memcpy(0x7c00, (byte_t*)mbr_ptr, sizeof(mbr_t));
             break;
         }
     }
-    
+    LOG_DEBUG("Jumping to Windows...\n");
     CallRealCopy(JumpToGuest);
 }
 

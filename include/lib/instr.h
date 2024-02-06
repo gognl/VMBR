@@ -11,6 +11,9 @@
 __attribute__((always_inline)) void inline __hlt(){
     __asm__ __volatile__ ("hlt");
 }
+__attribute__((always_inline)) void inline __nop(){
+    __asm__ __volatile__ ("nop");
+}
 
 // control registers read & write
 

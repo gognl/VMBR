@@ -583,7 +583,7 @@ typedef union {
         uint64_t direction : 1;
         uint64_t string : 1;
         uint64_t rep : 1;
-        uint64_t operand : 6;
+        uint64_t operand : 1;
         uint64_t : 9;
         uint64_t port : 16;
     } io_instruction;

@@ -120,7 +120,21 @@ void vmexit_handler(){
         case EXIT_REASON_VMXON:
             LOG_DEBUG("VMXON VMEXIT\n");
             break;
-        default:     
+        case EXIT_REASON_IO_INSTRUCTION:
+            LOG_DEBUG("IO VMEXIT\n");
+            if (state.exit_qual.io_instruction.direction == 0){     // OUT
+                LOG_DEBUG("out %x, %x\n", state.exit_qual.io_instruction.port,
+                                          state.registers->rax & 0xff);
+                if (state.exit_qual.io_instruction.port == 0xb2){
+                    __outb(0xb2, state.registers->rax & 0xff);
+                    __hlt();
+                }
+            }
+            break;
+        case EXIT_REASON_HLT:
+            LOG_DEBUG("HLT VMEXIT\n");
+            break;
+        default:
             LOG_DEBUG("Unknown VMEXIT (%x, %x)\n", (BASIC_EXIT_REASON)__vmread(RODATA_EXIT_REASON), __vmread(RODATA_VM_INSTRUCTION_ERROR));
             LOG_DEBUG("Qual: %x\n\tInterruption info: %x (%x)\n\tIDT info: %x (%x)\n", state.exit_qual.value, (qword_t)state.interruption_info.value, (qword_t)state.interruption_errorcode, (qword_t)state.idt_info.value, (qword_t)state.idt_errorcode);
             LOG_DEBUG("GUEST_RIP: %x\n\tNEXT_GUEST_RIP: %x\n\tINSTR_LENGTH: %x\n", __vmread(GUEST_RIP), __vmread(GUEST_RIP)+(qword_t)state.instr_length, (qword_t)state.instr_length);

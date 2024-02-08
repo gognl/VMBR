@@ -4,11 +4,11 @@
 #include <lib/instr.h>
 #include <vmm/vmm.h>
 
-static void putch(char_t c){
+static void __attribute__((section(".vmm"))) putch(char_t c){
     __outb(DBG_PORT, c);
 }
 
-static void puts(char_t *s, ...){
+static void __attribute__((section(".vmm"))) puts(char_t *s, ...){
 
     va_list args;
     va_start(args, s);
@@ -91,7 +91,7 @@ static void puts(char_t *s, ...){
     va_end(args);
 }
 
-static void vputs(char_t *s, va_list args){
+static void __attribute__((section(".vmm"))) vputs(char_t *s, va_list args){
     int len = strlen(s);
     for(int i = 0; i<len; i++){
         if(s[i] == '%'){
@@ -186,20 +186,20 @@ static void vputs(char_t *s, va_list args){
     }
 }
 
-void LOG_DEBUG(char_t *s, ...){
+void __attribute__((section(".vmm"))) LOG_DEBUG(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 0
-        AcquireLock(&shared_cores_data.puts_lock);
+        // AcquireLock(&shared_cores_data.puts_lock);
         puts("\033[35m[DEBUG]\t");
         va_list args;
         va_start(args, s);
         vputs(s, args);
         va_end(args);
         puts("\x1b[0m");
-        ReleaseLock(&shared_cores_data.puts_lock);
+        // ReleaseLock(&shared_cores_data.puts_lock);
     #endif 
 }
 
-void LOG_INFO(char_t *s, ...){
+void __attribute__((section(".vmm"))) LOG_INFO(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 1
         AcquireLock(&shared_cores_data.puts_lock);
         puts("\e[36m[INFO]\t");
@@ -212,7 +212,7 @@ void LOG_INFO(char_t *s, ...){
     #endif
 }
 
-void LOG_ERROR(char_t *s, ...){
+void __attribute__((section(".vmm"))) LOG_ERROR(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 2
         AcquireLock(&shared_cores_data.puts_lock);
         puts("\e[31m[ERROR]\t");

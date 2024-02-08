@@ -5,6 +5,7 @@
 
 extern void ReadDisk();
 extern void JumpToGuest();
+extern void LoadGuestVmcall();
 extern void CallReal(void (*)(void));
 extern void low_functions_start();
 extern void low_functions_end();

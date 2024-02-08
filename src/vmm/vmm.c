@@ -7,6 +7,8 @@
 #include <hardware/apic.h>
 #include <boot/mmap.h>
 #include <vmm/hooks.h>
+#include <lib/util.h>
+#include <vmm/paging.h>
 
 shared_cores_data_t shared_cores_data = {0};
 
@@ -25,14 +27,33 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
     vmcs_ptr->shadow_vmcs_indicator = FALSE;
 }
 
-extern void JumpToGuest();
-void vmentry_handler(){
-    LOG_INFO("Entered the VM Entry handler\n");
+void protect_vmm_memory(){
 
-    // CallReal(JumpToGuest);
+    extern byte_t vmm_start[];
+    extern byte_t vmm_end[];
+
+    qword_t aligned_bottom = ALIGN_DOWN((qword_t)vmm_start, PAGE_SIZE);
+    qword_t aligned_top = ALIGN_UP((qword_t)vmm_end, PAGE_SIZE);
+
+    ept_pte_t *pte;
+    for (uint64_t current_page = aligned_bottom; current_page < aligned_top; current_page += PAGE_SIZE){
+        pte = get_ept_pte_from_guest_address(current_page);
+        qword_t new_page = allocate_memory(PAGE_SIZE);
+        // LOG_DEBUG("Mapped %x to %x\n", current_page, new_page);
+        modify_pte_page(pte, new_page);
+
+        invept_descriptor_t descriptor;
+        descriptor.eptp = (eptp_t)__vmread(CONTROL_EPTP);
+        descriptor.zeros = 0;
+        __invept(&descriptor, 1);
+    }
+
+}
+
+void vmentry_handler(){
+
     load_guest();
 
-    LOG_INFO("Exited the VM Entry handler\n");
     for(;;);
 }
 
@@ -54,4 +75,6 @@ void prepare_vmm(){
     LOG_INFO("Done initializing VMCS fields\n");
 
     setup_int15h_hook();
+    // protect_vmm_memory();
+    // LOG_INFO("%x\n", ((ept_pte_t*)get_ept_pte_from_guest_address(0xb000))->page & ~0xfff);
 }

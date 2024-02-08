@@ -4,7 +4,7 @@
 %include "src/boot/macros.asm"
 
 global _gdt
-
+section .vmm
 _gdt:
 .null:
     dq 0

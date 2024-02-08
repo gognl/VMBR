@@ -6,7 +6,9 @@
 #include <boot/mmap.h>
 #include <hardware/apic.h>
 #include <boot/addresses.h>
+#include <lib/util.h>
 
+extern void VmExitHandlerEnd();
 void initialize_vmcs(){
 
     __vmwrite(HOST_CR0, __read_cr0());
@@ -95,10 +97,6 @@ void initialize_vmcs(){
     __vmwrite(GUEST_IA32_SYSENTER_CS, 8);
     __vmwrite(GUEST_VMCS_LINK_PTR, -1ull);
     __vmwrite(CONTROL_MSR_BITMAPS, allocate_memory(0x4000));
-    byte_t *bitmap_a = allocate_memory(0x1000);
-    // bitmap_a[0x16] |= 0b100;
-    __vmwrite(CONTROL_IO_BITMAP_A, (qword_t)bitmap_a);
-    __vmwrite(CONTROL_IO_BITMAP_B, allocate_memory(0x1000));
     __vmwrite(GUEST_IA32_EFER, __rdmsr(0xC0000080ull));
     // __vmwrite(CONTROL_CR0_GUESTHOST_MASK, 0);
     // __vmwrite(CONTROL_CR4_GUESTHOST_MASK, 0);
@@ -118,7 +116,6 @@ void initialize_vmcs(){
 
     proc_based_ctls.activate_secondary_controls = TRUE;
     proc_based_ctls.use_msr_bitmaps = TRUE;
-    proc_based_ctls.use_io_bitmaps = TRUE;
     proc_based_ctls2.enable_ept = TRUE;
     proc_based_ctls2.unrestricted_guest = TRUE;
     proc_based_ctls2.enable_rdtscp = TRUE;

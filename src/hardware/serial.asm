@@ -4,44 +4,24 @@
 
 global ReadDisk
 global JumpToGuest
+global LoadGuestVmcall
+global __invept
 
 section .text
 
 bits 16
+LoadGuestVmcall:
+    mov ax, 0x1234
+    mov bx, 0xabcd
+    vmcall
+
+bits 64
+__invept:
+    invept rsi, oword [rdi]
+    ret
+
+bits 16
 JumpToGuest:
-    ; vmcall
-    ; println "here"
-    ; in al, 0x70
-
-    ; mov al, 0xb5
-    ; mov ebx, 0xf7d2a
-    ; mov ecx, 0x1234
-    ; out 0xb2, al
-    ; nop
-    ; hlt
-
-    ; mov ax, 0xbb00
-    ; int 0x1a
-    ; push 0xf000
-    ; push 0xd009
-    ; push 0xcb00
-    ; push 0x0018
-    ; retf
-
-    ; println "Success!"
-    ; hlt
-
-    ; mov ebx, 0xffe6e
-    ; mov byte [ebx], 0xcb ; retf
-    ; push word 0x0000
-    ; push word REAL_ADDR(JumpToGuest.here)
-    ; push word 0xf000
-    ; push word 0xfe6e
-    ; retf
-    ; .here:
-    ; println "Passed!"
-    ; hlt
-    ; println "here"
     mov dl, byte [DRIVE_IDX_ADDRESS]
     UpdateSelectorsAX 0
     jmp 0:0x7c00
@@ -59,4 +39,3 @@ ReadDisk:
         println "Error while reading from disk"
         mov byte [DRIVE_IDX_ADDRESS], ah
     ret
-

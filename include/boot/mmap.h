@@ -8,8 +8,8 @@ extern void init_real(void);
 extern byte_t *allocate_memory(uint64_t length);
 
 extern void CallReal(void (*)());
-extern byte_t *low_functions_start(void);
-extern byte_t *low_functions_end(void);
+extern void low_functions_start(void);
+extern void low_functions_end(void);
 extern void LoadMemoryMap();
 extern void AcquireLock(dword_t* lock);
 extern void ReleaseLock(dword_t* lock);

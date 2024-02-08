@@ -14,6 +14,11 @@ extern qword_t initialize_ept();
 #define PTE_W (1<<1)            // Writeable bit
 #define PTE_PS (1<<7)           // Huge Page bit (2MB)
 
+#define ADDRMASK_EPT_PML4_INDEX(x) ((x & 0xFF8000000000ULL) >> 39)
+#define ADDRMASK_EPT_PDPT_INDEX(x) ((x & 0x7FC0000000ULL) >> 30)
+#define ADDRMASK_EPT_PD_INDEX(x) ((x & 0x3FE00000ULL) >> 21)
+#define ADDRMASK_EPT_PT_INDEX(x) ((x & 0x1FF000ULL) >> 12)
+
 typedef union {
     uint64_t ept_pml4;
     uint64_t value;

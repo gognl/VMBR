@@ -1,8 +1,8 @@
 %include "src/boot/macros.asm"
 
-%define p4_table 0x40000
-%define p3_table 0x41000
-%define p2_table 0x42000
+%define p4_table 0x60000
+%define p3_table 0x61000
+%define p2_table 0x62000
 
 section .text
 bits 32

@@ -4,6 +4,8 @@
 #include <lib/types.h>
 #include <vmm/vmcs.h>
 #include <lib/debug.h>
+#include <vmm/paging.h>
+#include <vmm/vmm.h>
 
 #define CARRY_FLAG (1<<0)
 #define ZERO_FLAG (1<<6)

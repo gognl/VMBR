@@ -118,3 +118,20 @@ qword_t initialize_ept(){
 
     return (qword_t)ept_pml4;
 }
+
+ept_pte_t *get_ept_pte_from_guest_address(qword_t address){
+    ept_pml4e_t* pml4 = ((eptp_t)__vmread(CONTROL_EPTP)).ept_pml4 & ~(0xfff);
+
+    ept_pdpte_t* pdpt = pml4[ADDRMASK_EPT_PML4_INDEX(address)].next_pd & ~(0xfff);
+    ept_pde_t* pd = pdpt[ADDRMASK_EPT_PDPT_INDEX(address)].next_pd & ~(0xfff);
+    ept_pde_t* pt = pd[ADDRMASK_EPT_PD_INDEX(address)].next_pd & ~(0xfff);
+
+    return &pt[ADDRMASK_EPT_PT_INDEX(address)];
+
+}
+
+void modify_pte_page(ept_pte_t *pte, qword_t page){
+    pte->page &= 0xff00000000000fff;
+    pte->page |= page;
+}
+

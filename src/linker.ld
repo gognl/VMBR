@@ -12,6 +12,11 @@ SECTIONS {
     .text :
     {
         *(.text)
+        . = ALIGN(4096);
+        vmm_start = .;
+        *(.vmm)
+        vmm_end = .;
+        . = ALIGN(4096);
     }
 
     .rodata :

@@ -5,9 +5,10 @@
 #include <boot/addresses.h>
 
 #define LOWER_DWORD(x) ((x) & 0xffffffffull)
+#define LOWER_WORD(x) ((x) & 0xffffull)
 #define UPPER_DWORD(x) ((x) >> 32)
 
-void initialize_vmexit_data(vmexit_data_t *data){
+void __attribute__((section(".vmm"))) initialize_vmexit_data(vmexit_data_t *data){
 
     data->registers = (guest_registers_t*)__read_fs();
 
@@ -33,7 +34,7 @@ void initialize_vmexit_data(vmexit_data_t *data){
     data->vmx_error = __vmread(RODATA_VM_INSTRUCTION_ERROR);
 }
 
-void vmexit_handler(){
+void __attribute__((section(".vmm"))) vmexit_handler(){
     
     vmexit_data_t state;
     initialize_vmexit_data(&state);
@@ -98,6 +99,11 @@ void vmexit_handler(){
                     __vmwrite(GUEST_CS_BASE, shared_cores_data.int15h_segment<<4);
                 }
             }
+            else if (LOWER_WORD(state.registers->rax) == 0x1234 && LOWER_WORD(state.registers->rbx) == 0xabcd){
+                protect_vmm_memory();
+                LOG_DEBUG("Jumping to guest...\n");
+                __vmwrite(GUEST_RIP, JumpToGuest-low_functions_start+REAL_START);
+            }
             return;
         case EXIT_REASON_VMCLEAR:
             LOG_DEBUG("VMCLEAR VMEXIT\n");
@@ -122,14 +128,6 @@ void vmexit_handler(){
             break;
         case EXIT_REASON_IO_INSTRUCTION:
             LOG_DEBUG("IO VMEXIT\n");
-            if (state.exit_qual.io_instruction.direction == 0){     // OUT
-                LOG_DEBUG("out %x, %x\n", state.exit_qual.io_instruction.port,
-                                          state.registers->rax & 0xff);
-                if (state.exit_qual.io_instruction.port == 0xb2){
-                    __outb(0xb2, state.registers->rax & 0xff);
-                    __hlt();
-                }
-            }
             break;
         case EXIT_REASON_HLT:
             LOG_DEBUG("HLT VMEXIT\n");

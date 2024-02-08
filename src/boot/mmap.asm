@@ -8,7 +8,6 @@ section .text
 
 bits 16
 LoadMemoryMap:
-
     ; mov ax, 0xbb00
     ; int 0x1a
 

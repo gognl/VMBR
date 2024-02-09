@@ -116,6 +116,7 @@ void initialize_vmcs(){
 
     proc_based_ctls.activate_secondary_controls = TRUE;
     proc_based_ctls.use_msr_bitmaps = TRUE;
+    proc_based_ctls2.enable_xsaves_xrstors = TRUE;
     proc_based_ctls2.enable_ept = TRUE;
     proc_based_ctls2.unrestricted_guest = TRUE;
     proc_based_ctls2.enable_rdtscp = TRUE;
@@ -147,5 +148,7 @@ void initialize_vmcs(){
 
     __vmwrite(CONTROL_SECONDARY_EXECUTION_CONTROLS, proc_based_ctls2.value);
     __vmwrite(CONTROL_EPTP, eptp.value);
-    __vmwrite(CONTROL_EXCEPTION_BITMAP, 0xffffffff);
+
+    __vmwrite(CONTROL_XSS_EXITING_BITMAP, 0);
+
 }

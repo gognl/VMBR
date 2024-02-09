@@ -71,7 +71,7 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
                 // state.registers->rcx &= ~(1<<31);   // hypervisor present bit
                 state.registers->rcx &= ~(1<<5);    // no VMX support (todo nested virtualization)
             }
-            LOG_DEBUG("rcx is %x\n", (qword_t)state.registers->rcx);
+            // LOG_DEBUG("rcx is %x\n", (qword_t)state.registers->rcx);
             break;
         case EXIT_REASON_GETSEC:
             LOG_DEBUG("GETSEC VMEXIT\n");
@@ -81,6 +81,7 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             break;
         case EXIT_REASON_XSETBV:
             LOG_DEBUG("XSETBV VMEXIT\n");
+            __xsetbv((dword_t)state.registers->rax, (dword_t)state.registers->rcx, (dword_t)state.registers->rdx);
             break;
         case EXIT_REASON_INVEPT:
             LOG_DEBUG("INVEPT VMEXIT\n");
@@ -139,6 +140,6 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             while(1);
     }
 
-    LOG_DEBUG("GUEST_RIP: %x\n\tNEXT_GUEST_RIP: %x\n\tINSTR_LENGTH: %x\n", __vmread(GUEST_RIP), __vmread(GUEST_RIP)+(qword_t)state.instr_length, (qword_t)state.instr_length);
+    // LOG_DEBUG("GUEST_RIP: %x\n\tNEXT_GUEST_RIP: %x\n\tINSTR_LENGTH: %x\n", __vmread(GUEST_RIP), __vmread(GUEST_RIP)+(qword_t)state.instr_length, (qword_t)state.instr_length);
     __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
 }

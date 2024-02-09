@@ -20,6 +20,7 @@ extern void __invept(invept_descriptor_t *descriptor, uint64_t type);
 
 #define CPUID_VMXON (1<<5)
 #define CR4_VMXE (1 << 13)
+#define CR4_OSXSAVE (1 << 18)
 #define CR0_NE (1 << 5)
 
 typedef struct {

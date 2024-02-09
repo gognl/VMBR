@@ -115,6 +115,10 @@ __attribute__((always_inline)) void inline __read_idtr(idtr_t* idtr){
     __asm__ __volatile__("sidt %0" : "=m"(*idtr));
 }
 
+__attribute__((always_inline)) void inline __xsetbv(dword_t eax, dword_t ecx, dword_t edx){
+    __asm__ __volatile__("xsetbv" :: "a"(eax), "c"(ecx), "d"(edx));
+}
+
 // vmx instructions
 
 __attribute__((always_inline)) void inline __vmwrite(VMCS_ENCODING field, qword_t value){

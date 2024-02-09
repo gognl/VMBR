@@ -135,3 +135,8 @@ void modify_pte_page(ept_pte_t *pte, qword_t page){
     pte->page |= page;
 }
 
+void modify_pte_access(ept_pte_t *pte, uint8_t read, uint8_t write, uint8_t execute){
+    pte->read_access = read;
+    pte->write_access = write;
+    pte->execute_access = execute;
+}

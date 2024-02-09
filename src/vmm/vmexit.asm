@@ -1,6 +1,9 @@
 
 global VmExitHandler
+global VmExitHandlerEnd
 extern vmexit_handler
+
+section .vmm
 
 VmExitHandler:
     mov qword [fs:0], rax
@@ -38,3 +41,4 @@ VmExitHandler:
     mov r15, qword [fs:112]
 
     vmresume
+VmExitHandlerEnd:

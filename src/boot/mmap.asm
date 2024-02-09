@@ -8,6 +8,8 @@ section .text
 
 bits 16
 LoadMemoryMap:
+    ; mov ax, 0xbb00
+    ; int 0x1a
 
     mov edi, MMAP_TABLE+4        ; The first dword is for the length of the table
     xor ebx, ebx

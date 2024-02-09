@@ -5,9 +5,10 @@
 #include <boot/addresses.h>
 
 #define LOWER_DWORD(x) ((x) & 0xffffffffull)
+#define LOWER_WORD(x) ((x) & 0xffffull)
 #define UPPER_DWORD(x) ((x) >> 32)
 
-void initialize_vmexit_data(vmexit_data_t *data){
+void __attribute__((section(".vmm"))) initialize_vmexit_data(vmexit_data_t *data){
 
     data->registers = (guest_registers_t*)__read_fs();
 
@@ -33,7 +34,7 @@ void initialize_vmexit_data(vmexit_data_t *data){
     data->vmx_error = __vmread(RODATA_VM_INSTRUCTION_ERROR);
 }
 
-void vmexit_handler(){
+void __attribute__((section(".vmm"))) vmexit_handler(){
     
     vmexit_data_t state;
     initialize_vmexit_data(&state);
@@ -70,7 +71,7 @@ void vmexit_handler(){
                 // state.registers->rcx &= ~(1<<31);   // hypervisor present bit
                 state.registers->rcx &= ~(1<<5);    // no VMX support (todo nested virtualization)
             }
-            LOG_DEBUG("rcx is %x\n", (qword_t)state.registers->rcx);
+            // LOG_DEBUG("rcx is %x\n", (qword_t)state.registers->rcx);
             break;
         case EXIT_REASON_GETSEC:
             LOG_DEBUG("GETSEC VMEXIT\n");
@@ -80,6 +81,7 @@ void vmexit_handler(){
             break;
         case EXIT_REASON_XSETBV:
             LOG_DEBUG("XSETBV VMEXIT\n");
+            __xsetbv((dword_t)state.registers->rax, (dword_t)state.registers->rcx, (dword_t)state.registers->rdx);
             break;
         case EXIT_REASON_INVEPT:
             LOG_DEBUG("INVEPT VMEXIT\n");
@@ -97,6 +99,11 @@ void vmexit_handler(){
                     __vmwrite(GUEST_CS, shared_cores_data.int15h_segment);
                     __vmwrite(GUEST_CS_BASE, shared_cores_data.int15h_segment<<4);
                 }
+            }
+            else if (LOWER_WORD(state.registers->rax) == 0x1234 && LOWER_WORD(state.registers->rbx) == 0xabcd){
+                protect_vmm_memory();
+                LOG_DEBUG("Jumping to guest...\n");
+                __vmwrite(GUEST_RIP, JumpToGuest-low_functions_start+REAL_START);
             }
             return;
         case EXIT_REASON_VMCLEAR:
@@ -120,11 +127,19 @@ void vmexit_handler(){
         case EXIT_REASON_VMXON:
             LOG_DEBUG("VMXON VMEXIT\n");
             break;
-        default:     
+        case EXIT_REASON_IO_INSTRUCTION:
+            LOG_DEBUG("IO VMEXIT\n");
+            break;
+        case EXIT_REASON_HLT:
+            LOG_DEBUG("HLT VMEXIT\n");
+            break;
+        default:
             LOG_DEBUG("Unknown VMEXIT (%x, %x)\n", (BASIC_EXIT_REASON)__vmread(RODATA_EXIT_REASON), __vmread(RODATA_VM_INSTRUCTION_ERROR));
             LOG_DEBUG("Qual: %x\n\tInterruption info: %x (%x)\n\tIDT info: %x (%x)\n", state.exit_qual.value, (qword_t)state.interruption_info.value, (qword_t)state.interruption_errorcode, (qword_t)state.idt_info.value, (qword_t)state.idt_errorcode);
+            LOG_DEBUG("GUEST_RIP: %x\n\tNEXT_GUEST_RIP: %x\n\tINSTR_LENGTH: %x\n", __vmread(GUEST_RIP), __vmread(GUEST_RIP)+(qword_t)state.instr_length, (qword_t)state.instr_length);
+            while(1);
     }
 
-    LOG_DEBUG("GUEST_RIP: %x\n\tNEXT_GUEST_RIP: %x\n\tINSTR_LENGTH: %x\n", __vmread(GUEST_RIP), __vmread(GUEST_RIP)+(qword_t)state.instr_length, (qword_t)state.instr_length);
+    // LOG_DEBUG("GUEST_RIP: %x\n\tNEXT_GUEST_RIP: %x\n\tINSTR_LENGTH: %x\n", __vmread(GUEST_RIP), __vmread(GUEST_RIP)+(qword_t)state.instr_length, (qword_t)state.instr_length);
     __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
 }

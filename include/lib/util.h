@@ -4,6 +4,7 @@
 #include <lib/types.h>
 
 #define ALIGN_UP(num, align) (((num)+(align)-1) & (-(align)))   // this is nice. Only works when align is a multiple of 2, though.
+#define ALIGN_DOWN(num, align) ((num) & (-(align)))
 
 extern byte_t *memcpy(byte_t *dest, const byte_t *src, uint32_t count);
 extern byte_t *memset(byte_t *dest, byte_t val, uint32_t count);

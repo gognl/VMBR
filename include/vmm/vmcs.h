@@ -181,7 +181,7 @@ typedef enum VMCS_ENCODINGS {
         CONTROL_VMREAD = 0x0002026,
         CONTROL_VMWRITE = 0x0002028,
         CONTROL_VIRTUALIZATION_EXCEPTION_INFO = 0x000202a,
-        CONTROL_XSS_EXITING = 0x000202c,
+        CONTROL_XSS_EXITING_BITMAP = 0x000202c,
         CONTROL_ENCLS_EXITING = 0x000202e,
         CONTROL_SUB_PAGE_PERMISSION_TABLE_PTR = 0x0002030,
         CONTROL_TSC_MULTIPLIER = 0x0002032,
@@ -583,7 +583,7 @@ typedef union {
         uint64_t direction : 1;
         uint64_t string : 1;
         uint64_t rep : 1;
-        uint64_t operand : 6;
+        uint64_t operand : 1;
         uint64_t : 9;
         uint64_t port : 16;
     } io_instruction;

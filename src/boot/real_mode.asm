@@ -2,6 +2,7 @@
 
 global low_functions_start
 global low_functions_end
+global call_real_end
 global CallReal
 
 section .text
@@ -14,8 +15,8 @@ CallReal:
     
     ; Passing a register to a macro is not possible
 
-    ; sub rdi, low_functions_start
-    ; add rdi, REAL_START
+    sub rdi, low_functions_start
+    add rdi, REAL_START
     mov rsi, REAL_ADDR(LongToProtected)
     call rsi
     bits 32
@@ -31,12 +32,12 @@ CallReal:
     mov esi, REAL_ADDR(ProtectedToLong)
     call esi
     bits 64
-    
     ret
+call_real_end:
 
 low_functions_start:
-%include "src/boot/mode-transitions.asm"
 %include "src/boot/mmap.asm"
+%include "src/boot/mode-transitions.asm"
 %include "src/hardware/serial.asm"
 %include "src/hardware/apic.asm"
 low_functions_end:

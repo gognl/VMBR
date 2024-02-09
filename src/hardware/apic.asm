@@ -73,6 +73,8 @@ bits 64
 
 InitializeSingleCore_end:
 
+section .vmm
+
 AcquireLock:
     lock bts dword [rdi], 0        ; Attempt to acquire the lock (in case lock is uncontended)
     jc AcquireLock.spin_with_pause
@@ -88,3 +90,4 @@ ReleaseLock:
     mov dword [rdi], 0
     ret
 
+section .text

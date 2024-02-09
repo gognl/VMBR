@@ -7,6 +7,8 @@
 #include <hardware/apic.h>
 #include <boot/mmap.h>
 #include <vmm/hooks.h>
+#include <lib/util.h>
+#include <vmm/paging.h>
 
 shared_cores_data_t shared_cores_data = {0};
 
@@ -16,7 +18,7 @@ void prepare_vmxon(byte_t *vmxon_region_ptr){
     if (!(ecx & CPUID_VMXON))
         LOG_ERROR("No VMX support in cpuid\n");
     __write_cr0((__read_cr0() | __rdmsr(IA32_VMX_CR0_FIXED0) | CR0_NE) & __rdmsr(IA32_VMX_CR0_FIXED1));
-    __write_cr4((__read_cr4() | __rdmsr(IA32_VMX_CR4_FIXED0) | CR4_VMXE) & __rdmsr(IA32_VMX_CR4_FIXED1));
+    __write_cr4((__read_cr4() | __rdmsr(IA32_VMX_CR4_FIXED0) | CR4_VMXE | CR4_OSXSAVE) & __rdmsr(IA32_VMX_CR4_FIXED1));
     *(dword_t*)vmxon_region_ptr = (dword_t)__rdmsr(IA32_VMX_BASIC);  // revision identifier
 }
 
@@ -25,17 +27,54 @@ void prepare_vmcs(vmcs_t *vmcs_ptr){
     vmcs_ptr->shadow_vmcs_indicator = FALSE;
 }
 
+void protect_vmm_memory(){
+
+    extern byte_t vmm_start[];
+    extern byte_t vmm_end[];
+
+    qword_t aligned_bottom = ALIGN_DOWN((qword_t)vmm_start, PAGE_SIZE);
+    qword_t aligned_top = ALIGN_UP((qword_t)vmm_end, PAGE_SIZE);
+
+    ept_pte_t *pte;
+    
+    for (uint64_t current_page = aligned_bottom; current_page < aligned_top; current_page += PAGE_SIZE){
+        pte = get_ept_pte_from_guest_address(current_page);
+        qword_t new_page = allocate_memory(PAGE_SIZE);
+        // LOG_DEBUG("Mapped %x to %x\n", current_page, new_page);
+        modify_pte_page(pte, new_page);
+    }
+
+    // Also keep 0x3000 page for extra uses
+    pte = get_ept_pte_from_guest_address(0x3000);
+    qword_t new_page = allocate_memory(PAGE_SIZE);
+    modify_pte_page(pte, new_page);
+
+    // And protect the allocated pages
+    uint64_t bottom_allocation = get_bottom_allocation(), top_allocation = get_top_allocation();
+    for (uint64_t current_page = bottom_allocation; current_page<top_allocation; current_page += PAGE_SIZE){
+        pte = get_ept_pte_from_guest_address(current_page);
+        // LOG_DEBUG("Protected %x\n", current_page);
+        modify_pte_access(pte, 0, 0, 0);
+        
+    }
+    
+    invept_descriptor_t descriptor;
+    descriptor.eptp = (eptp_t)__vmread(CONTROL_EPTP);
+    descriptor.zeros = 0;
+    __invept(&descriptor, 1);
+
+}
+
 void vmentry_handler(){
-    LOG_INFO("Entered the VM Entry handler\n");
 
     load_guest();
 
-    LOG_INFO("Exited the VM Entry handler\n");
     for(;;);
 }
 
-void prepare_vmm(){
 
+void prepare_vmm(){
+    
     byte_t *vmxon_region_ptr = allocate_memory(0x1000);   // 4kb aligned. size should actually be read from IA32_VMX_BASIC[32:44], but it's 0x1000 max.
     prepare_vmxon(vmxon_region_ptr);
     __vmxon(vmxon_region_ptr);
@@ -49,4 +88,5 @@ void prepare_vmm(){
     LOG_INFO("Done initializing VMCS fields\n");
 
     setup_int15h_hook();
+
 }

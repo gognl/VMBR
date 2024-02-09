@@ -2,11 +2,25 @@
 #define __VMM_H
 #include <lib/types.h>
 #include <vmm/vmcs.h>
+#include <vmm/paging.h>
+
+typedef struct __attribute__((__pakced__)) {
+    eptp_t eptp;
+    uint64_t zeros;
+} invept_descriptor_t;
 
 extern void vmentry_handler();
 
+extern void JumpToGuest();
+extern void CallReal(void (*)(void));
+extern void low_functions_start();
+extern void low_functions_end();
+extern void call_real_end();
+extern void __invept(invept_descriptor_t *descriptor, uint64_t type);
+
 #define CPUID_VMXON (1<<5)
 #define CR4_VMXE (1 << 13)
+#define CR4_OSXSAVE (1 << 18)
 #define CR0_NE (1 << 5)
 
 typedef struct {

@@ -6,7 +6,9 @@
 #include <boot/mmap.h>
 #include <hardware/apic.h>
 #include <boot/addresses.h>
+#include <lib/util.h>
 
+extern void VmExitHandlerEnd();
 void initialize_vmcs(){
 
     __vmwrite(HOST_CR0, __read_cr0());
@@ -26,7 +28,9 @@ void initialize_vmcs(){
     __vmwrite(HOST_TR_BASE, CANONICAL_ADDRESS);
     __vmwrite(HOST_IA32_SYSENTER_EIP, CANONICAL_ADDRESS);
     __vmwrite(HOST_IA32_SYSENTER_ESP, CANONICAL_ADDRESS);
+    __vmwrite(HOST_IA32_SYSENTER_CS, 0xff);
     __vmwrite(HOST_IA32_EFER, __rdmsr(0xC0000080));
+
     
     __vmwrite(GUEST_CR0, __read_cr0());
     __vmwrite(GUEST_CR3, __read_cr3());
@@ -38,7 +42,7 @@ void initialize_vmcs(){
     // CS
     __vmwrite(GUEST_CS, __read_cs() & 0x00f8);
     __vmwrite(GUEST_CS_BASE, 0ull);
-    __vmwrite(GUEST_CS_LIMIT, 0xfffffffff);
+    __vmwrite(GUEST_CS_LIMIT, 0xffffffff);
     __vmwrite(GUEST_CS_ACCESS_RIGHTS,  GDT_AB_A | GDT_AB_RW | GDT_AB_E | GDT_AB_S | GDT_AB_P | GDT_AB_L | GDT_AB_G);
     // ES
     __vmwrite(GUEST_ES, __read_es() & 0x00f8);
@@ -66,7 +70,7 @@ void initialize_vmcs(){
     __vmwrite(GUEST_GS_LIMIT, 0xffffffff);
     __vmwrite(GUEST_GS_ACCESS_RIGHTS, GDT_AB_A | GDT_AB_RW | GDT_AB_S | GDT_AB_P | GDT_AB_DB | GDT_AB_G);
     // TR
-    __vmwrite(GUEST_TR, __read_ds());
+    __vmwrite(GUEST_TR, __read_ds() & 0x00f8);
     __vmwrite(GUEST_TR_BASE, 0ull);
     __vmwrite(GUEST_TR_LIMIT, 0xffffffff);
     __vmwrite(GUEST_TR_ACCESS_RIGHTS, GDT_AB_A | GDT_AB_RW | GDT_AB_E | GDT_AB_P | GDT_AB_DB | GDT_AB_G);
@@ -88,11 +92,20 @@ void initialize_vmcs(){
     __vmwrite(GUEST_LDTR_ACCESS_RIGHTS, UNUSABLE_SELECTOR);
     
     __vmwrite(GUEST_ACTIVITY_STATE, 0ull);
-    __vmwrite(GUEST_IA32_SYSENTER_EIP, CANONICAL_ADDRESS);
-    __vmwrite(GUEST_IA32_SYSENTER_ESP, CANONICAL_ADDRESS);
-    __vmwrite(GUEST_VMCS_LINK_PTR, -1ll);
+    __vmwrite(GUEST_IA32_SYSENTER_EIP, 0xffff);
+    __vmwrite(GUEST_IA32_SYSENTER_ESP, 0xffff);
+    __vmwrite(GUEST_IA32_SYSENTER_CS, 8);
+    __vmwrite(GUEST_VMCS_LINK_PTR, -1ull);
     __vmwrite(CONTROL_MSR_BITMAPS, allocate_memory(0x4000));
-    __vmwrite(GUEST_IA32_EFER, __rdmsr(0xC0000080));
+    __vmwrite(GUEST_IA32_EFER, __rdmsr(0xC0000080ull));
+    // __vmwrite(CONTROL_CR0_GUESTHOST_MASK, 0);
+    // __vmwrite(CONTROL_CR4_GUESTHOST_MASK, 0);
+    // __vmwrite(CONTROL_VPID, 1);
+
+    // __vmwrite(GUEST_IA32_DEBUGCTL, __rdmsr(0x1d9u) & 0xffffffff);
+    // __vmwrite(GUEST_IA32_DEBUGCTL+1, __rdmsr(0x1d9u) >> 32);
+    // __vmwrite(GUEST_INTERRUPTIBILITY_STATE, 0);
+
 
     // Intel Manual Appendix A
     pin_based_ctls_t pin_based_ctls = {0};
@@ -103,10 +116,18 @@ void initialize_vmcs(){
 
     proc_based_ctls.activate_secondary_controls = TRUE;
     proc_based_ctls.use_msr_bitmaps = TRUE;
+    proc_based_ctls2.enable_xsaves_xrstors = TRUE;
     proc_based_ctls2.enable_ept = TRUE;
     proc_based_ctls2.unrestricted_guest = TRUE;
+    proc_based_ctls2.enable_rdtscp = TRUE;
+    proc_based_ctls2.enable_invpcid = TRUE;
     vmexit_ctls.host_address_space_size = TRUE;
+    vmexit_ctls.save_ia32_efer = TRUE;
+    vmexit_ctls.load_ia32_efer = TRUE;
     vmentry_ctls.ia32_mode_guest = TRUE;
+    vmentry_ctls.load_ia32_efer = TRUE;
+    // proc_based_ctls.hlt_exiting = TRUE;
+
 
     if (__rdmsr(IA32_VMX_BASIC) & (1ull<<55)){
         __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, __rdmsr(IA32_VMX_TRUE_PINBASED_CTLS) | pin_based_ctls.value);
@@ -127,5 +148,7 @@ void initialize_vmcs(){
 
     __vmwrite(CONTROL_SECONDARY_EXECUTION_CONTROLS, proc_based_ctls2.value);
     __vmwrite(CONTROL_EPTP, eptp.value);
-    __vmwrite(CONTROL_EXCEPTION_BITMAP, 0xffffffff);
+
+    __vmwrite(CONTROL_XSS_EXITING_BITMAP, 0);
+
 }

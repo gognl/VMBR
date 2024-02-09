@@ -3,9 +3,9 @@
 global _start
 global _sys_stack
 
-%define MEM_SIZE 512
+%define MEM_SIZE 8
 
-section .rodata
+section .vmm
 %include "src/boot/gdt.asm"
 
 section .bss

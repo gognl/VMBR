@@ -7,7 +7,7 @@
 
 #define LOWER_WORD(x) ((x) & 0xffffull)
 
-void emulate_iret(vmexit_data_t *state){
+void __attribute__((section(".vmm"))) emulate_iret(vmexit_data_t *state){
 
     // 16bit operand mode. https://www.felixcloutier.com/x86/iret:iretd:iretq
 
@@ -36,7 +36,7 @@ void setup_int15h_hook(){
 }
 
 
-void handle_int15h_hook(vmexit_data_t *state){
+void __attribute__((section(".vmm"))) handle_int15h_hook(vmexit_data_t *state){
     mmap_table_t *mmap = (mmap_table_t*)MMAP_TABLE;
 
     mmap_entry_t* address = (mmap_entry_t*)(__vmread(GUEST_ES_BASE) + LOWER_WORD(state->registers->rdi));

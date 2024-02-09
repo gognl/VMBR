@@ -4,12 +4,17 @@
 #include <lib/types.h>
 #include <vmm/vmcs.h>
 #include <lib/debug.h>
+#include <vmm/paging.h>
+#include <vmm/vmm.h>
 
 #define CARRY_FLAG (1<<0)
 #define ZERO_FLAG (1<<6)
 
 __attribute__((always_inline)) void inline __hlt(){
     __asm__ __volatile__ ("hlt");
+}
+__attribute__((always_inline)) void inline __nop(){
+    __asm__ __volatile__ ("nop");
 }
 
 // control registers read & write
@@ -108,6 +113,10 @@ __attribute__((always_inline)) void inline __read_gdtr(gdtr_t* gdtr){
 }
 __attribute__((always_inline)) void inline __read_idtr(idtr_t* idtr){
     __asm__ __volatile__("sidt %0" : "=m"(*idtr));
+}
+
+__attribute__((always_inline)) void inline __xsetbv(dword_t eax, dword_t ecx, dword_t edx){
+    __asm__ __volatile__("xsetbv" :: "a"(eax), "c"(ecx), "d"(edx));
 }
 
 // vmx instructions

@@ -4,11 +4,11 @@
 #include <lib/instr.h>
 #include <vmm/vmm.h>
 
-static void putch(char_t c){
+static void __attribute__((section(".vmm"))) putch(char_t c){
     __outb(DBG_PORT, c);
 }
 
-static void puts(char_t *s, ...){
+static void __attribute__((section(".vmm"))) puts(char_t *s, ...){
 
     va_list args;
     va_start(args, s);
@@ -91,7 +91,7 @@ static void puts(char_t *s, ...){
     va_end(args);
 }
 
-static void vputs(char_t *s, va_list args){
+static void __attribute__((section(".vmm"))) vputs(char_t *s, va_list args){
     int len = strlen(s);
     for(int i = 0; i<len; i++){
         if(s[i] == '%'){
@@ -150,15 +150,32 @@ static void vputs(char_t *s, va_list args){
                     break;
                 }
                 case 'm': {
-                    byte_t len = s[i+2]-'0';
+                    uint32_t j;
+                    for(j = i+2; s[j] != '%'; j++);    // len = s[i+2:j]
+                    uint32_t len = 0, d = 1;
+                    for(uint32_t k = j-1; k>=i+2; k--, d*=10){
+                        len += d*(s[k]-'0');
+                    }
                     
-                    byte_t *str = va_arg(args, byte_t*);
-                    for(byte_t j = 0; j<len; j++){
-                        putch(*str);
-                        str++;
+                    byte_t *buffer = va_arg(args, byte_t*);
+                    for (uint32_t c = 0; c<len; c++){
+                        byte_t num = buffer[c];
+                        byte_t digits = 2;
+                        byte_t delimeter = pow(16, digits-1);
+
+                        while(delimeter){
+                            if ((num/delimeter)%16 > 9){
+                                putch((num/delimeter)%16 + 'a' - 10);
+                            }
+                            else {
+                                putch((num/delimeter)%16 + '0');
+                            }
+                            delimeter /= 16;
+                        }
+                        // putch('.');
                     }
 
-                    i++;
+                    i += j-i-1;
                     break;
                 }
             }
@@ -169,20 +186,20 @@ static void vputs(char_t *s, va_list args){
     }
 }
 
-void LOG_DEBUG(char_t *s, ...){
+void __attribute__((section(".vmm"))) LOG_DEBUG(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 0
-        AcquireLock(&shared_cores_data.puts_lock);
+        // AcquireLock(&shared_cores_data.puts_lock);
         puts("\033[35m[DEBUG]\t");
         va_list args;
         va_start(args, s);
         vputs(s, args);
         va_end(args);
         puts("\x1b[0m");
-        ReleaseLock(&shared_cores_data.puts_lock);
+        // ReleaseLock(&shared_cores_data.puts_lock);
     #endif 
 }
 
-void LOG_INFO(char_t *s, ...){
+void __attribute__((section(".vmm"))) LOG_INFO(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 1
         AcquireLock(&shared_cores_data.puts_lock);
         puts("\e[36m[INFO]\t");
@@ -195,7 +212,7 @@ void LOG_INFO(char_t *s, ...){
     #endif
 }
 
-void LOG_ERROR(char_t *s, ...){
+void __attribute__((section(".vmm"))) LOG_ERROR(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 2
         AcquireLock(&shared_cores_data.puts_lock);
         puts("\e[31m[ERROR]\t");

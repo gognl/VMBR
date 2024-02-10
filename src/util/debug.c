@@ -188,14 +188,14 @@ static void __attribute__((section(".vmm"))) vputs(char_t *s, va_list args){
 
 void __attribute__((section(".vmm"))) LOG_DEBUG(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 0
-        // AcquireLock(&shared_cores_data.puts_lock);
+        AcquireLock(&shared_cores_data.puts_lock);
         puts("\033[35m[DEBUG]\t");
         va_list args;
         va_start(args, s);
         vputs(s, args);
         va_end(args);
         puts("\x1b[0m");
-        // ReleaseLock(&shared_cores_data.puts_lock);
+        ReleaseLock(&shared_cores_data.puts_lock);
     #endif 
 }
 

@@ -10,11 +10,11 @@ Sources:
 
 rsdp_t* detect_rsdp(void){
     byte_t magic[8] = RSDP_MAGIC;
-    byte_t *ebda_ptr = (*(word_t*)EBDA_PTR_ADDR);
+    byte_t *ebda_ptr = (*(word_t*)EBDA_PTR_ADDR)<<4;
     uint32_t i;
     rsdp_t *rsdp_ptr = NULLPTR;
 
-    for(i = 0; i < 0x400; i += 16){
+    for(i = 0; i < 1024; i += 16){
         if(memcmp(ebda_ptr+i, magic, 8)){
             rsdp_ptr = ebda_ptr+i;
             return rsdp_ptr;
@@ -63,23 +63,4 @@ void* search_SDT(rsdp_t *rsdp_ptr, char_t signature[4]){
     LOG_ERROR("No %m4 table found in XSDT/RSDT.\n", signature);
     return NULLPTR;
 
-}
-
-uint32_t get_cpu_count(void){
-    rsdp_t *rsdp_ptr = detect_rsdp();
-    madt_t *madt_ptr = (madt_t*)search_SDT(rsdp_ptr, MADT_SIGNATURE);
-
-    uint32_t cpu_count = 0;
-    uint32_t madt_length = madt_ptr->header.length;
-    madt_entry_header_t *current_entry = (madt_entry_header_t*)((byte_t*)madt_ptr+MADT_TABLE_START);
-
-    for(; current_entry < (byte_t*)madt_ptr + madt_length; current_entry = (madt_entry_header_t*)((byte_t*)current_entry+current_entry->length)){
-        if (current_entry->type == MADT_TYPE_LOCAL_APIC 
-        && (current_entry->type0.flags.processor_enabled | current_entry->type0.flags.online_capable)){
-            cpu_count++;
-        }
-
-    }
-
-    return cpu_count;
 }

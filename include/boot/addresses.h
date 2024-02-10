@@ -1,6 +1,7 @@
 #ifndef __ADDRESSES_H
 #define __ADDRESSES_H
 
+#define BSP_INIT_CODE 0x3000
 #define REAL_START 0x4000   // macros.asm
 #define MMAP_TABLE 0x5000   // macros.asm
 #define HOOK_INT15H 0xfffc

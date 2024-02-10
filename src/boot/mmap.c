@@ -62,7 +62,6 @@ qword_t get_top_allocation(){
 }
 
 byte_t* allocate_memory(uint64_t length){
-
     AcquireLock(&shared_cores_data.allocation_lock);
 
     uint64_t len = ALIGN_UP(length, PAGE_SIZE);

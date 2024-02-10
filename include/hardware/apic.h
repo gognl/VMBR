@@ -18,10 +18,12 @@ typedef union {
         uint64_t destination_mode : 1;      // 11
         uint64_t : 2;                       // 12-13
         uint64_t level : 1;                 // 14
+        #define DEASSERT 0
         #define ASSERT 1
         uint64_t trigger_mode : 1;          // 15
         uint64_t : 2;                       // 16-17
         uint64_t destination_shorthand : 2; // 18-19
+        #define ALL_EXCLUDING_SELF 3
         uint64_t : 12;                      // 20-31
         uint64_t destination_field : 32;    // 32-63
     };

@@ -119,6 +119,10 @@ __attribute__((always_inline)) void inline __xsetbv(dword_t eax, dword_t ecx, dw
     __asm__ __volatile__("xsetbv" :: "a"(eax), "c"(ecx), "d"(edx));
 }
 
+__attribute__((always_inline)) void inline __pause(){
+    __asm__ __volatile__("pause" ::: "memory");
+}
+
 // vmx instructions
 
 __attribute__((always_inline)) void inline __vmwrite(VMCS_ENCODING field, qword_t value){

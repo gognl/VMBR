@@ -16,7 +16,7 @@ void activate_x2apic(){
     __wrmsr(IA32_APIC_BASE, __rdmsr(IA32_APIC_BASE) | X2APIC_ENABLE | XAPIC_GLOBAL_ENABLE);
 }
 
-uint8_t get_current_core_id(){
+uint8_t __attribute__((section(".vmm"))) get_current_core_id(){
     qword_t ebx, tmp;
     __cpuid(1, 0, &tmp, &ebx, &tmp, &tmp);
     return ebx>>24;

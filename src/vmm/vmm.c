@@ -40,6 +40,9 @@ void protect_vmm_memory(){
     for (uint64_t current_page = aligned_bottom; current_page < aligned_top; current_page += PAGE_SIZE){
         pte = get_ept_pte_from_guest_address(current_page);
         qword_t new_page = allocate_memory(PAGE_SIZE);
+        if (current_page == 0xf000){    // for the vmcall hooks
+            memcpy(new_page, current_page, PAGE_SIZE);
+        }
         LOG_DEBUG("Mapped %x to %x\n", current_page, new_page);
         modify_pte_page(pte, new_page);
     }
@@ -54,10 +57,9 @@ void protect_vmm_memory(){
     for (uint64_t current_page = bottom_allocation; current_page<top_allocation; current_page += PAGE_SIZE){
         pte = get_ept_pte_from_guest_address(current_page);
         // LOG_DEBUG("Protected %x\n", current_page);
-        modify_pte_access(pte, 0, 0, 0);
-        
+        modify_pte_access(pte, 0, 0, 0);   
     }
-    
+
     invept_descriptor_t descriptor;
     descriptor.eptp = (eptp_t)__vmread(CONTROL_EPTP);
     descriptor.zeros = 0;

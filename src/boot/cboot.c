@@ -6,7 +6,7 @@
 #include <lib/instr.h>
 
 int cboot(){
-
+    // LOG_DEBUG("%m4096%\n", 0xf000);
     init_real();
     init_mmap();
     shared_cores_data.pml4 = initialize_host_paging();

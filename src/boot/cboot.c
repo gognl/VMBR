@@ -9,10 +9,11 @@ int cboot(){
 
     init_real();
     init_mmap();
+    shared_cores_data.pml4 = initialize_host_paging();
+    prepare_vmm();
     init_cores();
-    // prepare_vmm();
-    // __vmwrite(GUEST_RSP, __read_rsp());
-    // __vmlaunch();
+    __vmwrite(GUEST_RSP, __read_rsp());
+    __vmlaunch();
 
     for(;;);
 }

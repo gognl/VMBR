@@ -43,6 +43,20 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
         LOG_ERROR("VMX ERROR %d\n", state.vmx_error);
 
     switch (state.exit_reason){
+        case EXIT_REASON_INIT:
+            LOG_DEBUG("INIT VMEXIT\n");
+            __vmwrite(GUEST_ACTIVITY_STATE, ACTIVITY_STATE_WAIT_FOR_SIPI);
+            return;
+        case EXIT_REASON_SIPI:
+            uint8_t vector = state.exit_qual.sipi.vector;
+            LOG_DEBUG("SIPI VMEXIT (%x)\n", vector*PAGE_SIZE);
+            __vmwrite(GUEST_RIP, vector*PAGE_SIZE);
+            __vmwrite(GUEST_ACTIVITY_STATE, ACTIVITY_STATE_ACTIVE);
+            invept_descriptor_t descriptor;
+            descriptor.eptp = (eptp_t)__vmread(CONTROL_EPTP);
+            descriptor.zeros = 0;
+            __invept(&descriptor, 1);
+            return;
         case EXIT_REASON_WRMSR:
             qword_t msr = LOWER_DWORD(state.registers->rcx);
             qword_t value = LOWER_DWORD(state.registers->rax) | (state.registers->rdx<<32);

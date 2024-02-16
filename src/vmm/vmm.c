@@ -40,7 +40,7 @@ void protect_vmm_memory(){
     for (uint64_t current_page = aligned_bottom; current_page < aligned_top; current_page += PAGE_SIZE){
         pte = get_ept_pte_from_guest_address(current_page);
         qword_t new_page = allocate_memory(PAGE_SIZE);
-        // LOG_DEBUG("Mapped %x to %x\n", current_page, new_page);
+        LOG_DEBUG("Mapped %x to %x\n", current_page, new_page);
         modify_pte_page(pte, new_page);
     }
 
@@ -67,6 +67,10 @@ void protect_vmm_memory(){
 
 void vmentry_handler(){
 
+    // broadcast_init_ipi();
+    // sleep();
+    // broadcast_sipi_ipi();
+
     load_guest();
 
     for(;;);
@@ -89,4 +93,20 @@ void prepare_vmm(){
 
     setup_int15h_hook();
 
+}
+
+void prepare_vmm_bsp(){
+    byte_t *vmxon_region_ptr = allocate_memory(0x1000);   // 4kb aligned. size should actually be read from IA32_VMX_BASIC[32:44], but it's 0x1000 max.
+    prepare_vmxon(vmxon_region_ptr);
+    __vmxon(vmxon_region_ptr);
+
+    vmcs_t* vmcs_ptr = (vmcs_t*)allocate_memory(0x1000);   // 4kb aligned. size should actually be read from IA32_VMX_BASIC[32:44], but it's 0x1000 max.
+    prepare_vmcs(vmcs_ptr);
+    __vmclear(vmcs_ptr);
+    __vmptrld(vmcs_ptr);
+
+    initialize_vmcs_bsp();
+
+    __vmwrite(GUEST_RSP, __read_rsp());
+    __vmlaunch();
 }

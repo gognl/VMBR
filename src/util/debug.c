@@ -189,7 +189,7 @@ static void __attribute__((section(".vmm"))) vputs(char_t *s, va_list args){
 void __attribute__((section(".vmm"))) LOG_DEBUG(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 0
         AcquireLock(&shared_cores_data.puts_lock);
-        puts("\033[35m[DEBUG]\t");
+        puts("\033[35m[DEBUG|%d] ", (dword_t)get_current_core_id());
         va_list args;
         va_start(args, s);
         vputs(s, args);
@@ -202,7 +202,7 @@ void __attribute__((section(".vmm"))) LOG_DEBUG(char_t *s, ...){
 void __attribute__((section(".vmm"))) LOG_INFO(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 1
         AcquireLock(&shared_cores_data.puts_lock);
-        puts("\e[36m[INFO]\t");
+        puts("\e[36m[INFO|%d]  ", (dword_t)get_current_core_id());
         va_list args;
         va_start(args, s);
         vputs(s, args);
@@ -215,7 +215,7 @@ void __attribute__((section(".vmm"))) LOG_INFO(char_t *s, ...){
 void __attribute__((section(".vmm"))) LOG_ERROR(char_t *s, ...){
     #if CURRENT_LOG_LEVEL <= 2
         AcquireLock(&shared_cores_data.puts_lock);
-        puts("\e[31m[ERROR]\t");
+        puts("\e[31m[ERROR|%d] ", (dword_t)get_current_core_id());
         va_list args;
         va_start(args, s);
         vputs(s, args);

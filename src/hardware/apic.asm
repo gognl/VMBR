@@ -3,13 +3,12 @@ global InitializeSingleCore_end
 global cores_semaphore
 global AcquireLock
 global ReleaseLock
+global guest_bsp
 
-extern allocate_memory
-
-section .data
-cores_semaphore db 0
+extern prepare_vmm_bsp
 
 section .text
+cores_semaphore db 0
 
 bits 16
 InitializeSingleCore:
@@ -64,19 +63,19 @@ bits 64
     mov rsp, 0x70000
     sub rsp, rbx
 
-    ; Setup stack
-    mov rdi, 0x4000
-    mov rax, allocate_memory
+    mov rax, prepare_vmm_bsp
     call rax
-    add rax, 0x4000
-    mov rsp, rax
-    
+
+bits 16
+guest_bsp:
+
     lock add byte [cores_semaphore], 1
 
     cli
     hlt
-    jmp $ - 2
 
+
+bits 64
 InitializeSingleCore_end:
 
 section .vmm

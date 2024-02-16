@@ -21,6 +21,13 @@ extern void VmExitHandler(void);
 #define GDT_AB_G (1<<15)        // Granularity flag
 #define UNUSABLE_SELECTOR (1<<16)
 
+#define CR0_PG (1<<31)
+#define CR0_PE (1<<0)
+#define CR4_PAE (1<<5)
+
+#define ACTIVITY_STATE_ACTIVE 0
+#define ACTIVITY_STATE_WAIT_FOR_SIPI 3
+
 typedef enum VMCS_ENCODINGS {
     // host fields
         // 16bit

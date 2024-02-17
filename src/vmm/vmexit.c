@@ -3,6 +3,9 @@
 #include <vmm/vmm.h>
 #include <vmm/hooks.h>
 #include <boot/addresses.h>
+#include <hardware/apic.h>
+#include <lib/msr.h>
+#include <lib/util.h>
 
 #define LOWER_DWORD(x) ((x) & 0xffffffffull)
 #define LOWER_WORD(x) ((x) & 0xffffull)
@@ -43,21 +46,44 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
         LOG_ERROR("VMX ERROR %d\n", state.vmx_error);
 
     switch (state.exit_reason){
+        case EXIT_REASON_INIT:
+            // LOG_DEBUG("INIT VMEXIT\n");
+            __vmwrite(GUEST_ACTIVITY_STATE, ACTIVITY_STATE_WAIT_FOR_SIPI);
+            return;
+        case EXIT_REASON_SIPI:
+            uint8_t vector = state.exit_qual.sipi.vector;
+            #if DEBUG_VMEXITS
+            LOG_DEBUG("SIPI VMEXIT (%x)\n", vector*PAGE_SIZE);
+            #endif
+            __vmwrite(GUEST_RIP, 0);
+            __vmwrite(GUEST_CS, vector<<8);
+            __vmwrite(GUEST_CS_BASE, vector<<12);
+            __vmwrite(GUEST_ACTIVITY_STATE, ACTIVITY_STATE_ACTIVE);
+            return;
         case EXIT_REASON_WRMSR:
             qword_t msr = LOWER_DWORD(state.registers->rcx);
             qword_t value = LOWER_DWORD(state.registers->rax) | (state.registers->rdx<<32);
-            LOG_DEBUG("WRMSR VMEXIT (%x, %x)\n", msr, value);
+            #if DEBUG_VMEXITS
+            LOG_DEBUG("WRMSR VMEXIT (%x, %b)\n", msr, value);
+            #endif
             __wrmsr(msr, value);
+            if (msr == IA32_APIC_BASE && (value & X2APIC_ENABLE != 0)){
+                LOG_DEBUG("Guest is trying to enable X2APIC...\n");
+            }
             break;
         case EXIT_REASON_RDMSR:
             msr = LOWER_DWORD(state.registers->rcx);
-            LOG_DEBUG("RDMSR VMEXIT (%x, rcx=%x)\n", msr, state.registers->rcx);
+            #if DEBUG_VMEXITS
+            LOG_DEBUG("RDMSR VMEXIT (%x)\n", msr);
+            #endif
             value = __rdmsr(msr);
             state.registers->rdx = (state.registers->rdx>>32<<32) | value >> 32;
             state.registers->rax = LOWER_DWORD(value);
             break;
         case EXIT_REASON_CPUID:
+            #if DEBUG_VMEXITS
             LOG_DEBUG("CPUID VMEXIT\n");
+            #endif
             qword_t eax_in, ecx_in, eax, ebx, ecx, edx;
             eax_in = LOWER_DWORD(state.registers->rax);
             ecx_in = LOWER_DWORD(state.registers->rcx);
@@ -68,10 +94,10 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             state.registers->rdx = (qword_t)edx;
 
             if (eax_in == 1){
-                // state.registers->rcx &= ~(1<<31);   // hypervisor present bit
+                state.registers->rcx &= ~(1<<31);   // hypervisor present bit (i am not here)
                 state.registers->rcx &= ~(1<<5);    // no VMX support (todo nested virtualization)
             }
-            // LOG_DEBUG("rcx is %x\n", (qword_t)state.registers->rcx);
+
             break;
         case EXIT_REASON_GETSEC:
             LOG_DEBUG("GETSEC VMEXIT\n");
@@ -80,7 +106,9 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             LOG_DEBUG("INVD VMEXIT\n");
             break;
         case EXIT_REASON_XSETBV:
+            #if DEBUG_VMEXITS
             LOG_DEBUG("XSETBV VMEXIT\n");
+            #endif
             __xsetbv((dword_t)state.registers->rax, (dword_t)state.registers->rcx, (dword_t)state.registers->rdx);
             break;
         case EXIT_REASON_INVEPT:
@@ -90,7 +118,9 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             LOG_DEBUG("INVVPID VMEXIT\n");
             break;
         case EXIT_REASON_VMCALL:
+            #if DEBUG_VMEXITS
             LOG_DEBUG("VMCALL VMEXIT\n");
+            #endif
             if (__vmread(GUEST_RIP) == HOOK_INT15H){
                 if (state.registers->rax == 0xe820){
                     handle_int15h_hook(&state);
@@ -103,6 +133,8 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             else if (LOWER_WORD(state.registers->rax) == 0x1234 && LOWER_WORD(state.registers->rbx) == 0xabcd){
                 protect_vmm_memory();
                 LOG_DEBUG("Jumping to guest...\n");
+                __wrmsr(IA32_APIC_BASE, __rdmsr(IA32_APIC_BASE) & (~X2APIC_ENABLE) & (~XAPIC_GLOBAL_ENABLE));
+                __wrmsr(IA32_APIC_BASE, __rdmsr(IA32_APIC_BASE) | XAPIC_GLOBAL_ENABLE);
                 __vmwrite(GUEST_RIP, JumpToGuest-low_functions_start+REAL_START);
             }
             return;
@@ -134,9 +166,24 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             LOG_DEBUG("HLT VMEXIT\n");
             break;
         default:
-            LOG_DEBUG("Unknown VMEXIT (%x, %x)\n", (BASIC_EXIT_REASON)__vmread(RODATA_EXIT_REASON), __vmread(RODATA_VM_INSTRUCTION_ERROR));
-            LOG_DEBUG("Qual: %x\n\tInterruption info: %x (%x)\n\tIDT info: %x (%x)\n", state.exit_qual.value, (qword_t)state.interruption_info.value, (qword_t)state.interruption_errorcode, (qword_t)state.idt_info.value, (qword_t)state.idt_errorcode);
-            LOG_DEBUG("GUEST_RIP: %x\n\tNEXT_GUEST_RIP: %x\n\tINSTR_LENGTH: %x\n", __vmread(GUEST_RIP), __vmread(GUEST_RIP)+(qword_t)state.instr_length, (qword_t)state.instr_length);
+            LOG_DEBUG("Unknown VMEXIT (%x, %x)\n\t\tQual: %x\n\t\tInterruption info: %x (%x)\n\t\tIDT info: %x (%x)\n\t\tGUEST_RIP: %x\n\t\tNEXT_GUEST_RIP: %x\n\t\tINSTR_LENGTH: %x\n\t\tGuest CS: %x (%x)\n\t\tCode (real): %m20%\n\t\tCode (long): %m20%\n\t\tCR0: %b\n\t\tCR4: %b\n\t\tEFER: %b\n",
+                        (BASIC_EXIT_REASON)__vmread(RODATA_EXIT_REASON),
+                        __vmread(RODATA_VM_INSTRUCTION_ERROR),
+                        state.exit_qual.value,
+                        (qword_t)state.interruption_info.value,
+                        (qword_t)state.interruption_errorcode,
+                        (qword_t)state.idt_info.value,
+                        (qword_t)state.idt_errorcode,
+                        __vmread(GUEST_RIP),
+                        __vmread(GUEST_RIP)+(qword_t)state.instr_length,
+                        (qword_t)state.instr_length,
+                        __vmread(GUEST_CS),
+                        __vmread(GUEST_CS_BASE),
+                        __vmread(GUEST_RIP)+__vmread(GUEST_CS_BASE),
+                        __vmread(GUEST_RIP), 
+                        __vmread(GUEST_CR0),
+                         __vmread(GUEST_CR4), 
+                         __vmread(GUEST_IA32_EFER));
             while(1);
     }
 

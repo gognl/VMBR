@@ -3,13 +3,12 @@ global InitializeSingleCore_end
 global cores_semaphore
 global AcquireLock
 global ReleaseLock
+global guest_ap
 
-extern prepare_vmm
-
-section .data
-cores_semaphore db 0
+extern prepare_vmm_ap
 
 section .text
+cores_semaphore db 0
 
 bits 16
 InitializeSingleCore:
@@ -22,7 +21,7 @@ InitializeSingleCore:
 
     lgdt [_gdt.pointer]
 
-    jmp _gdt.code32:InitializeSingleCore.protected_mode
+    jmp _gdt.code32:(InitializeSingleCore.protected_mode-InitializeSingleCore+0x3000)
 bits 32
     .protected_mode:
 
@@ -48,41 +47,47 @@ bits 32
     or eax, CR0_PG
     mov cr0, eax
 
-    jmp _gdt.code64:InitializeSingleCore.long_mode
+    jmp _gdt.code64:(InitializeSingleCore.long_mode-InitializeSingleCore+0x3000)
 bits 64
     .long_mode:
     
     UpdateSelectorsAX _gdt.data64
 
+    ; Setup temporary stack for calling allocate_memory
     xor rbx, rbx
     mov eax, 1
     xor ecx, ecx
     cpuid
     shr ebx, 24     ; now ebx = core id
     shl ebx, 12     ; now ebx = core id * 0x1000
-    mov rsp, _sys_stack
+    mov rsp, 0x70000
     sub rsp, rbx
 
-    mov al, 1
-    mov byte [cores_semaphore], al
-    
-    call prepare_vmm
+    mov rax, prepare_vmm_ap
+    call rax
 
+bits 16
+guest_ap:
+
+    lock add byte [cores_semaphore], 1
+
+    cli
     hlt
-    jmp $ - 2
 
+
+bits 64
 InitializeSingleCore_end:
 
 section .vmm
 
 AcquireLock:
-    lock bts dword [rdi], 0        ; Attempt to acquire the lock (in case lock is uncontended)
+    lock bts dword [rdi], 0 ; Attempt to acquire the lock (in case lock is uncontended)
     jc AcquireLock.spin_with_pause
     ret
  
 .spin_with_pause:
     pause                    ; Tell CPU we're spinning
-    test dword [rdi], 1       ; Is the lock free?
+    test dword [rdi], 1      ; Is the lock free?
     jnz AcquireLock.spin_with_pause     ; no, wait
     jmp AcquireLock          ; retry
  

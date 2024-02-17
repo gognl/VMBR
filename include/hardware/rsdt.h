@@ -71,7 +71,6 @@ typedef struct __attribute__((__packed__)) {
     uint32_t sdt_ptr[];
 } rsdt_t;
 
-extern uint32_t get_cpu_count(void);
 extern void* search_SDT(rsdp_t *rsdp_ptr, char_t signature[4]);
 extern rsdp_t* detect_rsdp(void);
 #endif

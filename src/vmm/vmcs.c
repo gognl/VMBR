@@ -96,7 +96,8 @@ void initialize_vmcs(){
     __vmwrite(GUEST_IA32_SYSENTER_ESP, 0xffff);
     __vmwrite(GUEST_IA32_SYSENTER_CS, 8);
     __vmwrite(GUEST_VMCS_LINK_PTR, -1ull);
-    __vmwrite(CONTROL_MSR_BITMAPS, allocate_memory(0x4000));
+    shared_cores_data.msr_bitmaps = allocate_memory(0x1000);
+    __vmwrite(CONTROL_MSR_BITMAPS, shared_cores_data.msr_bitmaps);
     __vmwrite(GUEST_IA32_EFER, __rdmsr(0xC0000080ull));
 
 
@@ -119,7 +120,6 @@ void initialize_vmcs(){
     vmexit_ctls.load_ia32_efer = TRUE;
     vmentry_ctls.ia32_mode_guest = TRUE;
     vmentry_ctls.load_ia32_efer = TRUE;
-    // proc_based_ctls.hlt_exiting = TRUE;
 
 
     if (__rdmsr(IA32_VMX_BASIC) & (1ull<<55)){
@@ -145,10 +145,12 @@ void initialize_vmcs(){
 
     __vmwrite(CONTROL_XSS_EXITING_BITMAP, 0);
 
+    __vmwrite(CONTROL_EXCEPTION_BITMAP, (1<<6));
+
 }
 
-extern void guest_bsp();
-void initialize_vmcs_bsp(){
+extern void guest_ap();
+void initialize_vmcs_ap(){
     __vmwrite(HOST_CR0, __read_cr0());
     __vmwrite(HOST_CR3, shared_cores_data.pml4);
     __vmwrite(HOST_CR4, __read_cr4());
@@ -173,7 +175,7 @@ void initialize_vmcs_bsp(){
     __vmwrite(GUEST_CR3, 0);
     __vmwrite(GUEST_CR4, __read_cr4() & (~CR4_PAE));
     __vmwrite(GUEST_DR7, __read_dr7());
-    __vmwrite(GUEST_RIP, guest_bsp);
+    __vmwrite(GUEST_RIP, guest_ap);
     __vmwrite(GUEST_RSP, 0);
     __vmwrite(GUEST_RFLAGS, __read_rflags());
     // CS
@@ -233,7 +235,7 @@ void initialize_vmcs_bsp(){
     __vmwrite(GUEST_IA32_SYSENTER_ESP, 0xffff);
     __vmwrite(GUEST_IA32_SYSENTER_CS, 8);
     __vmwrite(GUEST_VMCS_LINK_PTR, -1ull);
-    __vmwrite(CONTROL_MSR_BITMAPS, allocate_memory(0x4000));
+    __vmwrite(CONTROL_MSR_BITMAPS, shared_cores_data.msr_bitmaps);
     __vmwrite(GUEST_IA32_EFER, 0);
     // LOG_DEBUG("efer is %b\n", __vmread(GUEST_IA32_EFER));
 
@@ -279,5 +281,5 @@ void initialize_vmcs_bsp(){
     __vmwrite(CONTROL_EPTP, eptp.value);
 
     __vmwrite(CONTROL_XSS_EXITING_BITMAP, 0);
-    __vmwrite(CONTROL_EXCEPTION_BITMAP, 0xffffffff);
+    // __vmwrite(CONTROL_EXCEPTION_BITMAP, 0xffffffff);
 }

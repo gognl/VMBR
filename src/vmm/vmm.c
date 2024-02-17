@@ -10,7 +10,7 @@
 #include <lib/util.h>
 #include <vmm/paging.h>
 
-shared_cores_data_t shared_cores_data = {0};
+shared_cores_data_t __attribute__((section(".vmm"))) shared_cores_data = {0};
 
 void prepare_vmxon(byte_t *vmxon_region_ptr){
     qword_t ecx, tmp;
@@ -31,6 +31,8 @@ void protect_vmm_memory(){
 
     extern byte_t vmm_start[];
     extern byte_t vmm_end[];
+    extern byte_t vmbr_end[];
+    LOG_DEBUG("vmbr_end is %x\n", vmbr_end);
 
     qword_t aligned_bottom = ALIGN_DOWN((qword_t)vmm_start, PAGE_SIZE);
     qword_t aligned_top = ALIGN_UP((qword_t)vmm_end, PAGE_SIZE);
@@ -40,6 +42,9 @@ void protect_vmm_memory(){
     for (uint64_t current_page = aligned_bottom; current_page < aligned_top; current_page += PAGE_SIZE){
         pte = get_ept_pte_from_guest_address(current_page);
         qword_t new_page = allocate_memory(PAGE_SIZE);
+        if (current_page == 0xf000){    // for the vmcall hooks
+            memcpy(new_page, current_page, PAGE_SIZE);
+        }
         LOG_DEBUG("Mapped %x to %x\n", current_page, new_page);
         modify_pte_page(pte, new_page);
     }
@@ -54,10 +59,9 @@ void protect_vmm_memory(){
     for (uint64_t current_page = bottom_allocation; current_page<top_allocation; current_page += PAGE_SIZE){
         pte = get_ept_pte_from_guest_address(current_page);
         // LOG_DEBUG("Protected %x\n", current_page);
-        modify_pte_access(pte, 0, 0, 0);
-        
+        modify_pte_access(pte, 0, 0, 0);   
     }
-    
+
     invept_descriptor_t descriptor;
     descriptor.eptp = (eptp_t)__vmread(CONTROL_EPTP);
     descriptor.zeros = 0;
@@ -67,10 +71,15 @@ void protect_vmm_memory(){
 
 void vmentry_handler(){
 
+    // activate_x2apic();
+    // __wrmsr(IA32_APIC_BASE, __rdmsr(IA32_APIC_BASE) | X2APIC_ENABLE | XAPIC_GLOBAL_ENABLE);
     // broadcast_init_ipi();
     // sleep();
     // broadcast_sipi_ipi();
-
+    // init_cores_apic();
+    // broadcast_init_ipi_apic();
+    // sleep();
+    // broadcast_sipi_ipi_apic();
     load_guest();
 
     for(;;);
@@ -95,7 +104,7 @@ void prepare_vmm(){
 
 }
 
-void prepare_vmm_bsp(){
+void prepare_vmm_ap(){
     byte_t *vmxon_region_ptr = allocate_memory(0x1000);   // 4kb aligned. size should actually be read from IA32_VMX_BASIC[32:44], but it's 0x1000 max.
     prepare_vmxon(vmxon_region_ptr);
     __vmxon(vmxon_region_ptr);
@@ -105,8 +114,8 @@ void prepare_vmm_bsp(){
     __vmclear(vmcs_ptr);
     __vmptrld(vmcs_ptr);
 
-    initialize_vmcs_bsp();
-
+    initialize_vmcs_ap();
+    LOG_DEBUG("Core %d initialized.\n", get_current_core_id());
     __vmwrite(GUEST_RSP, __read_rsp());
     __vmlaunch();
 }

@@ -4,6 +4,7 @@
 #include <lib/debug.h>
 #include <vmm/vmcs.h>
 #include <lib/instr.h>
+#include <lib/msr.h>
 
 int cboot(){
 
@@ -12,6 +13,7 @@ int cboot(){
     shared_cores_data.pml4 = initialize_host_paging();
     prepare_vmm();
     init_cores();
+
     __vmwrite(GUEST_RSP, __read_rsp());
     __vmlaunch();
 

@@ -35,7 +35,7 @@ scr: build
 	qemu-system-x86_64 -bios bios.bin -cdrom build/vmbr.iso -nographic --enable-kvm -serial mon:stdio -smp cores=1 -cpu host 
 
 run: build
-	qemu-system-x86_64 -bios bios.bin -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -serial stdio --enable-kvm -cpu host -smp cores=4 -m 1024,maxmem=8G -vga std
+	qemu-system-x86_64 -bios bios.bin -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -serial stdio --enable-kvm -cpu host -smp 4 -m 1024,maxmem=8G -vga std
 
 gdb: build
 	qemu-system-x86_64 -bios bios.bin -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -s -S --enable-kvm -serial stdio -smp 1 -cpu host & gdb

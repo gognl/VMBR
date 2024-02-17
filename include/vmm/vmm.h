@@ -30,6 +30,7 @@ typedef struct {
     dword_t puts_lock;
     qword_t pml4;
     qword_t ept_pml4;
+    msr_bitmaps_t *msr_bitmaps;
 } shared_cores_data_t;
 
 typedef struct __attribute__((__packed__)) {

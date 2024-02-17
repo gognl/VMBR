@@ -10,7 +10,7 @@
 #include <lib/util.h>
 #include <vmm/paging.h>
 
-shared_cores_data_t shared_cores_data = {0};
+shared_cores_data_t __attribute__((section(".vmm"))) shared_cores_data = {0};
 
 void prepare_vmxon(byte_t *vmxon_region_ptr){
     qword_t ecx, tmp;
@@ -31,6 +31,8 @@ void protect_vmm_memory(){
 
     extern byte_t vmm_start[];
     extern byte_t vmm_end[];
+    extern byte_t vmbr_end[];
+    LOG_DEBUG("vmbr_end is %x\n", vmbr_end);
 
     qword_t aligned_bottom = ALIGN_DOWN((qword_t)vmm_start, PAGE_SIZE);
     qword_t aligned_top = ALIGN_UP((qword_t)vmm_end, PAGE_SIZE);
@@ -69,10 +71,15 @@ void protect_vmm_memory(){
 
 void vmentry_handler(){
 
+    // activate_x2apic();
+    // __wrmsr(IA32_APIC_BASE, __rdmsr(IA32_APIC_BASE) | X2APIC_ENABLE | XAPIC_GLOBAL_ENABLE);
     // broadcast_init_ipi();
     // sleep();
     // broadcast_sipi_ipi();
-
+    // init_cores_apic();
+    // broadcast_init_ipi_apic();
+    // sleep();
+    // broadcast_sipi_ipi_apic();
     load_guest();
 
     for(;;);
@@ -97,7 +104,7 @@ void prepare_vmm(){
 
 }
 
-void prepare_vmm_bsp(){
+void prepare_vmm_ap(){
     byte_t *vmxon_region_ptr = allocate_memory(0x1000);   // 4kb aligned. size should actually be read from IA32_VMX_BASIC[32:44], but it's 0x1000 max.
     prepare_vmxon(vmxon_region_ptr);
     __vmxon(vmxon_region_ptr);
@@ -107,8 +114,8 @@ void prepare_vmm_bsp(){
     __vmclear(vmcs_ptr);
     __vmptrld(vmcs_ptr);
 
-    initialize_vmcs_bsp();
-
+    initialize_vmcs_ap();
+    LOG_DEBUG("Core %d initialized.\n", get_current_core_id());
     __vmwrite(GUEST_RSP, __read_rsp());
     __vmlaunch();
 }

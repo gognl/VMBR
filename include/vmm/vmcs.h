@@ -28,6 +28,13 @@ extern void VmExitHandler(void);
 #define ACTIVITY_STATE_ACTIVE 0
 #define ACTIVITY_STATE_WAIT_FOR_SIPI 3
 
+typedef struct {
+    byte_t read_low[1024];
+    byte_t read_high[1024];
+    byte_t write_low[1024];
+    byte_t write_high[1024];
+} __attribute__((__packed__)) msr_bitmaps_t;
+
 typedef enum VMCS_ENCODINGS {
     // host fields
         // 16bit

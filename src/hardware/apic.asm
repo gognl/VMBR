@@ -3,9 +3,9 @@ global InitializeSingleCore_end
 global cores_semaphore
 global AcquireLock
 global ReleaseLock
-global guest_bsp
+global guest_ap
 
-extern prepare_vmm_bsp
+extern prepare_vmm_ap
 
 section .text
 cores_semaphore db 0
@@ -63,11 +63,11 @@ bits 64
     mov rsp, 0x70000
     sub rsp, rbx
 
-    mov rax, prepare_vmm_bsp
+    mov rax, prepare_vmm_ap
     call rax
 
 bits 16
-guest_bsp:
+guest_ap:
 
     lock add byte [cores_semaphore], 1
 

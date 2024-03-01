@@ -88,6 +88,8 @@ byte_t* allocate_memory(uint64_t length){
     if (out != 0)
         memset(out, 0, len);
 
-    LOG_DEBUG("Allocated %x from %x to %x\n", len, out, out+len);
+    #if DEBUG_ALLOCATIONS
+        LOG_DEBUG("Allocated %x from %x to %x\n", len, out, out+len);
+    #endif
     return out;    
 }

@@ -39,5 +39,6 @@ low_functions_start:
 %include "src/boot/mmap.asm"
 %include "src/boot/mode-transitions.asm"
 %include "src/hardware/serial.asm"
+%include "src/hardware/idt.asm"
 %include "src/hardware/apic.asm"
 low_functions_end:

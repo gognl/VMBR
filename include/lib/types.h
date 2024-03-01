@@ -24,16 +24,19 @@ typedef unsigned long long uint64_t;
 #define va_arg(v,l) __builtin_va_arg(v,l)
 #define va_list __builtin_va_list
 
+// https://stackoverflow.com/questions/19401887/how-to-check-the-size-of-a-structure-at-compile-time
+#define STATIC_ASSERT(cond) typedef char assertion[(!!(cond))*2-1]
+
 #define PAGE_SIZE 0x1000
+
+typedef enum {
+    SUCCESS = 1,
+    FAIL = 0
+} STATUS;
 
 typedef struct {
     uint16_t limit;
     uint64_t base;
 } __attribute__((__packed__)) gdtr_t;
-
-typedef struct {
-    uint16_t limit;
-    uint64_t base;
-} __attribute__((__packed__)) idtr_t;
 
 #endif

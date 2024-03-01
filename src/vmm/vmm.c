@@ -71,15 +71,6 @@ void protect_vmm_memory(){
 
 void vmentry_handler(){
 
-    // activate_x2apic();
-    // __wrmsr(IA32_APIC_BASE, __rdmsr(IA32_APIC_BASE) | X2APIC_ENABLE | XAPIC_GLOBAL_ENABLE);
-    // broadcast_init_ipi();
-    // sleep();
-    // broadcast_sipi_ipi();
-    // init_cores_apic();
-    // broadcast_init_ipi_apic();
-    // sleep();
-    // broadcast_sipi_ipi_apic();
     load_guest();
 
     for(;;);

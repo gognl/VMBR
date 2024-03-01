@@ -4,6 +4,7 @@
 #include <boot/mmap.h>
 #include <lib/instr.h>
 #include <boot/addresses.h>
+#include <hardware/idt.h>
 
 #define LOWER_WORD(x) ((x) & 0xffffull)
 

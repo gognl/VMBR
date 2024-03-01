@@ -6,6 +6,7 @@
 #include <lib/debug.h>
 #include <vmm/paging.h>
 #include <vmm/vmm.h>
+#include <hardware/idt.h>
 
 #define CARRY_FLAG (1<<0)
 #define ZERO_FLAG (1<<6)
@@ -114,6 +115,13 @@ __attribute__((always_inline)) void inline __read_gdtr(gdtr_t* gdtr){
 __attribute__((always_inline)) void inline __read_idtr(idtr_t* idtr){
     __asm__ __volatile__("sidt %0" : "=m"(*idtr));
 }
+__attribute__((always_inline)) void inline __write_idtr(idtr_t* idtr){
+    __asm__ __volatile__("lidt %0" :: "m"(*idtr));
+}
+
+__attribute__((always_inline)) void inline __sti(){
+    __asm__ __volatile__("sti");
+}
 
 __attribute__((always_inline)) void inline __xsetbv(dword_t eax, dword_t ecx, dword_t edx){
     __asm__ __volatile__("xsetbv" :: "a"(eax), "c"(ecx), "d"(edx));
@@ -183,11 +191,29 @@ __attribute__((always_inline)) void inline __vmresume(){
 
 __attribute__((always_inline)) byte_t inline __inb(word_t port){
     byte_t in;
-    __asm__ __volatile__ ("inb %%dx, %%al" : "=a" (in) : "d" (port));
+    __asm__ __volatile__ ("inb %%dx, %%al" : "=a" (in) : "dN" (port));
     return in;
 }
 __attribute__((always_inline)) void inline __outb(word_t port, byte_t data){
-    __asm__ __volatile__ ("outb %%al, %%dx" : : "a" (data), "d" (port));
+    __asm__ __volatile__ ("outb %%al, %%dx" : : "a" (data), "dN" (port));
+}
+
+__attribute__((always_inline)) word_t inline __inw(word_t port){
+    word_t in;
+    __asm__ __volatile__ ("inw %%dx, %%ax" : "=a" (in) : "dN" (port));
+    return in;
+}
+__attribute__((always_inline)) void inline __outw(word_t port, word_t data){
+    __asm__ __volatile__ ("outw %%ax, %%dx" : : "a" (data), "dN" (port));
+}
+
+__attribute__((always_inline)) dword_t inline __inl(word_t port){
+    dword_t in;
+    __asm__ __volatile__ ("inl %%dx, %%eax" : "=a" (in) : "dN" (port));
+    return in;
+}
+__attribute__((always_inline)) void inline __outl(word_t port, dword_t data){
+    __asm__ __volatile__ ("outl %%eax, %%dx" : : "dN" (port), "a" (data));
 }
 
 #endif

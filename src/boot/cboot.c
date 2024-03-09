@@ -6,7 +6,7 @@
 #include <lib/instr.h>
 #include <lib/msr.h>
 #include <hardware/idt.h>
-#include <hardware/pica.h>
+#include <hardware/pic8259.h>
 #include <hardware/nic.h>
 #include <lib/util.h>
 

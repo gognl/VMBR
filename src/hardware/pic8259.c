@@ -1,4 +1,4 @@
-#include <hardware/pica.h>
+#include <hardware/pic8259.h>
 #include <lib/instr.h>
 
 void init_pic(){

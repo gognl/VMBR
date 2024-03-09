@@ -34,6 +34,7 @@ typedef struct {
     uint32_t io_base;
     uint32_t rx_buffer;
     uint8_t mac[6];
+    uint32_t ip;
     uint8_t irq;
 } nic_device_t;
 
@@ -61,5 +62,6 @@ extern void init_nic();
 extern void transmit_packet(byte_t *buffer, uint16_t size);
 extern STATUS transmit_over();
 extern uint8_t* get_mac_addr();
+extern uint32_t get_ip_addr();
 
 #endif

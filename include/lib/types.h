@@ -27,6 +27,12 @@ typedef unsigned long long uint64_t;
 // https://stackoverflow.com/questions/19401887/how-to-check-the-size-of-a-structure-at-compile-time
 #define STATIC_ASSERT(cond) typedef char assertion[(!!(cond))*2-1]
 
+#define FLIP_WORD(n)    ((((n)<<8) | ((n)>>8)) & 0xffff)
+#define FLIP_DWORD(n)   (((((n)>>24) & 0xff) | \
+                        (((n)<<8) & 0xff0000) | \
+                        (((n)>>8) & 0xff00) | \
+                        (((n)<<24) & 0xff000000)) & 0xffffffff);
+
 #define PAGE_SIZE 0x1000
 
 typedef enum {

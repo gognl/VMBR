@@ -51,6 +51,10 @@ uint8_t* get_mac_addr(){
     return nic_dev.mac;
 }
 
+uint32_t get_ip_addr(){
+    return nic_dev.ip;
+}
+
 void init_nic(){
 
     // Find the PCI configuration space of RTL8139

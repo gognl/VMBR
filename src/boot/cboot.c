@@ -17,17 +17,15 @@ int cboot(){
 
     init_pic();
     init_idt();
-    // LOG_DEBUG("Here\n");
     init_nic();
-    // __sti();
 
     byte_t str[] = "this is a test";
     LOG_DEBUG("Sending...\n");
     transmit_packet(&str, strlen(str));
-    // while (!transmit_over());
+    while (!transmit_over());
     LOG_DEBUG("Sending...\n");
     transmit_packet(&str, strlen(str));
-    // while (!transmit_over());
+    while (!transmit_over());
     LOG_DEBUG("Sending...\n");
     transmit_packet(&str, strlen(str));
     LOG_DEBUG("OVER\n");
@@ -43,8 +41,5 @@ int cboot(){
     // __vmwrite(GUEST_RSP, __read_rsp());
     // __vmlaunch();
 
-    // while(1){
-    //     __pause();
-    // }
     for(;;);
 }

@@ -1,7 +1,7 @@
 #include <hardware/idt.h>
 #include <lib/instr.h>
 
-__attribute__((section(".vmm"), aligned(0x10))) idt_entry_t idt[256];
+__attribute__((section(".vmmdata"), aligned(0x10))) idt_entry_t idt[256];
 
 void set_idt_entry(void (*isr)(), uint8_t id){
     uint64_t offset = (uint64_t)isr;
@@ -16,7 +16,7 @@ void set_idt_entry(void (*isr)(), uint8_t id){
 
 }
 
-void exception_handler(uint64_t interrupt, interrupt_data_t *data){
+__attribute__((section(".vmm"))) void exception_handler(uint64_t interrupt, interrupt_data_t *data){
     LOG_DEBUG("Exception %x: ERROR=%x, RIP=%x, CS=%x, RFLAGS=%x, RSP=%x\n",
                 interrupt, data->error, data->rip, data->cs, data->rflags, data->rsp);
 }

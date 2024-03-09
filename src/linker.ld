@@ -15,6 +15,7 @@ SECTIONS {
         . = ALIGN(4096);
         vmm_start = .;
         *(.vmm)
+        *(.vmmdata)
         vmm_end = .;
         . = ALIGN(4096);
     }

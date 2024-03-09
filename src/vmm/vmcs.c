@@ -31,6 +31,7 @@ void initialize_vmcs(){
     __vmwrite(HOST_IA32_SYSENTER_CS, 0xff);
     __vmwrite(HOST_IA32_EFER, __rdmsr(0xC0000080));
 
+    __vmwrite(HOST_IDTR_BASE, idt);
     
     __vmwrite(GUEST_CR0, __read_cr0());
     __vmwrite(GUEST_CR3, __read_cr3());
@@ -81,10 +82,9 @@ void initialize_vmcs(){
     __vmwrite(GUEST_GDTR_LIMIT, gdtr.limit);
     __vmwrite(HOST_GDTR_BASE, gdtr.base);
     // IDTR
-    idtr_t idtr;
-    __read_idtr(&idtr);
-    __vmwrite(GUEST_IDTR_BASE, idtr.base);
-    __vmwrite(GUEST_IDTR_LIMIT, idtr.limit);
+    // Default IVT (at 0x00)
+    __vmwrite(GUEST_IDTR_BASE, 0);
+    __vmwrite(GUEST_IDTR_LIMIT, 0x3ff);
     // LDTR
     __vmwrite(GUEST_LDTR, 0);
     __vmwrite(GUEST_LDTR_BASE, 0);
@@ -171,6 +171,8 @@ void initialize_vmcs_ap(){
     __vmwrite(HOST_IA32_SYSENTER_CS, 0xff);
     __vmwrite(HOST_IA32_EFER, __rdmsr(0xC0000080));
 
+    __vmwrite(HOST_IDTR_BASE, idt);
+
     __vmwrite(GUEST_CR0, __read_cr0() & (~CR0_PE) & (~CR0_PG));
     __vmwrite(GUEST_CR3, 0);
     __vmwrite(GUEST_CR4, __read_cr4() & (~CR4_PAE));
@@ -220,10 +222,8 @@ void initialize_vmcs_ap(){
     __vmwrite(GUEST_GDTR_LIMIT, gdtr.limit);
     __vmwrite(HOST_GDTR_BASE, gdtr.base);
     // IDTR
-    idtr_t idtr;
-    __read_idtr(&idtr);
-    __vmwrite(GUEST_IDTR_BASE, idtr.base);
-    __vmwrite(GUEST_IDTR_LIMIT, idtr.limit);
+    __vmwrite(GUEST_IDTR_BASE, 0);
+    __vmwrite(GUEST_IDTR_LIMIT, 0x3ff);
     // LDTR
     __vmwrite(GUEST_LDTR, 0);
     __vmwrite(GUEST_LDTR_BASE, 0);

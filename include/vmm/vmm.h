@@ -4,7 +4,7 @@
 #include <vmm/vmcs.h>
 #include <vmm/paging.h>
 
-typedef struct __attribute__((__pakced__)) {
+typedef struct __attribute__((__packed__)) {
     eptp_t eptp;
     uint64_t zeros;
 } invept_descriptor_t;

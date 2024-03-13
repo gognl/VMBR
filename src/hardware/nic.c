@@ -4,6 +4,10 @@
 #include <boot/mmap.h>
 #include <vmm/hooks.h>
 #include <hardware/idt.h>
+#include <network/ethernet.h>
+#include <network/ip.h>
+#include <network/udp.h>
+#include <network/dhcp.h>
 
 static uint32_t transmit_start[4] = {0x20, 0x24, 0x28, 0x2C};
 static uint32_t transmit_status_command[4] = {0x10, 0x14, 0x18, 0x1C};
@@ -11,6 +15,18 @@ static uint8_t current_transmit = 0;
 static nic_device_t nic_dev = {0};
 
 void receive_packet(){
+
+    byte_t *pkt = nic_dev.rx_buffer;
+
+    uint16_t pkt_len = *(uint16_t*)(pkt+2);
+    pkt += 4;   // pkt now points to packet's data
+
+    if (pkt_len < sizeof(ethernet_t)) return;
+
+    ethernet_t *ether_hdr = pkt;
+
+    if (FLIP_WORD(ether_hdr->type) == ETHERNET_TYPE_ARP) {}
+    if (FLIP_WORD(ether_hdr->type) == ETHERNET_TYPE_IP) handle_ip_packet(ether_hdr);
 
 }
 

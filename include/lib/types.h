@@ -31,7 +31,7 @@ typedef unsigned long long uint64_t;
 #define FLIP_DWORD(n)   (((((n)>>24) & 0xff) | \
                         (((n)<<8) & 0xff0000) | \
                         (((n)>>8) & 0xff00) | \
-                        (((n)<<24) & 0xff000000)) & 0xffffffff);
+                        (((n)<<24) & 0xff000000)) & 0xffffffff)
 
 #define PAGE_SIZE 0x1000
 

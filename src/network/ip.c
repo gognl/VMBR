@@ -1,5 +1,8 @@
 #include "network/ip.h"
 #include "hardware/nic.h"
+#include "network/ethernet.h"
+#include "network/udp.h"
+#include "network/dhcp.h"
 
 __attribute__((section(".vmm"))) uint32_t get_ip_header_size(){
     return sizeof(ip_t);
@@ -33,5 +36,25 @@ __attribute__((section(".vmm"))) void build_ip(ip_t *packet, uint16_t payload_le
     packet->source = FLIP_DWORD(get_ip_addr());
     packet->destination = FLIP_DWORD(dest);
     packet->checksum = calculate_ip_checksum(packet);
+}
+
+__attribute__((section(".vmm"))) void handle_ip_packet(ethernet_t *ether_hdr){
+    ip_t *ip_hdr = ether_hdr->payload;
+    uint32_t src_ip = FLIP_DWORD(ip_hdr->source), dst_ip = FLIP_DWORD(ip_hdr->destination);
+    uint16_t data_length = 0;
+    uint16_t src_port = 0, dst_port = 0;
+    udp_t *udp_hdr;
+    if (ip_hdr->protocol == IPV4_PROTOCOL_UDP){
+        udp_hdr = ip_hdr->payload;
+        data_length = FLIP_WORD(udp_hdr->length) - sizeof(udp_t);
+        src_port = FLIP_WORD(udp_hdr->source);
+        dst_port = FLIP_WORD(udp_hdr->destination);
+        // todo validate checksum
+    }
+    
+    if (dst_port == 68){
+        LOG_DEBUG("Received DHCP packet\n");
+        handle_dhcp_packet(udp_hdr->payload);
+    }
 }
 

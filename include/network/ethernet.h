@@ -4,14 +4,9 @@
 #include <lib/types.h>
 
 typedef struct {
-    // byte_t premable[7];
-    // byte_t start_of_frame;
     byte_t destination[6];
     byte_t source[6];
-    union {
-        word_t length;
-        word_t type;
-    };
+    word_t type;
     byte_t payload[];
 } __attribute__((__packed__)) ethernet_t;
 

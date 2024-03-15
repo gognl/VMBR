@@ -4,12 +4,16 @@
 #include <lib/types.h>
 
 typedef enum {
+    DHCP_CODE_SUBNET_MASK = 1,
+    DHCP_CODE_ROUTER = 3,
+    DHCP_CODE_SERVER_ID = 54,
     DHCP_CODE_MESSAGE_TYPE = 53,
     DHCP_CODE_END = 255
 } __attribute__ ((__packed__)) dhcp_code;
 
 typedef enum {
-    DHCP_LEN_MESSAGE_TYPE = 1
+    DHCP_LEN_MESSAGE_TYPE = 1,
+    DHCP_LEN_SERVER_ID = 4
 } __attribute__ ((__packed__)) dhcp_len;
 
 typedef enum {
@@ -52,5 +56,7 @@ typedef struct {
     dhcp_len len;
     byte_t data[];
 } __attribute__((__packed__)) dhcp_option_t;
+
+extern void handle_dhcp_packet(dhcp_t *packet);
 
 #endif

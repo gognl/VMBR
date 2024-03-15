@@ -8,22 +8,32 @@
 #include <network/ip.h>
 #include <network/udp.h>
 #include <network/dhcp.h>
+#include <lib/util.h>
 
 static uint32_t transmit_start[4] = {0x20, 0x24, 0x28, 0x2C};
 static uint32_t transmit_status_command[4] = {0x10, 0x14, 0x18, 0x1C};
 static uint8_t current_transmit = 0;
 static nic_device_t nic_dev = {0};
 
+static uint32_t current_pkt_ptr = 0;
+
 void receive_packet(){
 
-    byte_t *pkt = nic_dev.rx_buffer;
+    byte_t *pkt = nic_dev.rx_buffer + current_pkt_ptr;
 
-    uint16_t pkt_len = *(uint16_t*)(pkt+2);
+    uint16_t pkt_len = (*(uint16_t*)(pkt+2));
+
+    current_pkt_ptr = (current_pkt_ptr + pkt_len + 4 + 3) & (~0b11);
+    current_pkt_ptr %= RTL8139_RX_BASIC_BUFFER_SIZE;
+    __outw(nic_dev.io_base+RTL8139_CAPR, current_pkt_ptr-0x10);
+
     pkt += 4;   // pkt now points to packet's data
+    
+    memcpy(nic_dev.cp_buffer, pkt, pkt_len-4);
 
-    if (pkt_len < sizeof(ethernet_t)) return;
+    if (pkt_len-4 < sizeof(ethernet_t)) return;
 
-    ethernet_t *ether_hdr = pkt;
+    ethernet_t *ether_hdr = nic_dev.cp_buffer;
 
     if (FLIP_WORD(ether_hdr->type) == ETHERNET_TYPE_ARP) {}
     if (FLIP_WORD(ether_hdr->type) == ETHERNET_TYPE_IP) handle_ip_packet(ether_hdr);
@@ -33,16 +43,18 @@ void receive_packet(){
 void nic_handler(){
     LOG_DEBUG("Reached NIC handler\n");
     
-    
     uint16_t status = __inw(nic_dev.io_base+RTL8139_STATUS);
-    __outw(nic_dev.io_base+RTL8139_STATUS, RTL8139_STATUS_ROK | RTL8139_STATUS_TOK);
 
     if (status & RTL8139_STATUS_ROK){
         LOG_DEBUG("Received\n");
-        receive_packet();
+        while ((__inb(nic_dev.io_base+RTL8139_COMMAND) & RTL8139_COMMAND_BUFE) == 0) {
+            receive_packet();
+        }
+        __outw(nic_dev.io_base+RTL8139_STATUS, RTL8139_STATUS_ROK);
     }
     if (status & RTL8139_STATUS_TOK){
-        LOG_DEBUG("Sent\n");
+        LOG_DEBUG("Transmitted\n");
+        __outw(nic_dev.io_base+RTL8139_STATUS, RTL8139_STATUS_TOK);
     }
 
     pic_ack(nic_dev.irq);
@@ -69,6 +81,26 @@ uint8_t* get_mac_addr(){
 
 uint32_t get_ip_addr(){
     return nic_dev.ip;
+}
+
+uint32_t get_router_ip_addr(){
+    return nic_dev.router_ip;
+}
+
+uint32_t get_subnet_mask(){
+    return nic_dev.subnet_mask;
+}
+
+void set_ip_addr(uint32_t ip){
+    nic_dev.ip = ip;
+}
+
+void set_router_ip_addr(uint32_t router_ip){
+    nic_dev.router_ip = router_ip;
+}
+
+void set_subnet_mask(uint32_t subnet_mask){
+    nic_dev.subnet_mask = subnet_mask;
 }
 
 void init_nic(){
@@ -115,8 +147,6 @@ void init_nic(){
     __outl(nic_dev.io_base+RTL8139_RCR, RTL8139_RCR_AAP | RTL8139_RCR_APM | RTL8139_RCR_AM | RTL8139_RCR_AB | RTL8139_RCR_WRAP);
     // __outl(nic_dev.io_base+RTL8139_RCR, RTL8139_RCR_AAP | RTL8139_RCR_APM | RTL8139_RCR_AM | RTL8139_RCR_AB | (1<<10));
 
-    // Start the receiver & the transmitter
-    __outb(nic_dev.io_base+RTL8139_COMMAND, RTL8139_COMMAND_TE | RTL8139_COMMAND_RE);
     
     // Register the interrupts
     uint32_t interrupt_line = get_pci_device_register(nic_dev.pci_config_space, 0xF).register_f.interrupt_line;
@@ -125,6 +155,9 @@ void init_nic(){
     LOG_DEBUG("NIC IRQ is %x\n", interrupt_line);
     nic_dev.irq = interrupt_line+0x20;
     set_idt_entry(IsrWrapper_NIC, nic_dev.irq);
+
+    // Start the receiver & the transmitter
+    __outb(nic_dev.io_base+RTL8139_COMMAND, RTL8139_COMMAND_TE | RTL8139_COMMAND_RE);
 
     // Find MAC address
     uint32_t mac1 = __inl(nic_dev.io_base+0x00);
@@ -137,5 +170,7 @@ void init_nic(){
     nic_dev.mac[5] = mac2>>8;
 
     LOG_DEBUG("MAC: %x:%x:%x:%x:%x:%x\n", nic_dev.mac[0], nic_dev.mac[1], nic_dev.mac[2], nic_dev.mac[3], nic_dev.mac[4], nic_dev.mac[5]);
+
+    nic_dev.cp_buffer = allocate_memory(RTL8139_RX_BUFFER_SIZE);
 
 }

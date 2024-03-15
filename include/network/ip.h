@@ -2,6 +2,7 @@
 #define __IP_H
 
 #include "lib/types.h"
+#include "network/ethernet.h"
 
 #define IPV4_VERSION 4
 #define IPV4_IHL 5
@@ -29,5 +30,6 @@ typedef struct {
 
 extern uint32_t get_ip_header_size();
 extern void build_ip(ip_t *packet, uint16_t payload_length, uint32_t dest);
+extern void handle_ip_packet(ethernet_t *ether_hdr);
 
 #endif

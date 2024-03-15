@@ -43,8 +43,9 @@ __attribute__((section(".vmm"))) void handle_ip_packet(ethernet_t *ether_hdr){
     uint32_t src_ip = FLIP_DWORD(ip_hdr->source), dst_ip = FLIP_DWORD(ip_hdr->destination);
     uint16_t data_length = 0;
     uint16_t src_port = 0, dst_port = 0;
+    udp_t *udp_hdr;
     if (ip_hdr->protocol == IPV4_PROTOCOL_UDP){
-        udp_t *udp_hdr = ip_hdr->payload;
+        udp_hdr = ip_hdr->payload;
         data_length = FLIP_WORD(udp_hdr->length) - sizeof(udp_t);
         src_port = FLIP_WORD(udp_hdr->source);
         dst_port = FLIP_WORD(udp_hdr->destination);
@@ -53,6 +54,7 @@ __attribute__((section(".vmm"))) void handle_ip_packet(ethernet_t *ether_hdr){
     
     if (dst_port == 68){
         LOG_DEBUG("Received DHCP packet\n");
+        handle_dhcp_packet(udp_hdr->payload);
     }
 }
 

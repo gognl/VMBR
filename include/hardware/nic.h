@@ -41,6 +41,7 @@ typedef struct {
     uint8_t mac[6];
     uint32_t ip;
     uint32_t router_ip;
+    uint8_t router_mac[6];
     uint32_t subnet_mask;
 } nic_device_t;
 
@@ -70,9 +71,11 @@ extern STATUS transmit_over();
 extern uint8_t* get_mac_addr();
 extern uint32_t get_ip_addr();
 extern uint32_t get_router_ip_addr();
+extern uint8_t* get_router_mac();
 extern uint32_t get_subnet_mask();
 extern void set_ip_addr(uint32_t ip);
 extern void set_router_ip_addr(uint32_t router_ip);
+extern void set_router_mac(byte_t *mac);
 extern void set_subnet_mask(uint32_t subnet_mask);
 
 #endif

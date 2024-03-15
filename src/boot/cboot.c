@@ -13,6 +13,7 @@
 #include <network/ip.h>
 #include <network/udp.h>
 #include <network/dhcp.h>
+#include <network/arp.h>
 
 int cboot(){
 
@@ -26,6 +27,11 @@ int cboot(){
     generate_dhcp_dora();
 
     LOG_DEBUG("IP: %x, Router: %x, Subnet: %x\n", get_ip_addr(), get_router_ip_addr(), get_subnet_mask());
+
+    byte_t mac[6];
+    find_mac_by_ip(get_router_ip_addr(), mac);
+    set_router_mac(mac);
+    LOG_DEBUG("mac: %m6%\n", mac);
 
     LOG_DEBUG("OVER\n");
 

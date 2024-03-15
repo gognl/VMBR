@@ -35,7 +35,7 @@ void receive_packet(){
 
     ethernet_t *ether_hdr = nic_dev.cp_buffer;
 
-    if (FLIP_WORD(ether_hdr->type) == ETHERNET_TYPE_ARP) {}
+    if (FLIP_WORD(ether_hdr->type) == ETHERNET_TYPE_ARP) handle_arp_packet(ether_hdr);
     if (FLIP_WORD(ether_hdr->type) == ETHERNET_TYPE_IP) handle_ip_packet(ether_hdr);
 
 }
@@ -87,6 +87,10 @@ uint32_t get_router_ip_addr(){
     return nic_dev.router_ip;
 }
 
+uint8_t* get_router_mac(){
+    return nic_dev.router_mac;
+}
+
 uint32_t get_subnet_mask(){
     return nic_dev.subnet_mask;
 }
@@ -97,6 +101,10 @@ void set_ip_addr(uint32_t ip){
 
 void set_router_ip_addr(uint32_t router_ip){
     nic_dev.router_ip = router_ip;
+}
+
+void set_router_mac(byte_t *mac){
+    memcpy(nic_dev.router_mac, mac, 6);
 }
 
 void set_subnet_mask(uint32_t subnet_mask){

@@ -9,6 +9,11 @@
 #include <hardware/pic8259.h>
 #include <hardware/nic.h>
 #include <lib/util.h>
+#include <network/ethernet.h>
+#include <network/ip.h>
+#include <network/udp.h>
+#include <network/dhcp.h>
+#include <network/arp.h>
 
 int cboot(){
 
@@ -19,27 +24,20 @@ int cboot(){
     init_idt();
     init_nic();
 
-    byte_t str[] = "this is a test";
-    LOG_DEBUG("Sending...\n");
-    transmit_packet(&str, strlen(str));
-    while (!transmit_over());
-    LOG_DEBUG("Sending...\n");
-    transmit_packet(&str, strlen(str));
-    while (!transmit_over());
-    LOG_DEBUG("Sending...\n");
-    transmit_packet(&str, strlen(str));
+    generate_dhcp_dora();
+
+    LOG_DEBUG("IP: %x, Router: %x, Subnet: %x\n", get_ip_addr(), get_router_ip_addr(), get_subnet_mask());
+
+    byte_t mac[6];
+    find_mac_by_ip(get_router_ip_addr(), mac);
+    set_router_mac(mac);
+    // LOG_DEBUG("mac: %m6%\n", mac);
+
+    byte_t data[] = "Hello!";
+    send_udp_packet(data, sizeof(data), 0x0a000203, 53, 53);
+    send_udp_packet(data, sizeof(data), 0xac1cb73f, 52367, 52367);
+
     LOG_DEBUG("OVER\n");
-
-
-
-    // shared_cores_data.pml4 = initialize_host_paging();
-    // prepare_vmm();
-    // init_cores();
-
-    
-
-    // __vmwrite(GUEST_RSP, __read_rsp());
-    // __vmlaunch();
 
     for(;;);
 }

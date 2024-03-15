@@ -8,6 +8,7 @@
 
 #define RTL8139_RBSTART 0x30
 #define RTL8139_COMMAND 0x37
+#define RTL8139_CAPR 0x38
 #define RTL8139_IMR 0x3C
 #define RTL8139_STATUS 0x3E
 #define RTL8139_RCR 0x44
@@ -16,6 +17,7 @@
 #define RTL8139_STATUS_ROK (1<<0)
 #define RTL8139_STATUS_TOK (1<<2)
 
+#define RTL8139_COMMAND_BUFE (1<<0)
 #define RTL8139_COMMAND_TE (1<<2)
 #define RTL8139_COMMAND_RE (1<<3)
 #define RTL8139_COMMAND_RST (1<<4)
@@ -27,14 +29,20 @@
 #define RTL8139_RCR_AB (1<<3)
 #define RTL8139_RCR_WRAP (1<<7)
 
+#define RTL8139_RX_BASIC_BUFFER_SIZE 8192
 #define RTL8139_RX_BUFFER_SIZE (8192+16+1500)
 
 typedef struct {
     pci_device_t pci_config_space;
     uint32_t io_base;
     uint32_t rx_buffer;
-    uint8_t mac[6];
+    byte_t *cp_buffer;
     uint8_t irq;
+    uint8_t mac[6];
+    uint32_t ip;
+    uint32_t router_ip;
+    uint8_t router_mac[6];
+    uint32_t subnet_mask;
 } nic_device_t;
 
 typedef union {
@@ -61,5 +69,13 @@ extern void init_nic();
 extern void transmit_packet(byte_t *buffer, uint16_t size);
 extern STATUS transmit_over();
 extern uint8_t* get_mac_addr();
+extern uint32_t get_ip_addr();
+extern uint32_t get_router_ip_addr();
+extern uint8_t* get_router_mac();
+extern uint32_t get_subnet_mask();
+extern void set_ip_addr(uint32_t ip);
+extern void set_router_ip_addr(uint32_t router_ip);
+extern void set_router_mac(byte_t *mac);
+extern void set_subnet_mask(uint32_t subnet_mask);
 
 #endif

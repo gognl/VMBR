@@ -31,7 +31,11 @@ int cboot(){
     byte_t mac[6];
     find_mac_by_ip(get_router_ip_addr(), mac);
     set_router_mac(mac);
-    LOG_DEBUG("mac: %m6%\n", mac);
+    // LOG_DEBUG("mac: %m6%\n", mac);
+
+    byte_t data[] = "Hello!";
+    send_udp_packet(data, sizeof(data), 0x0a000203, 53, 53);
+    send_udp_packet(data, sizeof(data), 0xac1cb73f, 52367, 52367);
 
     LOG_DEBUG("OVER\n");
 

@@ -11,8 +11,8 @@ __attribute__((section(".vmm"))) uint32_t get_ip_header_size(){
 __attribute__((section(".vmm"))) uint16_t calculate_ip_checksum(ip_t *packet){
     uint16_t *values = packet;
     uint32_t checksum = 0;
+    packet->checksum = 0;
     for (uint8_t i = 0; i<10; i++){
-        if (i == 6) continue;   // skip the checksum itself
         checksum += FLIP_WORD(values[i]);
     }
     checksum = (checksum & 0xffff) + (checksum>>16);

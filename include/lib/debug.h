@@ -11,7 +11,7 @@
 #define LOG_LEVEL_ERROR 2
 #define CURRENT_LOG_LEVEL LOG_LEVEL_DEBUG
 #define DEBUG_VMEXITS TRUE
-#define DEBUG_ALLOCATIONS TRUE
+#define DEBUG_ALLOCATIONS FALSE
 
 extern void LOG_DEBUG(char_t *s, ...);
 extern void LOG_INFO(char_t *s, ...);

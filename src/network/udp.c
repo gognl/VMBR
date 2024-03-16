@@ -11,7 +11,30 @@ __attribute__((section(".vmm"))) uint32_t get_udp_header_size(){
 }
 
 __attribute__((section(".vmm"))) uint16_t calculate_udp_checksum(udp_t *packet, ip_t *ip_hdr){
-    return 0;
+
+    uint32_t checksum = 0;
+    packet->checksum = 0;
+
+    checksum += FLIP_WORD(ip_hdr->destination & 0xffff);
+    checksum += FLIP_WORD((ip_hdr->destination >> 16) & 0xffff);
+    checksum += FLIP_WORD(ip_hdr->source & 0xffff);
+    checksum += FLIP_WORD((ip_hdr->source >> 16) & 0xffff);
+    checksum += (uint16_t)ip_hdr->protocol;
+    checksum += FLIP_WORD(ip_hdr->total_length) - sizeof(ip_t);
+
+    word_t *buff = packet;
+    for (uint16_t i = 0; i<FLIP_WORD(packet->length)/2; i++){
+        checksum += FLIP_WORD(buff[i]);
+    }
+
+    while (checksum >> 16){
+        checksum = (checksum & 0xffff) + (checksum >> 16);
+    }
+
+    if (checksum == 0) return 0xffff;
+
+    return FLIP_WORD((~checksum) & 0xffff);
+
 }
 
 __attribute__((section(".vmm"))) void build_udp(udp_t *packet, uint16_t source, uint16_t dest, ip_t *ip_hdr, uint16_t payload_length){

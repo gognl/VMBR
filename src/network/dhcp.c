@@ -8,10 +8,6 @@
 static __attribute__((section(".vmmdata"))) uint32_t xid = 0x12c4851a;
 static __attribute__((section(".vmmdata"))) uint32_t server_ip = 0;
 
-__attribute__((section(".vmm"))) uint32_t get_dhcp_header_size(){
-    return sizeof(dhcp_t);
-}
-
 __attribute__((section(".vmm"))) void add_dhcp_option(dhcp_t *packet, dhcp_option_t *option, byte_t *data){
     packet->cookie = FLIP_DWORD(DHCP_MAGIC_COOKIE);
     byte_t *ptr = packet->options;
@@ -27,6 +23,18 @@ __attribute__((section(".vmm"))) dhcp_option_t* find_dhcp_option(dhcp_t *packet,
     while (*ptr != code && *ptr != DHCP_CODE_END) ptr += 2 + *(ptr+1);
     if (*ptr == DHCP_CODE_END && code != DHCP_CODE_END) return 0;
     return ptr;
+}
+
+uint16_t get_dhcp_hdr_length(dhcp_t *pkt){
+    uint16_t len = sizeof(dhcp_t);
+    if (pkt->cookie != FLIP_DWORD(DHCP_MAGIC_COOKIE)) return ALIGN_UP(len, 2);
+    byte_t *ptr = pkt->options;
+    while (*ptr != DHCP_CODE_END){
+        len += *(ptr+1) + 2;
+        ptr += 2 + *(ptr+1);
+    }
+    len += *(ptr+1) + 2;
+    return ALIGN_UP(len, 2);
 }
 
 __attribute__((section(".vmm"))) void build_dhcp_discover(dhcp_t *packet){
@@ -87,20 +95,22 @@ __attribute__((section(".vmm"))) void handle_dhcp_packet(dhcp_t *packet){
 }
 
 __attribute__((section(".vmm"))) void generate_dhcp_dora(){
-    byte_t *packet = allocate_memory(42+sizeof(dhcp_t));
+    byte_t *packet = allocate_memory(42+sizeof(dhcp_t)+12);
     dhcp_t *dhcp = packet+42;
     byte_t dst_mac[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     network_addr_t addr = {.dst_ip = 0xffffffff, .dst_mac = dst_mac, .dst_port=67, .src_port=68};
     build_dhcp_discover(dhcp);
-    build_udp_packet(packet, dhcp, sizeof(dhcp_t), &addr);
-    transmit_packet(packet, 42+sizeof(dhcp_t));
+    uint16_t dhcp_discover_len = get_dhcp_hdr_length(dhcp);
+    build_udp_packet(packet, dhcp, dhcp_discover_len, &addr);
+    transmit_packet(packet, 42+dhcp_discover_len);
 
     while (server_ip == 0) __pause();
 
-    memsetw(packet, 0, (42+sizeof(dhcp_t))/2);
+    memsetw(packet, 0, (42+dhcp_discover_len)/2);
     build_dhcp_request(dhcp, server_ip);
-    build_udp_packet(packet, dhcp, sizeof(dhcp_t), &addr);
-    transmit_packet(packet, 42+sizeof(dhcp_t));
+    uint16_t dhcp_request_len = get_dhcp_hdr_length(dhcp);
+    build_udp_packet(packet, dhcp, dhcp_request_len, &addr);
+    transmit_packet(packet, 42+dhcp_request_len);
 
     while (get_ip_addr() == 0) __pause();
 }

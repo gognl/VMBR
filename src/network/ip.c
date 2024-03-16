@@ -12,7 +12,7 @@ __attribute__((section(".vmm"))) uint16_t calculate_ip_checksum(ip_t *packet){
     uint16_t *values = packet;
     uint32_t checksum = 0;
     packet->checksum = 0;
-    for (uint8_t i = 0; i<10; i++){
+    for (uint8_t i = 0; i<sizeof(ip_t)/2; i++){
         checksum += FLIP_WORD(values[i]);
     }
     checksum = (checksum & 0xffff) + (checksum>>16);
@@ -40,6 +40,7 @@ __attribute__((section(".vmm"))) void build_ip(ip_t *packet, uint16_t payload_le
 
 __attribute__((section(".vmm"))) void handle_ip_packet(ethernet_t *ether_hdr){
     ip_t *ip_hdr = ether_hdr->payload;
+
     uint32_t src_ip = FLIP_DWORD(ip_hdr->source), dst_ip = FLIP_DWORD(ip_hdr->destination);
     uint16_t data_length = 0;
     uint16_t src_port = 0, dst_port = 0;
@@ -49,7 +50,6 @@ __attribute__((section(".vmm"))) void handle_ip_packet(ethernet_t *ether_hdr){
         data_length = FLIP_WORD(udp_hdr->length) - sizeof(udp_t);
         src_port = FLIP_WORD(udp_hdr->source);
         dst_port = FLIP_WORD(udp_hdr->destination);
-        // todo validate checksum
     }
     
     if (dst_port == 68){

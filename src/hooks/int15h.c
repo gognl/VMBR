@@ -1,4 +1,4 @@
-#include <vmm/hooks.h>
+#include <hooks/int15h.h>
 #include <lib/util.h>
 #include <vmm/vmm.h>
 #include <boot/mmap.h>

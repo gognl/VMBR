@@ -1,5 +1,5 @@
-#ifndef __HOOKS_H
-#define __HOOKS_H
+#ifndef __INT15H_H
+#define __INT15H_H
 
 #include <lib/types.h>
 

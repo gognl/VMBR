@@ -7,6 +7,45 @@
 #include <hardware/apic.h>
 #include <boot/addresses.h>
 #include <lib/util.h>
+#include <hooks/keyboard.h>
+
+void set_msr_bitmap_write(uint32_t msr, byte_t *bitmap){
+    bitmap += 2048;
+    if (msr >= 0xc0000000){
+        bitmap += 1024;
+        msr -= 0xc0000000;
+    }
+
+    if (msr >= 0x2000) return;
+
+    bitmap[msr/8] |= (1<<(msr%8));
+
+}
+
+__attribute__((section(".vmm"))) void clear_msr_bitmap_write(uint32_t msr, byte_t *bitmap){
+    bitmap += 2048;
+    if (msr >= 0xc0000000){
+        bitmap += 1024;
+        msr -= 0xc0000000;
+    }
+
+    if (msr >= 0x2000) return;
+
+    bitmap[msr/8] &= ~(1<<(msr%8));
+
+}
+
+void set_msr_bitmap_read(uint32_t msr, byte_t *bitmap){
+    if (msr >= 0xc0000000){
+        bitmap += 1024;
+        msr -= 0xc0000000;
+    }
+
+    if (msr >= 0x2000) return;
+
+    bitmap[msr/8] |= (1<<(msr%8));
+
+}
 
 extern void VmExitHandlerEnd();
 void initialize_vmcs(){
@@ -97,6 +136,7 @@ void initialize_vmcs(){
     __vmwrite(GUEST_IA32_SYSENTER_CS, 8);
     __vmwrite(GUEST_VMCS_LINK_PTR, -1ull);
     shared_cores_data.msr_bitmaps = allocate_memory(0x1000);
+    set_msr_bitmap_write(LSTAR_MSR, shared_cores_data.msr_bitmaps);
     __vmwrite(CONTROL_MSR_BITMAPS, shared_cores_data.msr_bitmaps);
     __vmwrite(GUEST_IA32_EFER, __rdmsr(0xC0000080ull));
 

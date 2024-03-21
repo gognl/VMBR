@@ -47,7 +47,16 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
         LOG_ERROR("VMX ERROR %d\n", state.vmx_error);
 
     if (state.exit_reason == 0 && state.interruption_info.valid && state.interruption_info.vector == 3){
-        
+        if (__vmread(GUEST_RIP) == shared_cores_data.ntoskrnl + NTOSKRNL_MiDriverLoadSucceeded_OFFSET){
+            handle_MiDriverLoadSucceeded_hook(&state);
+            __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
+            return;
+        }
+        else if (__vmread(GUEST_RIP) == shared_cores_data.kbdclass + KBDCLASS_KeyboardClassServiceCallback_OFFSET){
+            handle_KeyboardClassServiceCallback_hook(&state);
+            __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
+            return;
+        }
     }
     switch (state.exit_reason){
         case EXIT_REASON_INIT:

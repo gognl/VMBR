@@ -185,7 +185,8 @@ void initialize_vmcs(){
 
     __vmwrite(CONTROL_XSS_EXITING_BITMAP, 0);
 
-    __vmwrite(CONTROL_EXCEPTION_BITMAP, (1<<6));
+    // __vmwrite(CONTROL_EXCEPTION_BITMAP, (1<<6));
+    __vmwrite(CONTROL_EXCEPTION_BITMAP, (1<<3));
 
 }
 
@@ -321,5 +322,7 @@ void initialize_vmcs_ap(){
     __vmwrite(CONTROL_EPTP, eptp.value);
 
     __vmwrite(CONTROL_XSS_EXITING_BITMAP, 0);
+
+    __vmwrite(CONTROL_EXCEPTION_BITMAP, (1<<3));
     // __vmwrite(CONTROL_EXCEPTION_BITMAP, 0xffffffff);
 }

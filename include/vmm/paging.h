@@ -28,6 +28,7 @@ extern qword_t initialize_ept();
 #define PAGING_OFFSET_1GB(x) ((x) & 0x3fffffffull)
 #define PAGING_P (1<<0)
 #define PAGING_PS (1<<7)
+#define PAGING_ENTRY_MASK (~0xfff0000000000fff)
 
 typedef union {
     uint64_t ept_pml4;

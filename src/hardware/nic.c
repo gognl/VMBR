@@ -2,7 +2,7 @@
 #include <hardware/pci.h>
 #include <lib/instr.h>
 #include <boot/mmap.h>
-#include <vmm/hooks.h>
+#include <hooks/int15h.h>
 #include <hardware/idt.h>
 #include <network/ethernet.h>
 #include <network/ip.h>

@@ -31,6 +31,8 @@ typedef struct {
     qword_t pml4;
     qword_t ept_pml4;
     msr_bitmaps_t *msr_bitmaps;
+    qword_t ntoskrnl;
+    qword_t kbdclass;
 } shared_cores_data_t;
 
 typedef struct __attribute__((__packed__)) {
@@ -52,6 +54,7 @@ typedef struct __attribute__((__packed__)) {
     qword_t rdx;
     qword_t rdi;
     qword_t rsi;
+    qword_t rbp;
     qword_t r8;
     qword_t r9;
     qword_t r10;

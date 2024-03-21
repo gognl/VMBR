@@ -1,11 +1,12 @@
 #include <vmm/vmcs.h>
 #include <lib/instr.h>
 #include <vmm/vmm.h>
-#include <vmm/hooks.h>
+#include <hooks/int15h.h>
 #include <boot/addresses.h>
 #include <hardware/apic.h>
 #include <lib/msr.h>
 #include <lib/util.h>
+#include <hooks/keyboard.h>
 
 #define LOWER_DWORD(x) ((x) & 0xffffffffull)
 #define LOWER_WORD(x) ((x) & 0xffffull)
@@ -45,6 +46,18 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
     if (state.vmx_error)
         LOG_ERROR("VMX ERROR %d\n", state.vmx_error);
 
+    if (state.exit_reason == 0 && state.interruption_info.valid && state.interruption_info.vector == 3){
+        if (__vmread(GUEST_RIP) == shared_cores_data.ntoskrnl + NTOSKRNL_MiDriverLoadSucceeded_OFFSET){
+            handle_MiDriverLoadSucceeded_hook(&state);
+            __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
+            return;
+        }
+        else if (__vmread(GUEST_RIP) == shared_cores_data.kbdclass + KBDCLASS_KeyboardClassServiceCallback_OFFSET){
+            handle_KeyboardClassServiceCallback_hook(&state);
+            __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
+            return;
+        }
+    }
     switch (state.exit_reason){
         case EXIT_REASON_INIT:
             // LOG_DEBUG("INIT VMEXIT\n");
@@ -64,11 +77,15 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             qword_t msr = LOWER_DWORD(state.registers->rcx);
             qword_t value = LOWER_DWORD(state.registers->rax) | (state.registers->rdx<<32);
             #if DEBUG_VMEXITS
-            LOG_DEBUG("WRMSR VMEXIT (%x, %b)\n", msr, value);
+            // LOG_DEBUG("WRMSR VMEXIT (%x, %x)\n", msr, value);
             #endif
             __wrmsr(msr, value);
             if (msr == IA32_APIC_BASE && (value & X2APIC_ENABLE != 0)){
                 LOG_DEBUG("Guest is trying to enable X2APIC...\n");
+            }
+            if (msr == LSTAR_MSR){
+                // LOG_DEBUG("Guest is writing to LSTAR (%x)\n", value);
+                handle_lstar_write(value);
             }
             break;
         case EXIT_REASON_RDMSR:

@@ -19,6 +19,17 @@ extern qword_t initialize_ept();
 #define ADDRMASK_EPT_PD_INDEX(x) ((x & 0x3FE00000ULL) >> 21)
 #define ADDRMASK_EPT_PT_INDEX(x) ((x & 0x1FF000ULL) >> 12)
 
+#define PML4E_IDX(x) (((x) & 0xff8000000000ull) >> 39)   // bits 39:47
+#define PML3E_IDX(x) (((x) & 0x7fc0000000ull) >> 30)     // bits 30:38
+#define PML2E_IDX(x) (((x) & 0x3fe00000ull) >> 21)       // bits 21:29
+#define PML1E_IDX(x) (((x) & 0x1ff000ull) >> 12)         // bits 12:20
+#define PAGING_OFFSET_4KB(x) ((x) & 0xfffull)
+#define PAGING_OFFSET_2MB(x) ((x) & 0x1fffffull)
+#define PAGING_OFFSET_1GB(x) ((x) & 0x3fffffffull)
+#define PAGING_P (1<<0)
+#define PAGING_PS (1<<7)
+#define PAGING_ENTRY_MASK (~0xfff0000000000fff)
+
 typedef union {
     uint64_t ept_pml4;
     uint64_t value;

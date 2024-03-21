@@ -6,7 +6,7 @@
 #include <lib/msr.h>
 #include <hardware/apic.h>
 #include <boot/mmap.h>
-#include <vmm/hooks.h>
+#include <hooks/int15h.h>
 #include <lib/util.h>
 #include <vmm/paging.h>
 

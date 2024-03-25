@@ -11,7 +11,7 @@ __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(v
     // Emulate PUSH RBP
     __vmwrite(GUEST_RSP, __vmread(GUEST_RSP)-8);
     uint64_t guest_stack = __vmread(GUEST_RSP);
-    uint64_t guest_stack_phys = guest_virtual_to_physical(guest_stack, __vmread(GUEST_CR3));
+    uint64_t guest_stack_phys = guest_virtual_to_physical(guest_stack);
     *(uint64_t*)guest_stack_phys = state->registers->rbp;
     KEYBOARD_INPUT_DATA *InputDataStart = state->registers->rdx;
     KEYBOARD_INPUT_DATA *InputDataEnd = state->registers->r8;
@@ -53,7 +53,7 @@ __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(v
 
     KEYBOARD_INPUT_DATA *data_phys;
     for (; InputDataStart < InputDataEnd; InputDataStart++){
-        data_phys = guest_virtual_to_physical(InputDataStart, __vmread(GUEST_CR3));
+        data_phys = guest_virtual_to_physical(InputDataStart);
         if (data_phys->Flags == KEY_MAKE)
             LOG_INFO("Key pressed: %c\n", kbd_US[data_phys->MakeCode]);
         else if (data_phys->Flags == KEY_BREAK)

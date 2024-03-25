@@ -33,5 +33,6 @@ extern void handle_MiDriverLoadSucceeded_hook(vmexit_data_t *state);
 #define UNICODE_STRING_Buffer(x) ((x)+8)
 
 extern qword_t find_windows_module(wchar_t *name, uint16_t len);
+extern uint64_t guest_virtual_to_physical(uint64_t addr);
 
 #endif

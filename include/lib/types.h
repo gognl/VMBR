@@ -6,6 +6,7 @@ typedef unsigned int dword_t;
 typedef unsigned short word_t;
 typedef unsigned char byte_t;
 typedef unsigned char char_t;
+typedef unsigned short wchar_t;
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;

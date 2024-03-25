@@ -33,6 +33,7 @@ typedef struct {
     msr_bitmaps_t *msr_bitmaps;
     qword_t ntoskrnl;
     qword_t kbdclass;
+    qword_t ndis;
 } shared_cores_data_t;
 
 typedef struct __attribute__((__packed__)) {

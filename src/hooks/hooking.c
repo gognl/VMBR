@@ -85,6 +85,7 @@ __attribute__((section(".vmm"))) void handle_MiDriverLoadSucceeded_hook(vmexit_d
         shared_cores_data.ndis = find_windows_module(u"ndis.sys", 16);
         if (shared_cores_data.ndis != 0){
             hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisSendNetBufferLists_OFFSET));
+            hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET));
             LOG_INFO("Found ndis.sys: %x\n", shared_cores_data.ndis);
         }
     }

@@ -15,6 +15,7 @@
 #define KBDCLASS_KeyboardClassServiceCallback_OFFSET 0x5583 // actually at 0x5570, but "push rbp" is a bit later
 
 #define NDIS_NdisSendNetBufferLists_OFFSET 0x2474   // actually at 0x2460, but "push rbp" is a bit later
+#define NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET 0x4993   // actually at 0x4990, but "push r12" is a bit later
 
 
 #define PUSH_RBP 0x55

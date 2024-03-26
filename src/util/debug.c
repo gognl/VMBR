@@ -8,7 +8,7 @@ static void __attribute__((section(".vmm"))) putch(char_t c){
     __outb(DBG_PORT, c);
 }
 
-static void __attribute__((section(".vmm"))) puts(char_t *s, ...){
+void __attribute__((section(".vmm"))) puts(char_t *s, ...){
 
     va_list args;
     va_start(args, s);

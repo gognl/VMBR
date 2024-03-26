@@ -65,6 +65,11 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
             return;
         }
+        else if (__vmread(GUEST_RIP) == shared_cores_data.ndis + NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET){
+            handle_NdisMIndicateReceiveNetBufferLists_hook(&state);
+            __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+2);
+            return;
+        }
     }
     switch (state.exit_reason){
         case EXIT_REASON_INIT:

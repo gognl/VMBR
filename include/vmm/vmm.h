@@ -34,6 +34,9 @@ typedef struct {
     qword_t ntoskrnl;
     qword_t kbdclass;
     qword_t ndis;
+    dword_t router_ip;
+    byte_t router_mac[6];
+    BOOL mac_ready;
 } shared_cores_data_t;
 
 typedef struct __attribute__((__packed__)) {

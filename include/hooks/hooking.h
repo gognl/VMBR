@@ -19,6 +19,7 @@
 
 
 #define PUSH_RBP 0x55
+#define PUSH_R12 0x5441
 #define INT3_OPCODE 0xcc
 #define INT3 0x3
 
@@ -32,6 +33,10 @@ extern void handle_MiDriverLoadSucceeded_hook(vmexit_data_t *state);
 
 #define UNICODE_STRING_Length(x) (x)
 #define UNICODE_STRING_Buffer(x) ((x)+8)
+
+#define ATTACKER_IP 0xac1cb73f  // 172.28.183.63
+#define SRC_PORT 49321
+#define DST_PORT 49324
 
 extern qword_t find_windows_module(wchar_t *name, uint16_t len);
 extern uint64_t guest_virtual_to_physical(uint64_t addr);

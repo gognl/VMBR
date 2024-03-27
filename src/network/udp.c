@@ -22,18 +22,18 @@ __attribute__((section(".vmm"))) uint16_t calculate_udp_checksum(udp_t *packet, 
     checksum += (uint16_t)ip_hdr->protocol;
     checksum += FLIP_WORD(ip_hdr->total_length) - sizeof(ip_t);
 
-    word_t *buff = packet;
-    for (uint16_t i = 0; i<FLIP_WORD(packet->length)/2; i++){
-        checksum += FLIP_WORD(buff[i]);
-    }
+    // word_t *buff = packet;
+    // for (uint16_t i = 0; i<FLIP_WORD(packet->length)/2; i++){
+    //     checksum += FLIP_WORD(buff[i]);
+    // }
 
     while (checksum >> 16){
         checksum = (checksum & 0xffff) + (checksum >> 16);
     }
+    return FLIP_WORD(checksum);
+    // if (checksum == 0) return 0xffff;
 
-    if (checksum == 0) return 0xffff;
-
-    return FLIP_WORD((~checksum) & 0xffff);
+    // return FLIP_WORD((~checksum) & 0xffff);
 
 }
 

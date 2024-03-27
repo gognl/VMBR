@@ -747,4 +747,6 @@ typedef union {
     } loadiwkey;
 } instruction_info_t;
 
+extern void set_msr_bitmap_read(uint32_t msr, byte_t *bitmap);
+
 #endif

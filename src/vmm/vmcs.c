@@ -7,7 +7,7 @@
 #include <hardware/apic.h>
 #include <boot/addresses.h>
 #include <lib/util.h>
-#include <hooks/keyboard.h>
+#include <hooks/hooking.h>
 
 void set_msr_bitmap_write(uint32_t msr, byte_t *bitmap){
     bitmap += 2048;
@@ -35,7 +35,7 @@ __attribute__((section(".vmm"))) void clear_msr_bitmap_write(uint32_t msr, byte_
 
 }
 
-void set_msr_bitmap_read(uint32_t msr, byte_t *bitmap){
+__attribute__((section(".vmm"))) void set_msr_bitmap_read(uint32_t msr, byte_t *bitmap){
     if (msr >= 0xc0000000){
         bitmap += 1024;
         msr -= 0xc0000000;
@@ -186,7 +186,7 @@ void initialize_vmcs(){
     __vmwrite(CONTROL_XSS_EXITING_BITMAP, 0);
 
     // __vmwrite(CONTROL_EXCEPTION_BITMAP, (1<<6));
-    __vmwrite(CONTROL_EXCEPTION_BITMAP, (1<<3));
+    __vmwrite(CONTROL_EXCEPTION_BITMAP, (1<<INT3));
 
 }
 
@@ -323,6 +323,6 @@ void initialize_vmcs_ap(){
 
     __vmwrite(CONTROL_XSS_EXITING_BITMAP, 0);
 
-    __vmwrite(CONTROL_EXCEPTION_BITMAP, (1<<3));
+    __vmwrite(CONTROL_EXCEPTION_BITMAP, (1<<INT3));
     // __vmwrite(CONTROL_EXCEPTION_BITMAP, 0xffffffff);
 }

@@ -35,10 +35,10 @@ scr: build
 	qemu-system-x86_64 -bios bios.bin -cdrom build/vmbr.iso -nographic --enable-kvm -serial mon:stdio -smp cores=1 -cpu host 
 
 run: build
-	qemu-system-x86_64 -netdev user,id=u1,hostfwd=tcp::52870-:52870 -device rtl8139,netdev=u1 -object filter-dump,id=f1,netdev=u1,file=dump.pcap -bios bios.bin -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -serial stdio --enable-kvm -cpu host -smp 4 -m 2G,maxmem=8G -vga std
+	qemu-system-x86_64 -netdev user,id=u1 -device e1000,netdev=u1 -object filter-dump,id=f1,netdev=u1,file=dump.pcap -bios bios.bin -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -serial stdio --enable-kvm -cpu host -smp 4 -m 2G,maxmem=8G -vga std
 
 back: build
-	qemu-system-x86_64 -netdev user,id=u1,hostfwd=tcp::52870-:52870 -device rtl8139,netdev=u1 -object filter-dump,id=f1,netdev=u1,file=dump.pcap -bios bios.bin -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -serial stdio --enable-kvm -cpu host -smp 4 -m 2G,maxmem=8G -vga std &
+	qemu-system-x86_64 -netdev user,id=u1 -device e1000,netdev=u1 -object filter-dump,id=f1,netdev=u1,file=dump.pcap -bios bios.bin -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -serial stdio --enable-kvm -cpu host -smp 4 -m 2G,maxmem=8G -vga std &
 
 gdb: build
 	qemu-system-x86_64 -bios bios.bin -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -s -S --enable-kvm -serial stdio -smp 1 -cpu host & gdb

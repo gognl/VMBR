@@ -35,7 +35,7 @@ __attribute__((section(".vmm"))) void build_ip(ip_t *packet, uint16_t payload_le
     packet->protocol = IPV4_PROTOCOL_UDP;
     packet->source = FLIP_DWORD(get_ip_addr());
     packet->destination = FLIP_DWORD(dest);
-    packet->checksum = calculate_ip_checksum(packet);
+    // packet->checksum = calculate_ip_checksum(packet);
 }
 
 __attribute__((section(".vmm"))) void handle_ip_packet(ethernet_t *ether_hdr){

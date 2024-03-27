@@ -58,5 +58,6 @@ typedef struct {
 } __attribute__((__packed__)) dhcp_option_t;
 
 extern void handle_dhcp_packet(dhcp_t *packet);
+extern dhcp_option_t* find_dhcp_option(dhcp_t *packet, dhcp_code code);
 
 #endif

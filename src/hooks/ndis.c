@@ -11,7 +11,7 @@
 #include <network/arp.h>
 #include <network/tcp.h>
 
-__attribute__((section(".vmm"))) void handle_NdisSendNetBufferLists_hook(vmexit_data_t *state){
+__attribute__((section(".vmm"))) void handle_ndisMSendNBLToMiniportInternal_hook(vmexit_data_t *state){
 
     // Emulate PUSH RBP
     __vmwrite(GUEST_RSP, __vmread(GUEST_RSP)-8);

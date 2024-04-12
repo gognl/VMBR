@@ -70,6 +70,12 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+2);
             return;
         }
+        else {  // Inject INT3 (SDM 27.6)
+            __vmwrite(CONTROL_VMENTRY_INSTRUCTION_LENGTH, state.instr_length);
+            // According to SDM 25.8.3, must use "software exception" for INT3
+            __vmwrite(CONTROL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, (1<<31) | (4<<8)); 
+            return;
+        }
     }
     switch (state.exit_reason){
         case EXIT_REASON_VMX_PREEMPTION_TIMER:

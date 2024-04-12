@@ -60,7 +60,7 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
             return;
         }
-        else if (shared_cores_data.send_pending && __vmread(GUEST_RIP) == shared_cores_data.ndis + NDIS_NdisSendNetBufferLists_OFFSET){
+        else if (shared_cores_data.send_pending && __vmread(GUEST_RIP) == shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET){
             handle_NdisSendNetBufferLists_hook(&state);
             __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
             return;
@@ -72,6 +72,20 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
         }
     }
     switch (state.exit_reason){
+        case EXIT_REASON_VMX_PREEMPTION_TIMER:
+            LOG_INFO("VMX PREEMPTION TIMER VMEXIT\n");
+
+            // Initiate sending
+            shared_cores_data.send_pending = TRUE;
+            hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
+
+            // Disable timer
+            pin_based_ctls_t pin_based_ctls = {0};
+            pin_based_ctls.value = __vmread(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS);
+            pin_based_ctls.activate_vmx_preemption_timer = FALSE;
+            __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, pin_based_ctls.value);
+    
+            return;
         case EXIT_REASON_INIT:
             // LOG_DEBUG("INIT VMEXIT\n");
             __vmwrite(GUEST_ACTIVITY_STATE, ACTIVITY_STATE_WAIT_FOR_SIPI);

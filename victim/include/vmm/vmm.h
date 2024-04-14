@@ -24,7 +24,7 @@ extern void __invept(invept_descriptor_t *descriptor, uint64_t type);
 #define CR0_NE (1 << 5)
 
 typedef struct {
-    uint16_t length;
+    uint8_t length;
     byte_t chars[212];
 } spyware_data_t;
 

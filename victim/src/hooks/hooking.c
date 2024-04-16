@@ -95,7 +95,6 @@ __attribute__((section(".vmm"))) void handle_MiDriverLoadSucceeded_hook(vmexit_d
     uint64_t head = get_previous_node(PsLoadedModuleList);
     if (get_node_dllname_length(head) == sizeof(u"kbdclass.sys")-2 && memcmp(get_node_dllname_buffer(head), u"kbdclass.sys", sizeof(u"kbdclass.sys")-2)){
         shared_cores_data.kbdclass = get_node_dllbase(head);
-        hook_function(guest_virtual_to_physical(shared_cores_data.kbdclass + KBDCLASS_KeyboardClassServiceCallback_OFFSET));
         LOG_INFO("Found kbdclass.sys: %x\n", shared_cores_data.kbdclass);
     }
 

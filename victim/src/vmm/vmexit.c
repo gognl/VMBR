@@ -60,7 +60,7 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
             return;
         }
-        else if (shared_cores_data.send_pending && __vmread(GUEST_RIP) == shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET){
+        else if (__vmread(GUEST_RIP) == shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET){
             handle_ndisMSendNBLToMiniportInternal_hook(&state);
             __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
             return;
@@ -81,9 +81,14 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
         case EXIT_REASON_VMX_PREEMPTION_TIMER:
             LOG_INFO("VMX PREEMPTION TIMER VMEXIT\n");
 
-            // Initiate sending
-            shared_cores_data.send_pending = TRUE;
-            hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
+            if (shared_cores_data.send_requests){
+                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
+            }
+            else {
+                // Initiate sending
+                shared_cores_data.send_pending = TRUE;
+                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
+            }
 
             // Disable timer
             pin_based_ctls_t pin_based_ctls = {0};

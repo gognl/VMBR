@@ -43,6 +43,7 @@ typedef struct {
     byte_t router_mac[6];
     BOOL mac_ready;
     BOOL send_pending;
+    BOOL send_requests;
     dword_t spyware_data_lock;
     spyware_data_t spyware_data_buffer;
 } shared_cores_data_t;

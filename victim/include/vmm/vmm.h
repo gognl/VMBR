@@ -48,6 +48,8 @@ typedef struct {
     spyware_data_t spyware_data_buffer;
 } shared_cores_data_t;
 
+#define MAX_BUFFER_LENGTH 212
+
 typedef struct __attribute__((__packed__)) {
     union {
         uint32_t revision_id;

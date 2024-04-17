@@ -25,7 +25,7 @@ extern void __invept(invept_descriptor_t *descriptor, uint64_t type);
 
 typedef struct {
     uint8_t length;
-    byte_t chars[212];
+    byte_t chars[213];
 } spyware_data_t;
 
 typedef struct {
@@ -48,7 +48,7 @@ typedef struct {
     spyware_data_t spyware_data_buffer;
 } shared_cores_data_t;
 
-#define MAX_BUFFER_LENGTH 212
+#define MAX_BUFFER_LENGTH 213
 
 typedef struct __attribute__((__packed__)) {
     union {

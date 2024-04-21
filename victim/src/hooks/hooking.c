@@ -1,6 +1,7 @@
 #include <hooks/hooking.h>
 #include <lib/instr.h>
 #include <lib/util.h>
+#include <vmm/paging.h>
 
 __attribute__((section(".vmm"))) uint64_t guest_virtual_to_physical(uint64_t addr){
     qword_t *pml4 = __vmread(GUEST_CR3), *pml3, *pml2, *pml1;
@@ -46,8 +47,18 @@ __attribute__((section(".vmm"))) qword_t get_previous_node(qword_t node){
     return *(uint64_t*)guest_virtual_to_physical(KLDR_DATA_TABLE_ENTRY_Blink(node));
 }
 
-__attribute__((section(".vmm"))) void hook_function(byte_t *func){
+__attribute__((section(".vmm"))) void hook_function(byte_t *func, byte_t **x_page, byte_t *rw_page){
+
+    *x_page = ALIGN_DOWN((qword_t)func, PAGE_SIZE);
+    memcpy(rw_page, *x_page, PAGE_SIZE);
     *func = INT3_OPCODE;
+    modify_pte_access(get_ept_pte_from_guest_address(*x_page), 0, 0, 1);
+
+    invept_descriptor_t descriptor;
+    descriptor.eptp = (eptp_t)__vmread(CONTROL_EPTP);
+    descriptor.zeros = 0;
+    __invept(&descriptor, 1);
+
 }
 
 __attribute__((section(".vmm"))) void handle_lstar_write(uint64_t lstar){
@@ -68,7 +79,7 @@ __attribute__((section(".vmm"))) void handle_lstar_write(uint64_t lstar){
     
     clear_msr_bitmap_write(LSTAR_MSR, shared_cores_data.msr_bitmaps);
 
-    hook_function(MiDriverLoadSucceeded_phys);
+    hook_function(MiDriverLoadSucceeded_phys, &shared_cores_data.memory_shadowing_pages.MiDriverLoadSucceeded_x, shared_cores_data.memory_shadowing_pages.MiDriverLoadSucceeded_rw);
 
 }
 
@@ -85,7 +96,9 @@ __attribute__((section(".vmm"))) void handle_MiDriverLoadSucceeded_hook(vmexit_d
         shared_cores_data.ndis = find_windows_module(u"ndis.sys", 16);
         if (shared_cores_data.ndis != 0){
             // hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
-            hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET));
+            hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET),
+             &shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_x,
+              shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_rw);
             LOG_INFO("Found ndis.sys: %x\n", shared_cores_data.ndis);
         }
     }

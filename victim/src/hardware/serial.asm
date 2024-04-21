@@ -15,10 +15,14 @@ LoadGuestVmcall:
     mov bx, 0xabcd
     vmcall
 
+section .vmm
+
 bits 64
 __invept:
     invept rsi, oword [rdi]
     ret
+
+section .text
 
 bits 16
 JumpToGuest:

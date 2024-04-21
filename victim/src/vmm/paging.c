@@ -119,7 +119,7 @@ qword_t initialize_ept(){
     return (qword_t)ept_pml4;
 }
 
-ept_pte_t *get_ept_pte_from_guest_address(qword_t address){
+__attribute__((section(".vmm"))) ept_pte_t *get_ept_pte_from_guest_address(qword_t address){
     ept_pml4e_t* pml4 = ((eptp_t)__vmread(CONTROL_EPTP)).ept_pml4 & ~(0xfff);
 
     ept_pdpte_t* pdpt = pml4[ADDRMASK_EPT_PML4_INDEX(address)].next_pd & ~(0xfff);
@@ -130,12 +130,12 @@ ept_pte_t *get_ept_pte_from_guest_address(qword_t address){
 
 }
 
-void modify_pte_page(ept_pte_t *pte, qword_t page){
+__attribute__((section(".vmm"))) void modify_pte_page(ept_pte_t *pte, qword_t page){
     pte->page &= 0xff00000000000fff;
     pte->page |= page;
 }
 
-void modify_pte_access(ept_pte_t *pte, uint8_t read, uint8_t write, uint8_t execute){
+__attribute__((section(".vmm"))) void modify_pte_access(ept_pte_t *pte, uint8_t read, uint8_t write, uint8_t execute){
     pte->read_access = read;
     pte->write_access = write;
     pte->execute_access = execute;

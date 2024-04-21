@@ -20,28 +20,14 @@ int cboot(){
     init_real();
     init_mmap();
 
-    // init_pic();
-    // init_idt();
-    // init_nic();
-
-    // generate_dhcp_dora();
-
-    // LOG_DEBUG("IP: %x, Router: %x, Subnet: %x\n", get_ip_addr(), get_router_ip_addr(), get_subnet_mask());
-
-    // byte_t mac[6];
-    // find_mac_by_ip(get_router_ip_addr(), mac);
-    // set_router_mac(mac);
-    // // LOG_DEBUG("mac: %m6%\n", mac);
-
-    // byte_t data[] = "Hello!";
-    // send_udp_packet(data, sizeof(data), 0x0a000203, 53, 53);
-    // send_udp_packet(data, sizeof(data), 0xac1cb73f, 52367, 52367);
-
-    // LOG_DEBUG("OVER\n");
-
     shared_cores_data.pml4 = initialize_host_paging();
     prepare_vmm();
     init_cores();
+
+    shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_rw = allocate_memory(PAGE_SIZE);
+    shared_cores_data.memory_shadowing_pages.MiDriverLoadSucceeded_rw = allocate_memory(PAGE_SIZE);
+    shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw = allocate_memory(PAGE_SIZE);
+    shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_rw = allocate_memory(PAGE_SIZE);
 
     __vmwrite(GUEST_RSP, __read_rsp());
     __vmlaunch();

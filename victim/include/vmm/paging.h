@@ -3,8 +3,6 @@
 
 #include <lib/types.h>
 
-extern qword_t initialize_host_paging();
-extern qword_t initialize_ept();
 
 #define COMPUTER_RAM 8              // 8gb. TODO find this out instead of macro
 #define LARGE_PAGE_SIZE 0x200000ull
@@ -142,5 +140,11 @@ typedef union {
         qword_t page_idx : 24;
     };
 } ia32_mtrr_physmask_t;
+
+extern qword_t initialize_host_paging();
+extern qword_t initialize_ept();
+extern void modify_pte_access(ept_pte_t *pte, uint8_t read, uint8_t write, uint8_t execute);
+extern ept_pte_t *get_ept_pte_from_guest_address(qword_t address);
+extern void modify_pte_page(ept_pte_t *pte, qword_t page);
 
 #endif

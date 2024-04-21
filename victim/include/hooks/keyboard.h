@@ -14,6 +14,14 @@ typedef struct {
     dword_t  ExtraInformation;
 } KEYBOARD_INPUT_DATA;
 
+#define SCANCODE_CTRL 0x1d
+#define SCANCODE_RSHIFT 0x2a
+#define SCANCODE_LSHIFT 0x36
+#define SCANCODE_ALT 0x38
+#define SCANCODE_CTRL_RELEASED 0xa7
+#define SCANCODE_SHIFT_RELEASED 0xa8
+#define SCANCODE_ALT_RELEASED 0xa9
+
 extern void handle_KeyboardClassServiceCallback_hook(vmexit_data_t *state);
 
 #endif

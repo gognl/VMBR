@@ -79,8 +79,10 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
     }
     switch (state.exit_reason){
         case EXIT_REASON_VMX_PREEMPTION_TIMER:
+            #if DEBUG_VMEXITS
             LOG_INFO("VMX PREEMPTION TIMER VMEXIT\n");
-
+            #endif
+            
             if (shared_cores_data.send_requests){
                 hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
             }

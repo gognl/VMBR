@@ -47,7 +47,7 @@ gef: build
 	qemu-system-x86_64 -netdev user,id=u1,hostfwd=tcp::52869-:52869 -device rtl8139,netdev=u1 -object filter-dump,id=f1,netdev=u1,file=dump.pcap -bios bios.bin -boot d -cdrom build/vmbr.iso -drive file=win10.vhd,format=raw -s -S -serial stdio --enable-kvm -cpu host -smp 4 -m 2G,maxmem=8G & gef
 
 win: win10.vhd
-	qemu-system-x86_64 -bios bios.bin -drive file=win10.vhd,format=raw --enable-kvm -smp 4 -cpu host -m 2G,maxmem=8G -vga std
+	qemu-system-x86_64 -bios bios.bin -drive file=win10.vhd,format=raw --enable-kvm -smp 4 -cpu host -m 2G,maxmem=8G -netdev user,id=u1 -device e1000,netdev=u1 -object filter-dump,id=f1,netdev=u1,file=dump.pcap
 
 clean:
 	rm -rf build

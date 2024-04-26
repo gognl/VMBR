@@ -68,11 +68,48 @@ __attribute__((section(".vmm"))) byte_t* locate_ntoskrnl(uint64_t lstar){
     return base;
 }
 
+__attribute__((section(".vmm"))) uint64_t find_signature(uint64_t addr, byte_t *sign, uint32_t sign_len){
+    uint32_t module_len = get_image_size(addr);
+
+    uint64_t current_virt = addr;
+    byte_t *current_phys;
+
+    while (current_virt < addr + module_len){
+        if (current_virt % PAGE_SIZE == 0) current_phys = guest_virtual_to_physical(current_virt);
+
+        if (memcmp(current_phys, sign, sign_len)) return current_virt;
+
+        current_virt++;
+        current_phys++;
+    }
+
+    return 0;
+
+}
+
+__attribute__((section(".vmm"))) uint64_t locate_PsLoadedModuleList(uint64_t ntoskrnl){
+
+    byte_t sign[] = {
+        0x8b, 0x78, 0x28,   // mov rdi, [rax+28h]
+        0x4c, 0x8b, 0xe2,   // mov r12, rdx
+        0x4c, 0x89, 0x06,   // mov [rsi], r8
+        0x4c, 0x8b, 0xe9    // mov r13, rcx
+    };
+
+    uint64_t MiObtainSectionForDriver_lea = find_signature(ntoskrnl, sign, 12)+12;
+
+    uint64_t PsLoadedModuleList = MiObtainSectionForDriver_lea+7+*(dword_t*)guest_virtual_to_physical(MiObtainSectionForDriver_lea+3);
+
+    LOG_DEBUG("Found PsLoadedModuleList: %x\n", PsLoadedModuleList);
+}
+
 __attribute__((section(".vmm"))) void handle_lstar_write(uint64_t lstar){
 
     shared_cores_data.ntoskrnl = locate_ntoskrnl(lstar);
 
     LOG_INFO("Found ntoskrnl: %x\n", shared_cores_data.ntoskrnl);
+
+    shared_cores_data.PsLoadedModuleList = locate_PsLoadedModuleList(shared_cores_data.ntoskrnl);
 
     uint64_t MiDriverLoadSucceeded = shared_cores_data.ntoskrnl + NTOSKRNL_MiDriverLoadSucceeded_OFFSET;
     uint64_t ntoskrnl_phys = guest_virtual_to_physical(shared_cores_data.ntoskrnl);
@@ -105,8 +142,8 @@ __attribute__((section(".vmm"))) void handle_MiDriverLoadSucceeded_hook(vmexit_d
     }
 
     // Find kbdclass
-    uint64_t PsLoadedModuleList = shared_cores_data.ntoskrnl+NTOSKRNL_PsLoadedModuleList_OFFSET;
-    uint64_t head = get_previous_node(PsLoadedModuleList);
+
+    uint64_t head = get_previous_node(shared_cores_data.PsLoadedModuleList);
     if (get_node_dllname_length(head) == sizeof(u"kbdclass.sys")-2 && memcmp(get_node_dllname_buffer(head), u"kbdclass.sys", sizeof(u"kbdclass.sys")-2)){
         shared_cores_data.kbdclass = get_node_dllbase(head);
         LOG_INFO("Found kbdclass.sys: %x\n", shared_cores_data.kbdclass);
@@ -123,11 +160,11 @@ __attribute__((section(".vmm"))) void handle_MiDriverLoadSucceeded_hook(vmexit_d
 
 __attribute__((section(".vmm"))) qword_t find_windows_module(wchar_t *name, uint16_t len){
 
-    qword_t node = shared_cores_data.ntoskrnl+NTOSKRNL_PsLoadedModuleList_OFFSET;
+    qword_t node = shared_cores_data.PsLoadedModuleList;
 
     while (get_node_dllname_length(node) != len || !memcmp(get_node_dllname_buffer(node), name, len)){
         node = get_next_node(node);
-        if (node == shared_cores_data.ntoskrnl+NTOSKRNL_PsLoadedModuleList_OFFSET) return 0;    // Reached end of list
+        if (node == shared_cores_data.PsLoadedModuleList) return 0;    // Reached end of list
     }
 
     return get_node_dllbase(node);

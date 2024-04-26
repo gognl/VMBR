@@ -48,6 +48,7 @@ typedef struct {
     qword_t ept_pml4;
     msr_bitmaps_t *msr_bitmaps;
     qword_t ntoskrnl;
+    qword_t PsLoadedModuleList;
     qword_t kbdclass;
     qword_t ndis;
     dword_t router_ip;

@@ -12,6 +12,7 @@
 #define OPTIONAL_HEADER_OFFSET 0x18
 
 #define OPTIONAL_HEADER_NumberOfRvaAndSizes 108
+#define OPTIONAL_HEADER_SizeOfImage 56
 #define OPTIONAL_HEADER_DebugDirectory 160
 #define DEBUG_SECTION_AddressOfRawData 20
 #define DEBUG_DATA_StringOffset 24
@@ -24,5 +25,6 @@ typedef struct _IMAGE_DATA_DIRECTORY {
 } IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;
 
 extern BOOL check_for_module(byte_t *module, byte_t *name, byte_t name_len);
+extern uint32_t get_image_size(byte_t *module);
 
 #endif

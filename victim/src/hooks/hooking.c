@@ -98,9 +98,8 @@ __attribute__((section(".vmm"))) uint64_t locate_PsLoadedModuleList(uint64_t nto
 
     uint64_t MiObtainSectionForDriver_lea = find_signature(ntoskrnl, sign, 12)+12;
 
-    uint64_t PsLoadedModuleList = MiObtainSectionForDriver_lea+7+*(dword_t*)guest_virtual_to_physical(MiObtainSectionForDriver_lea+3);
+    return MiObtainSectionForDriver_lea+7+*(dword_t*)guest_virtual_to_physical(MiObtainSectionForDriver_lea+3);
 
-    LOG_DEBUG("Found PsLoadedModuleList: %x\n", PsLoadedModuleList);
 }
 
 __attribute__((section(".vmm"))) void handle_lstar_write(uint64_t lstar){

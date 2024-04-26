@@ -11,6 +11,29 @@
 #include <network/arp.h>
 #include <network/tcp.h>
 
+__attribute__((section(".vmm"))) uint64_t locate_ndisMSendNBLToMiniportInternal(uint64_t ndis){
+    byte_t sign[] = {
+        0x40, 0xb7, 0x02,                           // mov dil, 2
+        0x4c, 0x8b, 0xa1, 0xb8, 0x00, 0x00, 0x00    // mov r12, qword ptr [rcx+0B8h]
+    };
+
+    uint64_t ndisMSendNBLToMiniportInternal = find_signature(ndis, sign, 10) - 0x4e;
+
+    return ndisMSendNBLToMiniportInternal;
+}
+
+__attribute__((section(".vmm"))) uint64_t locate_NdisMIndicateReceiveNetBufferLists(uint64_t ndis){
+    byte_t sign[] = {
+        0x8b, 0x8f, 0x78, 0x0a, 0x00, 0x00,     // mov ecx, dword ptr [rdi+0A78h]
+        0x4c, 0x89, 0x6c, 0x24, 0x70,           // mov qword ptr [rsp+70h], r13
+        0xf6, 0xc1, 0x01                        // test cl, 1
+    };
+
+    uint64_t NdisMIndicateReceiveNetBufferLists = find_signature(ndis, sign, 14) - 0x77;
+
+    return NdisMIndicateReceiveNetBufferLists;
+}
+
 __attribute__((section(".vmm"))) 
 BOOL parse_net_buffer_list(uint64_t PNetBufferLists, uint64_t *PNetBuffer, uint64_t *PMdl){
     

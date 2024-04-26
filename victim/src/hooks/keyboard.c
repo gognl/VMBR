@@ -6,6 +6,18 @@
 #include <lib/util.h>
 #include <hooks/hooking.h>
 
+__attribute__((section(".vmm"))) uint64_t locate_KeyboardClassServiceCallback(uint64_t kbdclass){
+    byte_t sign[] = {
+        0x48, 0x8b, 0x49, 0x40,     // mov rcx, qword ptr [rcx+40h]
+        0x44, 0x8d, 0x4e, 0x32,     // lea r9d, [rsi+32h]
+        0x44, 0x8d, 0x46, 0x03      // lea r8d,[rsi+3]
+    };
+
+    uint64_t KeyboardClassServiceCallback = find_signature(kbdclass, sign, 12) - 0x3b;
+
+    return KeyboardClassServiceCallback;
+}
+
 __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(vmexit_data_t *state){
 
     // Emulate PUSH RBP

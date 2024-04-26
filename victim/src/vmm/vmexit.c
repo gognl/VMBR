@@ -61,7 +61,7 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
             return;
         }
-        else if (__vmread(GUEST_RIP) == shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET){
+        else if (__vmread(GUEST_RIP) == shared_cores_data.functions.ndisMSendNBLToMiniportInternal){
             handle_ndisMSendNBLToMiniportInternal_hook(&state);
             __vmwrite(GUEST_RIP, __vmread(GUEST_RIP)+(qword_t)state.instr_length);
             return;
@@ -85,12 +85,12 @@ void __attribute__((section(".vmm"))) vmexit_handler(){
             #endif
             
             if (shared_cores_data.send_requests){
-                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
+                hook_function(guest_virtual_to_physical(shared_cores_data.functions.ndisMSendNBLToMiniportInternal), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
             }
             else {
                 // Initiate sending
                 shared_cores_data.send_pending = TRUE;
-                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
+                hook_function(guest_virtual_to_physical(shared_cores_data.functions.ndisMSendNBLToMiniportInternal), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
             }
 
             // Disable timer

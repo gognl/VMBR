@@ -2,6 +2,7 @@
 #include <lib/instr.h>
 #include <lib/util.h>
 #include <vmm/paging.h>
+#include <hooks/pe.h>
 
 __attribute__((section(".vmm"))) uint64_t guest_virtual_to_physical(uint64_t addr){
     qword_t *pml4 = __vmread(GUEST_CR3), *pml3, *pml2, *pml1;
@@ -61,15 +62,15 @@ __attribute__((section(".vmm"))) void hook_function(byte_t *func, byte_t **x_pag
 
 }
 
+__attribute__((section(".vmm"))) byte_t* locate_ntoskrnl(uint64_t lstar){
+    byte_t* base = ALIGN_DOWN(lstar, PAGE_SIZE);
+    while (!check_for_module(base, "ntkrnlmp.pdb", 13)) base -= PAGE_SIZE;
+    return base;
+}
+
 __attribute__((section(".vmm"))) void handle_lstar_write(uint64_t lstar){
 
-    // LSTAR is either KiSystemCall64Shadow or KiSystemCall64. Try both.
-    if (!((lstar-NTOSKRNL_KiSystemCall64Shadow_OFFSET) & 0xfff))
-        shared_cores_data.ntoskrnl = lstar-NTOSKRNL_KiSystemCall64Shadow_OFFSET;
-    else if (!((lstar-NTOSKRNL_KiSystemCall64_OFFSET) & 0xfff))
-        shared_cores_data.ntoskrnl = lstar-NTOSKRNL_KiSystemCall64_OFFSET;
-    else
-        LOG_ERROR("FAILED TO FIND NTOSKRNL (LSTAR=%x)\n", lstar);
+    shared_cores_data.ntoskrnl = locate_ntoskrnl(lstar);
 
     LOG_INFO("Found ntoskrnl: %x\n", shared_cores_data.ntoskrnl);
 

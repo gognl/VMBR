@@ -102,6 +102,19 @@ __attribute__((section(".vmm"))) uint64_t locate_PsLoadedModuleList(uint64_t nto
 
 }
 
+__attribute__((section(".vmm"))) uint64_t locate_MiDriverLoadSucceeded(uint64_t ntoskrnl){
+    byte_t sign[] = {
+        0x48, 0x8b, 0x08,               // mov rcx, qword ptr [rax]
+        0xc6, 0x45, 0xc8, 0x03,         // mov byte ptr [rbp-38h], 3
+        0x8b, 0x45, 0xc8,               // mov eax, dword ptr [rbp-38h]
+        0x25, 0xff, 0x0f, 0xf8, 0xff    // and eax, 0FFF80FFFh
+    };
+
+    uint64_t MiDriverLoadSucceded = find_signature(ntoskrnl, sign, 15) - 0x58;
+
+    return MiDriverLoadSucceded;
+}
+
 __attribute__((section(".vmm"))) void handle_lstar_write(uint64_t lstar){
 
     shared_cores_data.ntoskrnl = locate_ntoskrnl(lstar);
@@ -110,13 +123,12 @@ __attribute__((section(".vmm"))) void handle_lstar_write(uint64_t lstar){
 
     shared_cores_data.PsLoadedModuleList = locate_PsLoadedModuleList(shared_cores_data.ntoskrnl);
 
-    uint64_t MiDriverLoadSucceeded = shared_cores_data.ntoskrnl + NTOSKRNL_MiDriverLoadSucceeded_OFFSET;
-    uint64_t ntoskrnl_phys = guest_virtual_to_physical(shared_cores_data.ntoskrnl);
-    uint64_t MiDriverLoadSucceeded_phys = guest_virtual_to_physical(MiDriverLoadSucceeded);
+    shared_cores_data.functions.MiDriverLoadSucceeded = locate_MiDriverLoadSucceeded(shared_cores_data.ntoskrnl);
+    uint64_t MiDriverLoadSucceeded_phys = guest_virtual_to_physical(shared_cores_data.functions.MiDriverLoadSucceeded);
     
-    clear_msr_bitmap_write(LSTAR_MSR, shared_cores_data.msr_bitmaps);
-
     hook_function(MiDriverLoadSucceeded_phys, &shared_cores_data.memory_shadowing_pages.MiDriverLoadSucceeded_x, shared_cores_data.memory_shadowing_pages.MiDriverLoadSucceeded_rw);
+
+    clear_msr_bitmap_write(LSTAR_MSR, shared_cores_data.msr_bitmaps);
 
 }
 

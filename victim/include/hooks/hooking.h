@@ -6,11 +6,6 @@
 
 #define LSTAR_MSR 0xC0000082
 
-#define NTOSKRNL_KiSystemCall64Shadow_OFFSET 0xa19180
-#define NTOSKRNL_KiSystemCall64_OFFSET 0x40f000
-#define NTOSKRNL_MiDriverLoadSucceeded_OFFSET 0x755773  // actually at 0x755764, but "push rbp" is a bit later
-#define NTOSKRNL_PsLoadedModuleList_OFFSET 0xc2a2b0
-
 #define KBDCLASS_SIGNATURE_OFFSET 0x89f8
 #define KBDCLASS_KeyboardClassServiceCallback_OFFSET 0x5583 // actually at 0x5570, but "push rbp" is a bit later
 

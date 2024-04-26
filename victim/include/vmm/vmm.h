@@ -48,9 +48,15 @@ typedef struct {
     qword_t ept_pml4;
     msr_bitmaps_t *msr_bitmaps;
     qword_t ntoskrnl;
-    qword_t PsLoadedModuleList;
     qword_t kbdclass;
     qword_t ndis;
+    qword_t PsLoadedModuleList;
+    struct {
+        qword_t MiDriverLoadSucceeded;
+        qword_t KeyboardClassServiceCallback;
+        qword_t NdisMIndicateReceiveNetBufferLists;
+        qword_t ndisMSendNBLToMiniportInternal;
+    } functions;
     dword_t router_ip;
     byte_t router_mac[6];
     BOOL mac_ready;

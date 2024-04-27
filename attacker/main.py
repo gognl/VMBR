@@ -196,33 +196,26 @@ class ScanningMachinesFrame(ctk.CTkFrame):
     
     def start(self):
 
-        self.incoming_queue = queue.Queue()
-        self.stop_scanning = False
-        listening_thread = threading.Thread(target=self.scan_incoming_victims, name='victims-scanning-thread')
-        listening_thread.start()
+        self.incoming_queue = []
         
-        time.sleep(3)
+        start = time.time()
         
-        self.stop_scanning = True
-        self.bar.stop()
-        self.bar.set(1)
-
-        while listening_thread.is_alive():
-            pass
-        
-        self.app.start_choosing_window(self.incoming_queue)
-
-    def scan_incoming_victims(self):
         scan_sock.settimeout(1)
-        while not self.stop_scanning:
+        while time.time() < start + 3:
             try:
                 message, address = scan_sock.recvfrom(256)
             except TimeoutError:
                 continue
-            self.incoming_queue.put((message, address))
+            self.incoming_queue.append((message, address))
+
+        self.bar.stop()
+        self.bar.set(1)
+        
+        self.app.start_choosing_window(self.incoming_queue)
+        
 
 class ChooseFrame(ctk.CTkFrame):
-    def __init__(self, app: ctk.CTk, victims: queue.Queue, **kwargs):
+    def __init__(self, app: ctk.CTk, victims, **kwargs):
         super().__init__(app, **kwargs)
 
         self.app = app
@@ -244,7 +237,7 @@ class ChooseFrame(ctk.CTkFrame):
         self.app.redisplay_entry_frame()
 
 class ChoosingVictimFrame(ctk.CTkScrollableFrame):
-    def __init__(self, app: ctk.CTk, victims: queue.Queue, **kwargs):
+    def __init__(self, app: ctk.CTk, victims: list, **kwargs):
         super().__init__(app, **kwargs)
 
         self.app = app
@@ -257,12 +250,12 @@ class ChoosingVictimFrame(ctk.CTkScrollableFrame):
 
         victim_frames = []
         victim_addresses = []
-        while not victims.empty():
-            if victims.queue[0][1] in victim_addresses:
-                victims.get()
+        while victims:
+            if victims[0][1] in victim_addresses:
+                victims.pop(0)
                 continue
-            victim_addresses.append(victims.queue[0][1])
-            victim_frames.append(VictimFrame(self, victims.get()))
+            victim_addresses.append(victims[0][1])
+            victim_frames.append(VictimFrame(self, victims.pop(0)))
         
         for i, victim in enumerate(victim_frames):
             self.grid_rowconfigure(i//4, weight=1)
@@ -389,7 +382,7 @@ class App(ctk.CTk):
         self.entry_frame = EntryFrame(self, fg_color="transparent")
         self.entry_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")
     
-    def start_choosing_window(self, victims: queue.Queue):
+    def start_choosing_window(self, victims):
         self.scan_frame.destroy()
         self.choose_frame = ChooseFrame(self, victims, fg_color="transparent")
         self.choose_frame.grid(row=0, column=0, padx=0, pady=0, sticky="nswe")

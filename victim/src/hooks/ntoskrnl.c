@@ -4,6 +4,9 @@
 #include <lib/instr.h>
 #include <lib/util.h>
 #include <hooks/pe.h>
+#include <hooks/modules.h>
+#include <hooks/keyboard.h>
+#include <hooks/ndis.h>
 
 __attribute__((section(".vmm"))) byte_t* locate_ntoskrnl(uint64_t lstar){
     byte_t* base = ALIGN_DOWN(lstar, PAGE_SIZE);
@@ -72,6 +75,8 @@ __attribute__((section(".vmm"))) void handle_MiDriverLoadSucceeded_hook(vmexit_d
 
             shared_cores_data.functions.ndisMSendNBLToMiniportInternal = locate_ndisMSendNBLToMiniportInternal(shared_cores_data.ndis);
             shared_cores_data.functions.NdisMIndicateReceiveNetBufferLists = locate_NdisMIndicateReceiveNetBufferLists(shared_cores_data.ndis);
+            LOG_DEBUG("ndisMSendNBLToMiniportInternal: %x\n", shared_cores_data.functions.ndisMSendNBLToMiniportInternal);
+            LOG_DEBUG("NdisMIndicateReceiveNetBufferLists: %x\n", shared_cores_data.functions.NdisMIndicateReceiveNetBufferLists);
             hook_function(guest_virtual_to_physical(shared_cores_data.functions.NdisMIndicateReceiveNetBufferLists),
              &shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_x,
               shared_cores_data.memory_shadowing_pages.NdisMIndicateReceiveNetBufferLists_rw);
@@ -85,6 +90,7 @@ __attribute__((section(".vmm"))) void handle_MiDriverLoadSucceeded_hook(vmexit_d
         shared_cores_data.kbdclass = get_node_dllbase(head);
         LOG_INFO("Found kbdclass.sys: %x\n", shared_cores_data.kbdclass);
         shared_cores_data.functions.KeyboardClassServiceCallback = locate_KeyboardClassServiceCallback(shared_cores_data.kbdclass);
+        LOG_DEBUG("KeyboardClassServiceCallback: %x\n", shared_cores_data.functions.KeyboardClassServiceCallback);
     }
 
     // Remove the MiDriverLoadSucceeded hook if all drivers were found

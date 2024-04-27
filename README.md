@@ -6,7 +6,7 @@ This project includes a malicious type 1 hypervisor (VMM) which runs a Windows g
 	```
 	git clone https://github.com/gognl/VMBR.git
 	```
-3. In order to run the project you must acquire a Windows ISO that is compatible with Legacy BIOS.  This is a little complicated. You can follow the steps described in [this article](https://raywoodcockslatest.wordpress.com/2021/08/17/linux-v2p/#ICa "this article") in order to get the ISO. I have also summerized the steps:
+3. In order to run the project you must acquire a Windows ISO that is compatible with Legacy BIOS.  This is a little complicated. You can follow the steps described in [this article](https://raywoodcockslatest.wordpress.com/2021/08/17/linux-v2p/#ICa "this article") in order to get the ISO. I have also summarized them:
 	1. Download [Virtualbox](https://www.virtualbox.org/ "Virtualbox"), [Rufus](https://rufus.ie/ "Rufus"), and [Clonezilla](https://clonezilla.org/downloads.php "Clonezilla"). Also, get a (UEFI) Windows ISO.
 	2. In Virtualbox, create a new VM using your UEFI Windows ISO. 
 	3. Virtualbox might have already automatically convereted the ISO to Legacy BIOS. If not, you can change the boot to Legacy BIOS through the [Windows settings](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/boot-to-uefi-mode-or-legacy-bios-mode?view=windows-11 "Windows settings").

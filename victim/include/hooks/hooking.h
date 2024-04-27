@@ -19,7 +19,8 @@
 #define SEND_TIMER_TIME 0x2ffffff
 #define IMMEDIATE_SENDING TRUE
 
-extern qword_t find_windows_module(wchar_t *name, uint16_t len);
 extern uint64_t guest_virtual_to_physical(uint64_t addr);
+extern void hook_function(byte_t *func, byte_t **x_page, byte_t *rw_page);
+extern uint64_t find_signature(uint64_t addr, byte_t *sign, uint32_t sign_len);
 
 #endif

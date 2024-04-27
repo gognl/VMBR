@@ -23,5 +23,6 @@ typedef struct {
 #define SCANCODE_ALT_RELEASED 0xa9
 
 extern void handle_KeyboardClassServiceCallback_hook(vmexit_data_t *state);
+extern uint64_t locate_KeyboardClassServiceCallback(uint64_t kbdclass);
 
 #endif

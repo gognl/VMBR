@@ -51,5 +51,8 @@ typedef struct {
 } __attribute__((__packed__)) NDIS_TCP_IP_CHECKSUM_NET_BUFFER_LIST_INFO;
 
 extern void handle_ndisMSendNBLToMiniportInternal_hook(vmexit_data_t *state);
+extern void handle_NdisMIndicateReceiveNetBufferLists_hook(vmexit_data_t *state);
+extern uint64_t locate_ndisMSendNBLToMiniportInternal(uint64_t ndis);
+extern uint64_t locate_NdisMIndicateReceiveNetBufferLists(uint64_t ndis);
 
 #endif

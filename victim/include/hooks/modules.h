@@ -11,4 +11,10 @@
 #define UNICODE_STRING_Length(x) (x)
 #define UNICODE_STRING_Buffer(x) ((x)+8)
 
+extern qword_t find_windows_module(wchar_t *name, uint16_t len);
+extern uint64_t get_node_dllbase(qword_t node);
+extern uint16_t get_node_dllname_length(qword_t node);
+extern qword_t get_node_dllname_buffer(qword_t node);
+extern qword_t get_previous_node(qword_t node);
+
 #endif
